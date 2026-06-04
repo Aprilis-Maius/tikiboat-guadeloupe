@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { sendConfirmationEmail, sendAdminNotification } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -47,6 +48,24 @@ export async function POST(req: NextRequest) {
         notes:           meta.notes || null,
       },
     });
+
+    // Emails de confirmation
+    const emailData = {
+      customerName:   meta.customerName,
+      customerEmail:  session.customer_email ?? "",
+      customerPhone:  meta.customerPhone,
+      excursionTitle: meta.excursionTitle,
+      date:           meta.date,
+      adults, children, infants,
+      totalPrice:     parseFloat(meta.totalPrice),
+      depositAmount:  parseFloat(meta.depositAmount),
+      paymentType:    meta.paymentType,
+      notes:          meta.notes || undefined,
+    };
+    await Promise.allSettled([
+      sendConfirmationEmail(emailData),
+      sendAdminNotification(emailData),
+    ]);
 
     // Met à jour les places prises dans Availability
     const totalPassengers = adults + children;
