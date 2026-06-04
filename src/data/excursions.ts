@@ -70,7 +70,7 @@ export const excursions: Excursion[] = [
       "/photos/coucherdesoleil.png",
       "/photos/coucherdesoleil.png",
     ],
-    badge: "Romantique",
+    badge: "Coucher de soleil",
   },
   {
     id: "3",
