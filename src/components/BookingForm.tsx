@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info } from "lucide-react";
+import BookingCalendar from "@/components/BookingCalendar";
 import { excursions } from "@/data/excursions";
 import { formatPrice, calculateTotal, calculateDeposit } from "@/lib/utils";
 
@@ -45,11 +46,6 @@ function BookingFormInner() {
   const total      = excursion ? calculateTotal(data.adults, data.children, excursion.priceAdult, excursion.priceChild) : 0;
   const deposit    = calculateDeposit(total);
   const amountToPay = data.paymentType === "deposit" ? deposit : total;
-
-  const today      = new Date().toISOString().split("T")[0];
-  const maxDate    = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 1);
-  const maxDateStr = maxDate.toISOString().split("T")[0];
 
   const steps = [
     { num: 1, label: "Excursion" },
@@ -161,18 +157,21 @@ function BookingFormInner() {
 
             {/* Date */}
             <div>
-              <label className="block text-white/70 text-sm font-medium mb-2">
+              <label className="block text-white/70 text-sm font-medium mb-3">
                 <CalendarDays size={14} className="inline mr-1.5 text-tiki-gold" />
                 Date de l&apos;excursion *
               </label>
-              <input type="date" min={today} max={maxDateStr}
+              <BookingCalendar
+                excursionSlug={data.excursionSlug}
                 value={data.date}
-                onChange={(e) => setData({ ...data, date: e.target.value })}
-                className={inputCls}
+                onChange={(date) => setData({ ...data, date })}
               />
-              <p className="text-white/35 text-xs mt-1.5">
-                Départ {excursion.departureTime} — Retour {excursion.returnTime}
-              </p>
+              {data.date && (
+                <p className="text-white/50 text-xs mt-2">
+                  {new Date(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  {" · "}Départ {excursion.departureTime} — Retour {excursion.returnTime}
+                </p>
+              )}
             </div>
 
             {/* Passagers */}
