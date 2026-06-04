@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Plus, Trash2, PlayCircle, ImageIcon, GripVertical } from "lucide-react";
+import AdminImageUpload from "@/components/admin/AdminImageUpload";
 
 interface GalleryItem {
   id: string; type: string; url: string; caption?: string; sortOrder: number;
@@ -95,14 +96,24 @@ export default function GalleriePage() {
               ))}
             </div>
 
-            <div>
-              <label className="block text-white/50 text-xs mb-1.5">
-                {form.type === "photo" ? "URL de la photo" : "URL YouTube (ex: https://youtu.be/xxx)"}
-              </label>
-              <input type="url" value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))}
-                placeholder={form.type === "photo" ? "https://..." : "https://youtu.be/..."}
-                className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none text-sm" />
-            </div>
+            {form.type === "photo" ? (
+              <AdminImageUpload
+                value={form.url}
+                onChange={url => setForm(p => ({ ...p, url }))}
+                label="Photo"
+                hint="Glissez votre photo ou cliquez pour la choisir depuis votre ordinateur"
+              />
+            ) : (
+              <div>
+                <label className="block text-white/50 text-xs mb-1.5">
+                  Lien YouTube <span className="text-white/25">(ex: https://youtu.be/xxx)</span>
+                </label>
+                <input type="url" value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))}
+                  placeholder="https://youtu.be/..."
+                  className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none text-sm" />
+                <p className="text-white/25 text-xs mt-1">Copiez le lien de la vidéo YouTube et collez-le ici</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-white/50 text-xs mb-1.5">Légende (optionnel)</label>

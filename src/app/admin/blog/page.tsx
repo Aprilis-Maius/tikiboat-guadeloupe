@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Save, X } from "lucide-react";
+import AdminImageUpload from "@/components/admin/AdminImageUpload";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 interface BlogPost {
   id: string; slug: string; title: string; excerpt: string;
@@ -100,73 +102,67 @@ export default function BlogAdminPage() {
             <button onClick={closeEdit} className="text-white/30 hover:text-white transition-colors"><X size={18} /></button>
           </div>
 
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* COL 1 */}
-            <div className="space-y-4">
-              <div>
-                <label className={labelCls}>Titre *</label>
-                <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className={inputCls} placeholder="Les 5 activités en mer en Guadeloupe" />
-              </div>
-              <div>
-                <label className={labelCls}>Extrait (affiché dans la liste)</label>
-                <textarea value={form.excerpt} rows={3}
-                  onChange={e => setForm(p => ({ ...p, excerpt: e.target.value }))}
-                  className={`${inputCls} resize-none`} placeholder="Résumé court de l'article..." />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+          <div className="p-6 space-y-5">
+            {/* Ligne 1 — Infos principales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-4">
                 <div>
-                  <label className={labelCls}>Catégorie</label>
-                  <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                    className={inputCls}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <label className={labelCls}>Titre de l&apos;article *</label>
+                  <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                    className={inputCls} placeholder="Ex : Les meilleures excursions en Guadeloupe" />
+                  <p className="text-white/20 text-xs mt-1">Le titre qui apparaîtra sur le site</p>
                 </div>
                 <div>
-                  <label className={labelCls}>Date</label>
-                  <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
-                    className={inputCls} />
+                  <label className={labelCls}>Résumé <span className="text-white/20 font-normal">(affiché dans la liste d&apos;articles)</span></label>
+                  <textarea value={form.excerpt} rows={3}
+                    onChange={e => setForm(p => ({ ...p, excerpt: e.target.value }))}
+                    className={`${inputCls} resize-none`} placeholder="En 2-3 phrases, décrivez le sujet de l'article..." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Catégorie</label>
+                    <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
+                      className={inputCls}>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Date de publication</label>
+                    <input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+                      className={inputCls} />
+                  </div>
                 </div>
                 <div>
-                  <label className={labelCls}>Temps de lecture (min)</label>
-                  <input type="number" value={form.readTime} onChange={e => setForm(p => ({ ...p, readTime: +e.target.value }))}
-                    className={inputCls} />
+                  <label className={labelCls}>Mots-clés pour Google <span className="text-white/20 font-normal">(séparés par des virgules)</span></label>
+                  <input value={form.keywords} onChange={e => setForm(p => ({ ...p, keywords: e.target.value }))}
+                    className={inputCls} placeholder="excursion Guadeloupe, snorkeling, Grand Cul de Sac" />
+                  <p className="text-white/20 text-xs mt-1">Ces mots aident Google à trouver votre article</p>
                 </div>
-                <div>
-                  <label className={labelCls}>Image de couverture</label>
-                  <input value={form.coverImage} onChange={e => setForm(p => ({ ...p, coverImage: e.target.value }))}
-                    className={inputCls} placeholder="/photos/blog-01.jpg" />
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-white/3 border border-white/8">
+                  <input type="checkbox" id="published" checked={form.isPublished}
+                    onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))}
+                    className="w-4 h-4 rounded accent-tiki-gold" />
+                  <div>
+                    <label htmlFor="published" className="text-white/70 text-sm cursor-pointer font-medium">Publier sur le site</label>
+                    <p className="text-white/30 text-xs">Si décoché, l&apos;article est en brouillon et invisible</p>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className={labelCls}>Mots-clés SEO (séparés par des virgules)</label>
-                <input value={form.keywords} onChange={e => setForm(p => ({ ...p, keywords: e.target.value }))}
-                  className={inputCls} placeholder="excursion Guadeloupe, snorkeling, Grand Cul de Sac" />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="published" checked={form.isPublished}
-                  onChange={e => setForm(p => ({ ...p, isPublished: e.target.checked }))}
-                  className="w-4 h-4 rounded accent-tiki-gold" />
-                <label htmlFor="published" className="text-white/60 text-sm cursor-pointer">Publié (visible sur le site)</label>
-              </div>
-            </div>
 
-            {/* COL 2 — Contenu */}
-            <div className="space-y-2">
-              <label className={labelCls}>
-                Contenu de l&apos;article
-                <span className="ml-2 text-white/20 font-normal normal-case">
-                  ## Titre, ### sous-titre, - liste, texte = paragraphe
-                </span>
-              </label>
-              <textarea
-                value={form.content}
-                onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                rows={20}
-                className={`${inputCls} resize-y font-mono text-xs leading-relaxed`}
-                placeholder={`Paragraphe d'introduction...\n\n## Premier titre de section\n\nContenu du paragraphe.\n\n- Élément de liste 1\n- Élément de liste 2\n\n## Deuxième section\n\nAutre paragraphe.`}
+              {/* Image de couverture */}
+              <AdminImageUpload
+                value={form.coverImage}
+                onChange={url => setForm(p => ({ ...p, coverImage: url }))}
+                label="Photo de couverture"
+                hint="Cette photo apparaît en haut de l'article et dans la liste"
               />
             </div>
+
+            {/* Contenu de l'article */}
+            <BlogEditor
+              value={form.content}
+              onChange={content => setForm(p => ({ ...p, content }))}
+            />
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">

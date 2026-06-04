@@ -149,8 +149,10 @@ export default function CalendarPage() {
 
               return (
                 <button key={dateStr}
-                  onClick={() => { setSelectedDay(dateStr === selectedDay ? null : dateStr); }}
-                  onDoubleClick={() => !isPast && openEdit(dateStr)}
+                  onClick={() => {
+                    if (!isPast) { openEdit(dateStr); }
+                    setSelectedDay(dateStr === selectedDay ? null : dateStr);
+                  }}
                   className={`relative aspect-square rounded-xl border text-sm font-medium transition-all ${bg} ${
                     isPast ? "opacity-30 cursor-default" : "hover:border-tiki-gold/40 cursor-pointer"
                   } ${isToday ? "ring-2 ring-tiki-gold/40" : ""} ${isSelected ? "ring-2 ring-white/40" : ""}`}>
@@ -167,7 +169,7 @@ export default function CalendarPage() {
               );
             })}
           </div>
-          <p className="text-white/25 text-xs mt-3 text-center">Double-cliquez sur une date pour modifier les disponibilités</p>
+          <p className="text-white/25 text-xs mt-3 text-center">Cliquez sur une date pour modifier ses disponibilités</p>
         </div>
 
         {/* Panneau droit */}
