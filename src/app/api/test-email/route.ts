@@ -9,7 +9,7 @@ export async function GET() {
 
   const testData = {
     customerName:   "Jean Test",
-    customerEmail:  session.user?.email ?? "test@test.com",
+    customerEmail:  "mfortier.prophy@gmail.com",
     customerPhone:  "+590 690 49 58 48",
     excursionTitle: "Croisière Grand Cul de Sac Marin",
     excursionSlug:  "grand-cul-de-sac-marin",
