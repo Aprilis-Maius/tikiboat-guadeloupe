@@ -7,7 +7,7 @@ export const excursions: Excursion[] = [
     title: "Croisière Grand Cul de Sac Marin",
     subtitle: "Journée complète inoubliable",
     description:
-      "Embarquez pour une journée extraordinaire et unique aux Antilles dans le Grand Cul de Sac Marin, le plus grand lagon des Petites Antilles. Fonds marins au fond de verre, snorkeling en cœur de Parc National, épave, mangrove, rivière salée — et repas créole 100% frais servi les pieds dans l'eau autour de notre bar flottant, original et unique aux Antilles.",
+      "Embarquez pour une journée extraordinaire et unique en Guadeloupe dans le Grand Cul de Sac Marin, le plus grand lagon des Petites Antilles. Fonds marins au fond de verre, snorkeling en cœur de Parc National, épave, mangrove, rivière salée — et repas créole 100% frais servi les pieds dans l'eau autour de notre bar flottant, original et unique en Guadeloupe.",
     duration: "Journée complète",
     departureTime: "08h00",
     returnTime: "17h00",
@@ -26,7 +26,7 @@ export const excursions: Excursion[] = [
     ],
     notIncluded: ["Transport jusqu'au point de départ"],
     highlights: [
-      "Bar flottant unique aux Antilles",
+      "Bar flottant unique en Guadeloupe",
       "Fonds marins avec fond de verre du bateau",
       "Snorkeling en cœur de Parc National",
       "Îlets Caret, Fajou, la Biche, îlet aux oiseaux",
@@ -50,7 +50,7 @@ export const excursions: Excursion[] = [
     title: "Croisière Coucher de Soleil",
     subtitle: "Une soirée magique en mer",
     description:
-      "Laissez-vous envoûter par les couleurs flamboyantes du coucher de soleil sur le lagon des Antilles. Cocktails tropicaux, planches créoles, musique douce — une soirée romantique et unique en mer.",
+      "Laissez-vous envoûter par les couleurs flamboyantes du coucher de soleil sur le lagon de Guadeloupe. Cocktails tropicaux, planches créoles, musique douce — une soirée romantique et unique en mer.",
     duration: "3 heures",
     departureTime: "17h00",
     returnTime: "20h00",

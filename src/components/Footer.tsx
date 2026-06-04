@@ -21,8 +21,7 @@ export default function Footer() {
               <div className="text-tiki-cream-dark text-sm mt-1">Excursions en Guadeloupe</div>
             </div>
             <p className="text-tiki-cream-dark leading-relaxed mb-6 max-w-md">
-              Vivez une expérience inoubliable dans le Grand Cul de Sac Marin — le plus grand lagon des petites
-              Antilles. Snorkeling, îlets, repas créole les pieds dans l&apos;eau... Une journée comme nulle part ailleurs.
+              Vivez une expérience inoubliable dans le Grand Cul de Sac Marin — le plus grand lagon de Guadeloupe. Snorkeling, îlets, repas créole les pieds dans l&apos;eau... Une journée comme nulle part ailleurs.
             </p>
             <div className="flex gap-3">
               <a

@@ -27,7 +27,7 @@ const FEATURES = [
   { icon: Fish,    label: "Snorkeling inclus",      desc: "Masque, tuba et palmes à bord" },
   { icon: Anchor,  label: "Adapté à tous",          desc: "Bébés, enfants, seniors — tout le monde" },
   { icon: Utensils,label: "Repas créole inclus",   desc: "Chef à bord, 100% produits frais" },
-  { icon: Waves,   label: "Bar flottant unique",     desc: "Original et unique aux Antilles" },
+  { icon: Waves,   label: "Bar flottant unique",     desc: "Original et unique en Guadeloupe" },
 ];
 
 export default async function HomePage() {
@@ -205,7 +205,7 @@ export default async function HomePage() {
                   "Repas créole complet (Chef à bord, 100% frais)",
                   "Boissons à volonté",
                   "Guide naturaliste",
-                  "Bar flottant unique aux Antilles",
+                  "Bar flottant unique en Guadeloupe",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-white/75 text-sm">
                     <CheckCircle2 size={16} className="text-tiki-gold shrink-0" />
