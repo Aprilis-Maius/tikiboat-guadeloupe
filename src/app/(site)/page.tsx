@@ -104,28 +104,49 @@ export default async function HomePage() {
 
 
       {/* ══════════════════════════════════════════
-          FEATURES
+          FEATURES — split photo / grille
       ══════════════════════════════════════════ */}
-      <section className="bg-tiki-ocean-mid py-20">
+      <section className="bg-tiki-ocean-mid py-20 overflow-hidden">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="text-center mb-12">
-            <p className="text-tiki-lagon-light text-xs font-bold tracking-[0.2em] uppercase mb-3">Pourquoi Tiki Boat</p>
-            <h2 className="font-display font-black text-white text-3xl sm:text-4xl">
-              Une expérience pensée dans les moindres détails
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-            {FEATURES.map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="flex flex-col items-start gap-2.5 p-4 sm:p-5 rounded-2xl border border-white/8 hover:border-tiki-gold/40 hover:bg-white/5 transition-all duration-300 group">
-                <div className="w-11 h-11 rounded-xl bg-tiki-gold/15 flex items-center justify-center group-hover:bg-tiki-gold/25 transition-colors">
-                  <Icon size={20} className="text-tiki-gold" />
-                </div>
-                <div>
-                  <div className="font-bold text-white text-sm mb-0.5">{label}</div>
-                  <div className="text-white/45 text-xs leading-relaxed">{desc}</div>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+            {/* GAUCHE — photos empilées */}
+            <div className="relative hidden lg:block h-[480px]">
+              <div className="absolute top-0 left-0 w-[75%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
+                <SiteImage src="/photos/grandculdesacmarin-excursion.png" alt="Excursion Tiki Boat"
+                  label="Excursion lagon" fill className="object-cover" />
               </div>
-            ))}
+              <div className="absolute bottom-0 right-0 w-[60%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border-4 border-tiki-ocean-mid">
+                <SiteImage src="/photos/lagon.jpg" alt="Grand Cul de Sac Marin"
+                  label="Lagon Guadeloupe" fill className="object-cover" />
+              </div>
+            </div>
+
+            {/* DROITE — texte + grille */}
+            <div>
+              <p className="text-tiki-gold text-xs font-bold tracking-[0.2em] uppercase mb-3">Pourquoi Tiki Boat</p>
+              <h2 className="font-display font-black text-white text-3xl sm:text-4xl mb-4 leading-tight">
+                Une expérience pensée dans les moindres détails
+              </h2>
+              <p className="text-white/50 text-base leading-relaxed mb-8">
+                À bord du Tiki Boat, tout est prévu pour que vous profitiez pleinement de votre journée — de l&apos;embarquement au retour.
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {FEATURES.map(({ icon: Icon, label, desc }) => (
+                  <div key={label} className="flex flex-col items-center text-center gap-2.5 p-4 rounded-2xl bg-white/5 hover:bg-white/8 border border-white/8 hover:border-tiki-gold/30 transition-all group">
+                    <div className="w-10 h-10 rounded-xl bg-tiki-gold/15 flex items-center justify-center group-hover:bg-tiki-gold/25 transition-colors">
+                      <Icon size={18} className="text-tiki-gold" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-xs mb-0.5 leading-tight">{label}</div>
+                      <div className="text-white/40 text-xs leading-relaxed hidden sm:block">{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
