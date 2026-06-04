@@ -14,7 +14,6 @@ export default function ReservationPage() {
       <section className="pt-32 pb-10 bg-tiki-dark-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-tiki-red/10 to-transparent" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="badge mb-4 inline-block">Réservation en ligne</div>
           <h1 className="section-title mb-4">Réservez votre aventure</h1>
           <p className="section-subtitle max-w-xl mx-auto">
             Choisissez votre excursion, votre date et procédez au paiement sécurisé. Confirmation instantanée par email.
