@@ -337,10 +337,10 @@ export default async function ExcursionDetailPage({ params }: Props) {
                 <Link key={exc.id} href={`/excursions/${exc.slug}`} className="group card-dark overflow-hidden p-0">
                   <div className="relative h-48 overflow-hidden">
                     <SiteImage src={exc.images[0]} alt={exc.title} label={exc.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-tiki-dark/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     <div className="absolute bottom-4 left-4">
-                      <h3 className="font-display text-xl font-bold text-tiki-gold">{exc.title}</h3>
-                      <p className="text-tiki-cream-dark text-sm">{exc.subtitle}</p>
+                      <h3 className="font-display text-xl font-bold text-tiki-gold drop-shadow-lg">{exc.title}</h3>
+                      <p className="text-white/90 text-sm drop-shadow">{exc.subtitle}</p>
                     </div>
                   </div>
                 </Link>
