@@ -157,12 +157,12 @@ export default async function ExcursionDetailPage({ params }: Props) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-tiki-dark via-tiki-dark/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 pb-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
               {excursion.badge && <div className="badge mb-3 inline-block">{excursion.badge}</div>}
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-2">{excursion.title}</h1>
-              <p className="text-tiki-cream-dark text-xl">{excursion.subtitle}</p>
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">{excursion.title}</h1>
+              <p className="text-white/80 text-xl drop-shadow">{excursion.subtitle}</p>
             </div>
           </div>
         </div>
