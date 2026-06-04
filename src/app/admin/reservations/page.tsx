@@ -140,6 +140,22 @@ export default function ReservationsPage() {
     setEditMode(true);
   };
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const deleteReservation = async () => {
+    if (!selected) return;
+    setSaving(true);
+    await fetch("/api/admin/reservations", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selected.id }),
+    });
+    setSelected(null);
+    setConfirmDelete(false);
+    await fetchReservations();
+    setSaving(false);
+  };
+
   const submitEdit = async () => {
     if (!selected || !editForm) return;
     setSaving(true);
@@ -608,6 +624,31 @@ export default function ReservationsPage() {
                   className="w-full py-2.5 rounded-xl text-sm font-medium border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center gap-2 mt-1">
                   Contacter sur WhatsApp
                 </a>
+
+                {/* Suppression avec confirmation */}
+                {!confirmDelete ? (
+                  <button onClick={() => setConfirmDelete(true)}
+                    className="w-full py-2.5 rounded-xl text-sm font-medium border border-red-500/20 text-red-400/50 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/5 transition-all mt-3">
+                    Supprimer la réservation
+                  </button>
+                ) : (
+                  <div className="mt-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 space-y-3">
+                    <p className="text-red-300 text-sm font-medium">
+                      Êtes-vous sûr de vouloir supprimer la réservation de <strong>{selected.customerName}</strong> ?
+                    </p>
+                    <p className="text-white/40 text-xs">Cette action est irréversible — la réservation sera définitivement effacée.</p>
+                    <div className="flex gap-2">
+                      <button onClick={deleteReservation} disabled={saving}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
+                        {saving ? "Suppression..." : "Oui, supprimer"}
+                      </button>
+                      <button onClick={() => setConfirmDelete(false)}
+                        className="flex-1 py-2 border border-white/15 text-white/60 hover:text-white rounded-lg text-sm transition-colors">
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
