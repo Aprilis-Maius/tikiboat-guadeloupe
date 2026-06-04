@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function AvisPage() {
-  const avgRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
 
   return (
     <>
@@ -17,7 +16,6 @@ export default function AvisPage() {
       <section className="pt-32 pb-16 bg-tiki-dark-2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-tiki-red/10 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="badge mb-4 inline-block">Avis vérifiés</div>
           <h1 className="section-title mb-4">Ce que disent nos clients</h1>
           <div className="flex items-center justify-center gap-2 mb-4">
             {[...Array(5)].map((_, i) => (
@@ -36,8 +34,8 @@ export default function AvisPage() {
             {[
               { value: "4.8★", label: "Note Google" },
               { value: "4.9★", label: "Note Tripadvisor" },
-              { value: "400+", label: "Avis Google" },
-              { value: "200+", label: "Avis Tripadvisor" },
+              { value: "100%", label: "Recommandent" },
+              { value: "500+", label: "Clients satisfaits" },
             ].map((stat) => (
               <div key={stat.label} className="card-dark text-center py-5">
                 <div className="font-display text-2xl font-bold text-tiki-gold">{stat.value}</div>
