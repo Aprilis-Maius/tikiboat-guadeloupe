@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save } from "lucide-react";
+import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil } from "lucide-react";
 import { excursions } from "@/data/excursions";
 
 interface Reservation {
@@ -43,6 +43,13 @@ export default function ReservationsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState(emptyCreate());
   const [creating, setCreating] = useState(false);
+
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    date: string; adults: number; children: number; infants: number;
+    customerName: string; customerEmail: string; customerPhone: string;
+    notes: string; status: string; isPaid: boolean; paymentType: string;
+  } | null>(null);
 
   const selectedExc = excursions.find(e => e.slug === createForm.excursionSlug);
   const calcTotal = () => selectedExc
@@ -118,6 +125,32 @@ export default function ReservationsPage() {
     });
     await fetchReservations();
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, status: newStatus } : null);
+    setSaving(false);
+  };
+
+  const openEdit = () => {
+    if (!selected) return;
+    setEditForm({
+      date: selected.date, adults: selected.adults, children: selected.children,
+      infants: selected.infants ?? 0, customerName: selected.customerName,
+      customerEmail: selected.customerEmail, customerPhone: selected.customerPhone,
+      notes: selected.notes ?? "", status: selected.status,
+      isPaid: selected.isPaid, paymentType: selected.paymentType,
+    });
+    setEditMode(true);
+  };
+
+  const submitEdit = async () => {
+    if (!selected || !editForm) return;
+    setSaving(true);
+    await fetch("/api/admin/reservations", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selected.id, ...editForm }),
+    });
+    await fetchReservations();
+    setEditMode(false);
+    setEditForm(null);
     setSaving(false);
   };
 
@@ -308,82 +341,116 @@ export default function ReservationsPage() {
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        {/* Liste */}
-        <div className="xl:col-span-2 space-y-5">
+        {/* Liste groupée par jour */}
+        <div className="xl:col-span-2 space-y-6">
           {loading ? (
             <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-8 text-center text-white/30 text-sm">Chargement...</div>
           ) : reservations.length === 0 ? (
             <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-8 text-center text-white/30 text-sm">Aucune réservation trouvée</div>
           ) : (() => {
             const today = new Date(new Date().toDateString());
-            const upcoming = reservations.filter(r => new Date(r.date) >= today);
-            const past     = reservations.filter(r => new Date(r.date) <  today);
 
-            const ReservationCard = (r: Reservation, isPast: boolean) => {
-              const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
-              const isSelected = selected?.id === r.id;
+            // Groupement par date
+            const groupByDate = (resas: Reservation[]) => {
+              const sorted = [...resas].sort((a, b) => a.date.localeCompare(b.date));
+              const map = new Map<string, Reservation[]>();
+              for (const r of sorted) {
+                const g = map.get(r.date) ?? [];
+                g.push(r);
+                map.set(r.date, g);
+              }
+              return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
+            };
+
+            const upcoming = groupByDate(reservations.filter(r => new Date(r.date) >= today));
+            const past     = groupByDate(reservations.filter(r => new Date(r.date) <  today));
+
+            const DayGroup = ({ date, items, isPast }: { date: string; items: Reservation[]; isPast: boolean }) => {
+              const MAX = 12;
+              const total = items.filter(r => r.status !== "cancelled").reduce((s, r) => s + r.adults + r.children, 0);
+              const fillRate = total / MAX;
+              const fillColor = fillRate >= 1 ? "bg-red-500" : fillRate >= 0.7 ? "bg-yellow-500" : "bg-green-500";
+              const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
               return (
-                <button key={r.id} onClick={() => setSelected(r)} className={`w-full text-left rounded-2xl border-2 px-5 py-4 transition-all duration-150 ${
-                  isSelected
-                    ? "bg-tiki-ocean-mid border-tiki-gold shadow-lg shadow-tiki-gold/10"
-                    : isPast
-                    ? "bg-[#111820] border-white/5 hover:border-white/15"
-                    : "bg-tiki-ocean-mid border-white/8 hover:border-white/20"
-                }`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className={`font-bold text-sm ${isSelected ? "text-tiki-gold" : isPast ? "text-white/45" : "text-white"}`}>
-                          {r.customerName}
-                        </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${s.cls}`}>{s.label}</span>
-                        {r.isPaid
-                          ? <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 size={11} /> Soldé</span>
-                          : <span className="text-xs text-yellow-400 flex items-center gap-1"><Clock size={11} /> Acompte</span>}
-                      </div>
-                      <div className={`text-xs ${isPast ? "text-white/30" : "text-white/45"}`}>
-                        {r.excursionTitle} &nbsp;·&nbsp;
-                        {new Date(r.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })}
-                      </div>
-                      <div className="text-white/25 text-xs mt-0.5">{r.adults + r.children} pers.</div>
+                <div>
+                  {/* Header jour */}
+                  <div className={`flex items-center justify-between mb-2 pb-2 border-b ${isPast ? "border-white/8" : "border-tiki-gold/20"}`}>
+                    <div>
+                      <span className={`font-bold text-sm capitalize ${isPast ? "text-white/40" : "text-white"}`}>{dateLabel}</span>
+                      <span className="text-white/30 text-xs ml-2">{items.length} groupe{items.length > 1 ? "s" : ""}</span>
                     </div>
-                    <div className={`font-black text-lg shrink-0 ${isSelected ? "text-tiki-gold" : isPast ? "text-white/25" : "text-white/70"}`}>
-                      {r.totalPrice} €
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 bg-white/10 rounded-full h-1.5">
+                        <div className={`h-1.5 rounded-full transition-all ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
+                      </div>
+                      <span className={`text-xs font-bold ${fillRate >= 1 ? "text-red-400" : fillRate >= 0.7 ? "text-yellow-400" : "text-green-400"}`}>
+                        {total}/{MAX}
+                      </span>
                     </div>
                   </div>
-                </button>
+
+                  {/* Cards du jour */}
+                  <div className="space-y-1.5 pl-2 border-l-2 border-white/8">
+                    {items.map(r => {
+                      const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+                      const isSelected = selected?.id === r.id;
+                      return (
+                        <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); }}
+                          className={`w-full text-left rounded-xl border px-4 py-3 transition-all ${
+                            isSelected ? "border-tiki-gold bg-tiki-gold/8 shadow-sm" :
+                            isPast ? "border-white/5 bg-[#111820] hover:border-white/12" :
+                            "border-white/8 bg-tiki-ocean-mid hover:border-white/20"
+                          }`}>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`font-semibold text-sm ${isSelected ? "text-tiki-gold" : isPast ? "text-white/50" : "text-white"}`}>
+                                  {r.customerName}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full border ${s.cls}`}>{s.label}</span>
+                                {r.isPaid
+                                  ? <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 size={10} /> Soldé</span>
+                                  : <span className="text-xs text-yellow-400 flex items-center gap-1"><Clock size={10} /> Acompte</span>}
+                              </div>
+                              <div className="text-white/35 text-xs mt-0.5">
+                                {r.excursionTitle} &nbsp;·&nbsp; {r.adults + r.children} pers.
+                              </div>
+                            </div>
+                            <div className={`font-bold text-sm shrink-0 ${isSelected ? "text-tiki-gold" : isPast ? "text-white/25" : "text-white/60"}`}>
+                              {r.totalPrice} €
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             };
 
             return (
               <>
-                {/* Réservations à venir */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold text-white/50 uppercase tracking-widest">À venir</span>
-                    <span className="text-xs bg-tiki-gold/15 text-tiki-gold border border-tiki-gold/25 px-2 py-0.5 rounded-full font-bold">{upcoming.length}</span>
+                {upcoming.length > 0 && (
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white/50 uppercase tracking-widest">À venir</span>
+                      <span className="text-xs bg-tiki-gold/15 text-tiki-gold border border-tiki-gold/25 px-2 py-0.5 rounded-full font-bold">
+                        {reservations.filter(r => new Date(r.date) >= today).length}
+                      </span>
+                    </div>
+                    {upcoming.map(({ date, items }) => <DayGroup key={date} date={date} items={items} isPast={false} />)}
                   </div>
-                  {upcoming.length === 0 ? (
-                    <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5 text-center text-white/25 text-sm">
-                      Aucune réservation à venir
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {upcoming.map(r => ReservationCard(r, false))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Réservations passées */}
+                )}
                 {past.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-white/30 uppercase tracking-widest">Passées</span>
-                      <span className="text-xs bg-white/5 text-white/30 border border-white/10 px-2 py-0.5 rounded-full font-bold">{past.length}</span>
+                      <span className="text-xs bg-white/5 text-white/30 border border-white/10 px-2 py-0.5 rounded-full font-bold">
+                        {reservations.filter(r => new Date(r.date) < today).length}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      {past.map(r => ReservationCard(r, true))}
-                    </div>
+                    {past.map(({ date, items }) => <DayGroup key={date} date={date} items={items} isPast={true} />)}
                   </div>
                 )}
               </>
@@ -391,31 +458,111 @@ export default function ReservationsPage() {
           })()}
         </div>
 
-        {/* Détail */}
-        <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5">
+        {/* Détail / Édition */}
+        <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5 sticky top-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
           {!selected ? (
             <div className="text-center text-white/25 text-sm py-12">
-              Sélectionnez une réservation
+              Cliquez sur une réservation pour voir le détail
+            </div>
+          ) : editMode && editForm ? (
+            /* ── MODE ÉDITION ── */
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-bold text-tiki-gold text-sm">Modifier la réservation</h2>
+                <button onClick={() => { setEditMode(false); setEditForm(null); }}
+                  className="text-white/30 hover:text-white transition-colors"><X size={16} /></button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className={labelCls}>Nom complet *</label>
+                  <input value={editForm.customerName} onChange={e => setEditForm(p => p ? { ...p, customerName: e.target.value } : p)}
+                    className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Email *</label>
+                  <input type="email" value={editForm.customerEmail} onChange={e => setEditForm(p => p ? { ...p, customerEmail: e.target.value } : p)}
+                    className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Téléphone *</label>
+                  <input type="tel" value={editForm.customerPhone} onChange={e => setEditForm(p => p ? { ...p, customerPhone: e.target.value } : p)}
+                    className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Date</label>
+                  <input type="date" value={editForm.date} onChange={e => setEditForm(p => p ? { ...p, date: e.target.value } : p)}
+                    className={inputCls} />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {([["Adultes", "adults"], ["Enfants", "children"], ["Bébés", "infants"]] as [string, keyof typeof editForm][]).map(([label, key]) => (
+                    <div key={key}>
+                      <label className={labelCls}>{label}</label>
+                      <input type="number" min={0} value={editForm[key] as number}
+                        onChange={e => setEditForm(p => p ? { ...p, [key]: +e.target.value } : p)}
+                        className={inputCls} />
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <label className={labelCls}>Statut</label>
+                  <select value={editForm.status} onChange={e => setEditForm(p => p ? { ...p, status: e.target.value } : p)} className={inputCls}>
+                    <option value="confirmed">Confirmé</option>
+                    <option value="pending">En attente</option>
+                    <option value="cancelled">Annulé</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Paiement</label>
+                  <select value={editForm.paymentType} onChange={e => setEditForm(p => p ? { ...p, paymentType: e.target.value } : p)} className={inputCls}>
+                    <option value="full">Total réglé</option>
+                    <option value="deposit">Acompte 30%</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <input type="checkbox" id="editIsPaid" checked={editForm.isPaid}
+                    onChange={e => setEditForm(p => p ? { ...p, isPaid: e.target.checked } : p)}
+                    className="w-4 h-4 accent-tiki-gold" />
+                  <label htmlFor="editIsPaid" className="text-white/60 text-sm cursor-pointer">Déjà encaissé</label>
+                </div>
+                <div>
+                  <label className={labelCls}>Notes internes</label>
+                  <textarea rows={2} value={editForm.notes} onChange={e => setEditForm(p => p ? { ...p, notes: e.target.value } : p)}
+                    className={`${inputCls} resize-none`} />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={submitEdit} disabled={saving || !editForm.customerName || !editForm.customerEmail}
+                    className="flex-1 flex items-center justify-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
+                    <Save size={14} /> {saving ? "Enregistrement..." : "Enregistrer"}
+                  </button>
+                  <button onClick={() => { setEditMode(false); setEditForm(null); }}
+                    className="px-4 border border-white/15 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+                    Annuler
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
+            /* ── MODE LECTURE ── */
             <div>
-              <h2 className="font-bold text-white mb-4">{selected.customerName}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-white">{selected.customerName}</h2>
+                <button onClick={openEdit}
+                  className="flex items-center gap-1.5 text-xs bg-white/8 hover:bg-tiki-gold/15 hover:text-tiki-gold border border-white/10 hover:border-tiki-gold/30 text-white/60 px-3 py-1.5 rounded-lg transition-all">
+                  <Pencil size={11} /> Modifier
+                </button>
+              </div>
 
-              {/* Contacts */}
               <div className="space-y-2 mb-5">
-                <a href={`tel:${selected.customerPhone}`}
-                  className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
+                <a href={`tel:${selected.customerPhone}`} className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
                   <Phone size={13} /> {selected.customerPhone}
                 </a>
-                <a href={`mailto:${selected.customerEmail}`}
-                  className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
+                <a href={`mailto:${selected.customerEmail}`} className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
                   <Mail size={13} /> {selected.customerEmail}
                 </a>
               </div>
 
-              {/* Infos résa */}
               <div className="space-y-2 text-sm mb-5 border-y border-white/8 py-4">
-                {[
+                {([
                   ["Excursion", selected.excursionTitle],
                   ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
                   ["Adultes", selected.adults],
@@ -424,8 +571,8 @@ export default function ReservationsPage() {
                   ["Acompte", `${selected.depositAmount} €`],
                   ["Paiement", selected.paymentType === "deposit" ? "Acompte 30%" : "Total réglé"],
                   ["Réservé le", new Date(selected.createdAt).toLocaleDateString("fr-FR")],
-                ].map(([l, v]) => (
-                  <div key={String(l)} className="flex justify-between gap-2">
+                ] as [string, string | number][]).map(([l, v]) => (
+                  <div key={l} className="flex justify-between gap-2">
                     <span className="text-white/40">{l}</span>
                     <span className="text-white text-right">{String(v)}</span>
                   </div>
@@ -439,32 +586,24 @@ export default function ReservationsPage() {
                 </div>
               )}
 
-              {/* Actions statut */}
               <div className="space-y-2">
-                <p className="text-white/30 text-xs font-medium uppercase tracking-wide mb-2">Statut</p>
+                <p className="text-white/30 text-xs font-medium uppercase tracking-wide mb-2">Actions rapides</p>
                 {[
                   { val: "confirmed", label: "✓ Confirmer",   cls: "bg-green-600 hover:bg-green-700 text-white" },
                   { val: "pending",   label: "⏳ En attente", cls: "bg-yellow-600 hover:bg-yellow-700 text-white" },
                   { val: "cancelled", label: "✗ Annuler",     cls: "bg-red-600 hover:bg-red-700 text-white" },
                 ].map(({ val, label, cls }) => (
-                  <button key={val}
-                    disabled={saving || selected.status === val}
+                  <button key={val} disabled={saving || selected.status === val}
                     onClick={() => updateStatus(selected.id, val)}
-                    className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-40 ${
-                      selected.status === val ? "opacity-40 cursor-default " : ""
-                    }${cls}`}>
+                    className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-40 ${selected.status === val ? "opacity-40 cursor-default " : ""}${cls}`}>
                     {label}
                   </button>
                 ))}
-
-                <button
-                  disabled={saving}
-                  onClick={() => markPaid(selected.id, !selected.isPaid)}
-                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-tiki-gold/30 text-tiki-gold hover:bg-tiki-gold/10 transition-colors disabled:opacity-40 mt-2">
-                  {selected.isPaid ? "Marquer comme non soldé" : "Marquer comme soldé"}
+                <button disabled={saving} onClick={() => markPaid(selected.id, !selected.isPaid)}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-tiki-gold/30 text-tiki-gold hover:bg-tiki-gold/10 transition-colors disabled:opacity-40 mt-1">
+                  {selected.isPaid ? "Marquer non soldé" : "Marquer soldé"}
                 </button>
-
-                <a href={`https://wa.me/${selected.customerPhone.replace(/\s+/g, "").replace("+", "")}`}
+                <a href={`https://wa.me/${selected.customerPhone.replace(/\D/g, "")}`}
                   target="_blank" rel="noopener noreferrer"
                   className="w-full py-2.5 rounded-xl text-sm font-medium border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center gap-2 mt-1">
                   Contacter sur WhatsApp
