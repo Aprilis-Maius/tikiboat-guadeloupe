@@ -37,59 +37,55 @@ export default async function HomePage() {
   return (
     <>
       {/* ══════════════════════════════════════════
-          HERO
+          HERO — photo en fond plein écran
       ══════════════════════════════════════════ */}
-      <section className="bg-tiki-ocean min-h-screen flex items-center">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center pt-24 pb-12 lg:py-24">
+      <section className="relative min-h-screen flex items-end">
 
-          {/* GAUCHE — Texte (premier dans le DOM = premier sur mobile) */}
-          <div className="order-1">
-            <p className="text-tiki-gold text-xs font-bold tracking-[0.25em] uppercase mb-6">
-              Excursions en bateau · Guadeloupe
-            </p>
+        {/* Photo de fond */}
+        <SiteImage
+          src="/photos/grandculdesacmarin-excursion.png"
+          alt="Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe"
+          label="Photo principale du hero"
+          fill className="object-cover" priority
+        />
 
-            <h1 className="font-display font-black text-white leading-[1.06] mb-6"
-                style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.75rem)" }}>
-              Une journée en mer<br />
-              <span className="text-tiki-gold">inoubliable</span><br />
-              en Guadeloupe.
-            </h1>
+        {/* Dégradé : léger en haut, sombre en bas pour le texte */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
 
-            <p className="text-white/55 text-base leading-relaxed mb-10 max-w-sm">
-              Snorkeling, îlets sauvages et repas créole les pieds dans l&apos;eau. Une expérience unique dans le Grand Cul de Sac Marin.
-            </p>
+        {/* Contenu */}
+        <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-16 sm:pb-20 pt-32">
+          <p className="text-tiki-gold text-xs font-bold tracking-[0.25em] uppercase mb-5 drop-shadow">
+            Excursions en bateau · Guadeloupe
+          </p>
 
-            <Link href="/reservation"
-              className="inline-flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-4 px-9 rounded-full transition-all hover:scale-105 text-sm shadow-lg shadow-tiki-gold/25 mb-12">
-              Réserver maintenant <ChevronRight size={16} />
-            </Link>
+          <h1 className="font-display font-black text-white leading-[1.06] mb-6 drop-shadow-lg"
+              style={{ fontSize: "clamp(2.6rem, 5vw, 4.5rem)" }}>
+            Une journée en mer<br />
+            <span className="text-tiki-gold">inoubliable</span><br />
+            en Guadeloupe.
+          </h1>
 
-            <div className="flex gap-12 pt-6 border-t border-white/10">
-              {[
-                { v: "4.9 ★", l: "Note Google" },
-                { v: "500+", l: "Clients satisfaits" },
-                { v: "2018", l: "En Guadeloupe" },
-              ].map(({ v, l }) => (
-                <div key={l}>
-                  <div className="text-white font-bold text-xl">{v}</div>
-                  <div className="text-white/35 text-xs mt-1">{l}</div>
-                </div>
-              ))}
-            </div>
+          <p className="text-white/75 text-base leading-relaxed mb-10 max-w-lg drop-shadow">
+            Snorkeling, îlets sauvages et repas créole les pieds dans l&apos;eau. Une expérience unique dans le Grand Cul de Sac Marin.
+          </p>
+
+          <Link href="/reservation"
+            className="inline-flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-4 px-9 rounded-full transition-all hover:scale-105 text-sm shadow-lg shadow-tiki-gold/30 mb-14">
+            Réserver maintenant <ChevronRight size={16} />
+          </Link>
+
+          <div className="flex gap-10 sm:gap-16 pt-6 border-t border-white/20">
+            {[
+              { v: "4.9 ★", l: "Note Google" },
+              { v: "500+", l: "Clients satisfaits" },
+              { v: "2018", l: "En Guadeloupe" },
+            ].map(({ v, l }) => (
+              <div key={l}>
+                <div className="text-white font-bold text-xl drop-shadow">{v}</div>
+                <div className="text-white/50 text-xs mt-1">{l}</div>
+              </div>
+            ))}
           </div>
-
-          {/* DROITE — Photo (masqué sur mobile) */}
-          <div className="order-2 hidden lg:block">
-            <div className="relative rounded-2xl overflow-hidden aspect-[3/2] shadow-2xl shadow-black/40 bg-tiki-ocean">
-              <SiteImage
-                src="/photos/hero.jpg"
-                alt="Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe"
-                label="Photo principale du hero"
-                fill className="object-contain" priority
-              />
-            </div>
-          </div>
-
         </div>
       </section>
 
