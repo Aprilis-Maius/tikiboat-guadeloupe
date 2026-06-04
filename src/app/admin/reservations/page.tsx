@@ -584,7 +584,7 @@ export default function ReservationsPage() {
                   ["Adultes", selected.adults],
                   ["Enfants", selected.children],
                   ["Total", `${selected.totalPrice} €`],
-                  ["Acompte", `${selected.depositAmount} €`],
+                  ["Acompte versé", `${selected.depositAmount} €`],
                   ["Paiement", selected.paymentType === "deposit" ? "Acompte 30%" : "Total réglé"],
                   ["Réservé le", new Date(selected.createdAt).toLocaleDateString("fr-FR")],
                 ] as [string, string | number][]).map(([l, v]) => (
@@ -593,6 +593,16 @@ export default function ReservationsPage() {
                     <span className="text-white text-right">{String(v)}</span>
                   </div>
                 ))}
+
+                {/* Solde restant — visible uniquement si acompte non soldé */}
+                {selected.paymentType === "deposit" && !selected.isPaid && (
+                  <div className="flex justify-between gap-2 pt-2 mt-1 border-t border-white/8">
+                    <span className="text-yellow-400 font-medium text-sm">Solde restant à encaisser</span>
+                    <span className="text-yellow-400 font-black text-sm">
+                      {(selected.totalPrice - selected.depositAmount).toFixed(2)} €
+                    </span>
+                  </div>
+                )}
               </div>
 
               {selected.notes && (
