@@ -68,6 +68,7 @@ export default async function HomePage() {
               {[
                 { v: "4.9 ★", l: "Note Google" },
                 { v: "500+", l: "Clients satisfaits" },
+                { v: "Depuis 2018", l: "En Guadeloupe" },
               ].map(({ v, l }) => (
                 <div key={l}>
                   <div className="text-white font-bold text-xl">{v}</div>
