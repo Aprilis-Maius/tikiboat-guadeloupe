@@ -23,7 +23,7 @@ export default function AvisPage() {
             {[...Array(5)].map((_, i) => (
               <Star key={i} className="text-tiki-gold fill-tiki-gold" size={28} />
             ))}
-            <span className="text-white font-bold text-3xl ml-2">{avgRating.toFixed(1)}/5</span>
+            <span className="text-white font-bold text-3xl ml-2">4.9/5</span>
           </div>
           <p className="text-tiki-cream-dark text-lg">Basé sur 400+ avis Google & 200+ avis Tripadvisor</p>
         </div>
