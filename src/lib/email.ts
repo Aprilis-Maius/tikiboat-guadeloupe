@@ -3,7 +3,8 @@ import { excursions } from "@/data/excursions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM  = "Tiki Boat <reservations@tiki-boat.com>";
+// TODO: remplacer par "Tiki Boat <reservations@tiki-boat.com>" une fois tiki-boat.com vérifié sur Resend
+const FROM  = "Tiki Boat <onboarding@resend.dev>";
 const ADMIN = process.env.ADMIN_EMAIL_NOTIF ?? "contact@tiki-boat.com";
 
 export interface ReservationData {
@@ -71,7 +72,6 @@ export async function sendConfirmationEmail(data: ReservationData) {
   const exc       = excursions.find(e => e.slug === data.excursionSlug || e.title === data.excursionTitle);
   const isDeposit = data.paymentType === "deposit";
   const remaining = data.totalPrice - data.depositAmount;
-  const pax       = data.adults + (data.children ?? 0);
   const included  = exc?.included as string[] | undefined;
   const depTime   = exc?.departureTime ?? "08h00";
   const retTime   = exc?.returnTime    ?? "17h00";
