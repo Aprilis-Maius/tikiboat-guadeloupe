@@ -99,12 +99,15 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Espacement bas */}
-        <div className="pb-12" />
+        {/* Vague en bas du hero — sur la photo */}
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+            className="block w-full" style={{ height: "clamp(40px, 5vw, 70px)" }}>
+            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,0 1440,35 L1440,70 L0,70 Z" fill="#0F2A3D" />
+          </svg>
+        </div>
       </section>
 
-
-      <WaveDivider topColor="transparent" bottomColor="#0F2A3D" />
 
       {/* ══════════════════════════════════════════
           FEATURES — split photo / grille
