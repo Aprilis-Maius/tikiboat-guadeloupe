@@ -24,7 +24,7 @@ export const excursions: Excursion[] = [
       "Boissons",
       "Guide naturaliste",
     ],
-    notIncluded: ["Transport jusqu'au point de départ", "Pourboires"],
+    notIncluded: ["Transport jusqu'au point de départ"],
     highlights: [
       "Bar flottant unique aux Antilles",
       "Fonds marins avec fond de verre du bateau",
