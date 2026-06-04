@@ -104,7 +104,7 @@ export default async function HomePage() {
       </section>
 
 
-      <WaveDivider topColor="#0A1E2E" bottomColor="#0F2A3D" />
+      <WaveDivider topColor="transparent" bottomColor="#0F2A3D" />
 
       {/* ══════════════════════════════════════════
           FEATURES — split photo / grille
