@@ -16,6 +16,8 @@ interface Props {
   sizes?: string;
 }
 
+const DEFAULT_SIZES = "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw";
+
 export default function SiteImage({ src, alt, label, fill, width, height, className, priority, sizes }: Props) {
   const [error, setError] = useState(false);
 
@@ -36,34 +38,29 @@ export default function SiteImage({ src, alt, label, fill, width, height, classN
 
   if (error) return <Placeholder />;
 
-  // Images locales : <img> natif pour avoir onError fiable
-  if (src.startsWith("/")) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={[fill ? "absolute inset-0 w-full h-full" : "w-full h-full", "object-cover", className ?? ""].join(" ")}
-        onError={() => setError(true)}
-      />
-    );
-  }
-
-  // Images externes (Unsplash, YouTube, etc.) : Next.js Image avec optimisation
   if (fill) {
     return (
       <Image
         src={src} alt={alt} fill
-        className={className} priority={priority} sizes={sizes}
+        className={className}
+        priority={priority}
+        sizes={sizes ?? DEFAULT_SIZES}
         onError={() => setError(true)}
+        quality={85}
       />
     );
   }
+
   return (
     <Image
       src={src} alt={alt}
       width={width ?? 800} height={height ?? 600}
-      className={className} priority={priority} sizes={sizes}
+      className={className}
+      priority={priority}
+      sizes={sizes ?? DEFAULT_SIZES}
       onError={() => setError(true)}
+      quality={85}
+      loading={priority ? "eager" : "lazy"}
     />
   );
 }
