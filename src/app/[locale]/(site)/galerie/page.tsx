@@ -111,7 +111,7 @@ export default function GaleriePage() {
           </p>
           <div className="flex gap-4 justify-center">
             <a
-              href="https://www.instagram.com"
+              href="https://www.instagram.com/tikiboatguadeloupe/"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm py-2.5 px-6"
@@ -119,7 +119,7 @@ export default function GaleriePage() {
               Instagram
             </a>
             <a
-              href="https://www.facebook.com"
+              href="https://www.facebook.com/tikiboatguadeloupe/?locale=fr_FR"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm py-2.5 px-6"
@@ -127,7 +127,7 @@ export default function GaleriePage() {
               Facebook
             </a>
             <a
-              href="https://www.youtube.com"
+              href="https://www.youtube.com/@TikiBoatGuadeloupe"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm py-2.5 px-6"
