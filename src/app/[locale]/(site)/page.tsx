@@ -131,7 +131,7 @@ export default async function HomePage() {
       <section className="bg-sky-50 py-16">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14">
-            <p className="text-tiki-lagon-light text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("excursions.badge")}</p>
+            <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("excursions.badge")}</p>
             <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl">{t("excursions.title")}</h2>
           </div>
           <div className={
@@ -201,7 +201,7 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-tiki-lagon-light text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("inclus.badge")}</p>
+              <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("inclus.badge")}</p>
               <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-6 leading-tight">
                 {t("inclus.title")}
               </h2>
@@ -258,7 +258,7 @@ export default async function HomePage() {
       <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14">
-            <p className="text-tiki-lagon-light text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("avis.badge")}</p>
+            <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("avis.badge")}</p>
             <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">{t("avis.title")}</h2>
             <div className="flex items-center justify-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => <Star key={i} size={18} className="text-tiki-gold fill-tiki-gold" />)}
@@ -301,7 +301,7 @@ export default async function HomePage() {
       <section className="bg-sky-50 py-16">
         <div className="max-w-4xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14">
-            <p className="text-tiki-lagon-light text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("tarifs.badge")}</p>
+            <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("tarifs.badge")}</p>
             <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">{t("tarifs.title")}</h2>
             <p className="text-slate-400 max-w-md mx-auto text-sm">{t("tarifs.subtitle")}</p>
           </div>
