@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import { Clock, Users, MapPin, CheckCircle2, XCircle, ChevronRight, CalendarDays, Star } from "lucide-react";
@@ -9,7 +10,7 @@ import { formatPrice } from "@/lib/utils";
 const BASE = "https://tiki-boat.com";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 export async function generateStaticParams() {
@@ -20,118 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const exc = getExcursionBySlug(slug);
   if (!exc) return {};
-
-  const price = exc.pricePrivate
-    ? `À partir de ${exc.pricePrivate} €`
-    : `À partir de ${exc.priceAdult} € / adulte`;
-
-  const title = `${exc.title} en Guadeloupe`;
-  const description = `${exc.description} ${price}. Départ ${exc.departureTime}, durée : ${exc.duration}. Note 4,8/5 · Réservation en ligne.`;
   const url = `${BASE}/excursions/${slug}`;
-  const ogImage = exc.images[0];
-
   return {
-    title,
-    description,
+    title: `${exc.title} — Guadeloupe`,
+    description: exc.description,
     alternates: { canonical: url },
-    openGraph: {
-      title,
-      description,
-      url,
-      type: "website",
-      siteName: "Tiki Boat",
-      locale: "fr_FR",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${exc.title} — Tiki Boat Guadeloupe`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [ogImage],
-    },
-  };
-}
-
-function buildJsonLd(exc: NonNullable<ReturnType<typeof getExcursionBySlug>>) {
-  const url = `${BASE}/excursions/${exc.slug}`;
-
-  const offers = exc.pricePrivate
-    ? {
-        "@type": "Offer",
-        price: exc.pricePrivate,
-        priceCurrency: "EUR",
-        description: "Privatisation — tarif sur devis",
-        availability: "https://schema.org/InStock",
-        url: `${BASE}/contact?type=privatisation`,
-      }
-    : [
-        {
-          "@type": "Offer",
-          name: "Adulte",
-          price: exc.priceAdult,
-          priceCurrency: "EUR",
-          availability: "https://schema.org/InStock",
-          url: `${BASE}/reservation?excursion=${exc.slug}`,
-        },
-        {
-          "@type": "Offer",
-          name: "Enfant (3–12 ans)",
-          price: exc.priceChild,
-          priceCurrency: "EUR",
-          availability: "https://schema.org/InStock",
-          url: `${BASE}/reservation?excursion=${exc.slug}`,
-        },
-      ];
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Accueil", item: BASE },
-          { "@type": "ListItem", position: 2, name: "Excursions", item: `${BASE}/excursions` },
-          { "@type": "ListItem", position: 3, name: exc.title, item: url },
-        ],
-      },
-      {
-        "@type": "TouristTrip",
-        "@id": `${url}#trip`,
-        name: `${exc.title} — Guadeloupe`,
-        description: exc.description,
-        url,
-        image: exc.images,
-        provider: { "@id": `${BASE}/#business` },
-        touristType: [
-          { "@type": "Audience", audienceType: "Famille" },
-          { "@type": "Audience", audienceType: "Couple" },
-          { "@type": "Audience", audienceType: "Groupe" },
-        ],
-        itinerary: {
-          "@type": "ItemList",
-          itemListElement: exc.highlights.map((h, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            name: h,
-          })),
-        },
-        offers,
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.9",
-          reviewCount: "100",
-          bestRating: "5",
-          worstRating: "1",
-        },
-      },
-    ],
+    openGraph: { title: exc.title, description: exc.description, url, type: "website", images: [{ url: exc.images[0], width: 1200, height: 630 }] },
   };
 }
 
@@ -140,23 +35,22 @@ export default async function ExcursionDetailPage({ params }: Props) {
   const excursion = getExcursionBySlug(slug);
   if (!excursion) notFound();
 
+  const t = await getTranslations("excursionDetail");
+
+  const metaCards = [
+    { icon: Clock,       label: t("duree"),       value: excursion.duration },
+    { icon: CalendarDays,label: t("heureDepart"), value: excursion.departureTime },
+    { icon: Users,       label: t("capacite"),    value: `Max ${excursion.maxPassengers}` },
+    { icon: MapPin,      label: t("pointRdv"),    value: excursion.departurePoint.split("/")[0].trim() },
+  ];
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd(excursion)) }}
-      />
       {/* Hero */}
       <section className="relative pt-20">
         <div className="relative h-[60vh] min-h-[400px]">
-          <SiteImage
-            src={excursion.images[0]}
-            alt={excursion.title}
-            label={excursion.title}
-            fill
-            className="object-cover"
-            priority
-          />
+          <SiteImage src={excursion.images[0]} alt={excursion.title} label={excursion.title}
+            fill className="object-cover" priority />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 pb-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
@@ -169,19 +63,16 @@ export default async function ExcursionDetailPage({ params }: Props) {
       </section>
 
       {/* Content */}
-      <section className="py-16 bg-tiki-dark">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Main content */}
+
+            {/* Main */}
             <div className="lg:col-span-2 space-y-10">
-              {/* Meta infos */}
+
+              {/* Meta cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { icon: Clock, label: "Durée", value: excursion.duration },
-                  { icon: CalendarDays, label: "Heure départ", value: excursion.departureTime },
-                  { icon: Users, label: "Capacité", value: `Max ${excursion.maxPassengers}` },
-                  { icon: MapPin, label: "Point de RDV", value: excursion.departurePoint.split("/")[0].trim() },
-                ].map((item) => (
+                {metaCards.map((item) => (
                   <div key={item.label} className="card-dark text-center py-4">
                     <item.icon className="text-tiki-gold mx-auto mb-2" size={22} />
                     <div className="text-slate-500 text-xs mb-1">{item.label}</div>
@@ -192,13 +83,13 @@ export default async function ExcursionDetailPage({ params }: Props) {
 
               {/* Description */}
               <div>
-                <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">L&apos;expérience</h2>
+                <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">{t("lexperience")}</h2>
                 <p className="text-slate-800 leading-relaxed text-lg">{excursion.description}</p>
               </div>
 
-              {/* Points forts */}
+              {/* Highlights */}
               <div>
-                <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">Au programme</h2>
+                <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">{t("auProgramme")}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {excursion.highlights.map((h) => (
                     <div key={h} className="flex items-center gap-3 text-slate-800">
@@ -212,7 +103,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
               {/* Inclus / Non inclus */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-4">Inclus dans le tarif</h3>
+                  <h3 className="font-bold text-slate-800 text-lg mb-4">{t("toutCompris")}</h3>
                   <ul className="space-y-2">
                     {excursion.included.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-slate-800 text-sm">
@@ -223,7 +114,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-lg mb-4">Non inclus</h3>
+                  <h3 className="font-bold text-slate-800 text-lg mb-4">{t("nonInclus")}</h3>
                   <ul className="space-y-2">
                     {excursion.notIncluded.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-slate-500 text-sm">
@@ -238,15 +129,12 @@ export default async function ExcursionDetailPage({ params }: Props) {
               {/* Vidéo */}
               {excursion.youtubeId && (
                 <div>
-                  <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">Voir la vidéo</h2>
+                  <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">{t("voirVideo")}</h2>
                   <div className="relative aspect-video rounded-2xl overflow-hidden border border-tiki-gold/20">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${excursion.youtubeId}`}
+                    <iframe src={`https://www.youtube.com/embed/${excursion.youtubeId}`}
                       title={excursion.title}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full"
-                    />
+                      allowFullScreen className="absolute inset-0 w-full h-full" />
                   </div>
                 </div>
               )}
@@ -258,90 +146,81 @@ export default async function ExcursionDetailPage({ params }: Props) {
                 {excursion.pricePrivate ? (
                   <>
                     <div className="text-center mb-6">
-                      <div className="font-display text-3xl font-bold text-tiki-gold mb-1">Sur devis</div>
-                      <p className="text-slate-500 text-sm">à partir de {formatPrice(excursion.pricePrivate)}</p>
+                      <div className="font-display text-3xl font-bold text-tiki-gold mb-1">{t("surDevis")}</div>
+                      <p className="text-slate-500 text-sm">{t("aPartirDe")} {formatPrice(excursion.pricePrivate)}</p>
                     </div>
                     <div className="space-y-3 mb-6 text-sm text-slate-500">
                       <div className="flex justify-between">
-                        <span>Durée</span><span className="text-slate-800">{excursion.duration}</span>
+                        <span>{t("duree")}</span><span className="text-slate-800">{excursion.duration}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Capacité</span><span className="text-slate-800">Max {excursion.maxPassengers} pers.</span>
+                        <span>{t("capaciteLabel")}</span><span className="text-slate-800">Max {excursion.maxPassengers}</span>
                       </div>
                     </div>
                     <Link href="/contact?type=privatisation" className="btn-primary w-full justify-center">
-                      Demander un devis
-                      <ChevronRight size={16} />
+                      {t("demanderDevis")} <ChevronRight size={16} />
                     </Link>
                   </>
                 ) : (
                   <>
                     <div className="mb-6 space-y-3">
                       <div>
-                        <div className="text-xs font-semibold text-tiki-lagon-light uppercase tracking-wider mb-1">Basse saison</div>
+                        <div className="text-xs font-semibold text-tiki-lagon uppercase tracking-wider mb-1">{t("basseSaison")}</div>
                         <div className="flex items-baseline gap-2 mb-0.5">
                           <span className="font-display text-3xl font-bold text-tiki-gold">{formatPrice(excursion.priceAdult)}</span>
-                          <span className="text-slate-500 text-sm">/ adulte</span>
+                          <span className="text-slate-500 text-sm">/ {t("duree").toLowerCase() === "duration" ? "adult" : "adulte"}</span>
                         </div>
-                        <div className="text-slate-500 text-sm">Enfant (3–12 ans) : {formatPrice(excursion.priceChild)}</div>
+                        <div className="text-slate-500 text-sm">{t("enfant")} : {formatPrice(excursion.priceChild)}</div>
                       </div>
                       {excursion.priceAdultHighSeason && (
                         <div className="border-t border-slate-200 pt-3">
-                          <div className="text-xs font-semibold text-tiki-gold uppercase tracking-wider mb-1">Haute saison</div>
+                          <div className="text-xs font-semibold text-tiki-gold uppercase tracking-wider mb-1">{t("hauteSaison")}</div>
                           <div className="flex items-baseline gap-2 mb-0.5">
                             <span className="font-display text-2xl font-bold text-tiki-gold">{formatPrice(excursion.priceAdultHighSeason)}</span>
-                            <span className="text-slate-500 text-sm">/ adulte</span>
+                            <span className="text-slate-500 text-sm">/ {t("duree").toLowerCase() === "duration" ? "adult" : "adulte"}</span>
                           </div>
-                          <div className="text-slate-500 text-sm">Enfant (3–12 ans) : {formatPrice(excursion.priceChildHighSeason!)}</div>
+                          <div className="text-slate-500 text-sm">{t("enfant")} : {formatPrice(excursion.priceChildHighSeason!)}</div>
                         </div>
                       )}
-                      <div className="text-slate-500 text-sm">Moins de 2 ans : Gratuit</div>
+                      <div className="text-slate-500 text-sm">{t("moinsDe2Ans")}</div>
                     </div>
                     <div className="space-y-3 mb-6 text-sm text-slate-500 border-t border-tiki-gold/20 pt-4">
                       <div className="flex justify-between">
-                        <span>Durée</span><span className="text-slate-800">{excursion.duration}</span>
+                        <span>{t("duree")}</span><span className="text-slate-800">{excursion.duration}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Départ</span><span className="text-slate-800">{excursion.departureTime}</span>
+                        <span>{t("depart")}</span><span className="text-slate-800">{excursion.departureTime}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Retour</span><span className="text-slate-800">{excursion.returnTime}</span>
+                        <span>{t("retour")}</span><span className="text-slate-800">{excursion.returnTime}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Capacité</span><span className="text-slate-800">Max {excursion.maxPassengers} pers.</span>
+                        <span>{t("capaciteLabel")}</span><span className="text-slate-800">Max {excursion.maxPassengers}</span>
                       </div>
                     </div>
                     <Link href={`/reservation?excursion=${excursion.slug}`} className="btn-primary w-full justify-center mb-3">
-                      Réserver maintenant
-                      <ChevronRight size={16} />
+                      {t("reserver")} <ChevronRight size={16} />
                     </Link>
-                    <div className="flex items-center gap-2 justify-center text-xs text-slate-500">
-                      <CheckCircle2 size={14} className="text-tiki-gold" />
-                      Acompte de 30% — annulation gratuite
-                    </div>
                   </>
                 )}
-
-                {/* Reviews mini */}
                 <div className="mt-6 pt-6 border-t border-tiki-gold/20">
                   <div className="flex items-center gap-2 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="text-tiki-gold fill-tiki-gold" size={14} />
-                    ))}
+                    {[...Array(5)].map((_, i) => <Star key={i} className="text-tiki-gold fill-tiki-gold" size={14} />)}
                     <span className="text-slate-800 text-sm font-bold ml-1">4.8/5</span>
                   </div>
-                  <p className="text-center text-slate-500 text-xs mt-1">400+ avis vérifiés</p>
+                  <p className="text-center text-slate-500 text-xs mt-1">400+ avis</p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* Other excursions */}
-      <section className="py-16 bg-tiki-dark-2">
+      {/* Autres excursions */}
+      <section className="py-16 bg-sky-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title mb-8">Autres excursions</h2>
+          <h2 className="font-display text-3xl font-bold text-slate-800 mb-8">{t("autresExcursions")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {excursions
               .filter((e) => e.slug !== excursion.slug)
@@ -349,7 +228,8 @@ export default async function ExcursionDetailPage({ params }: Props) {
               .map((exc) => (
                 <Link key={exc.id} href={`/excursions/${exc.slug}`} className="group card-dark overflow-hidden p-0">
                   <div className="relative h-48 overflow-hidden">
-                    <SiteImage src={exc.images[0]} alt={exc.title} label={exc.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <SiteImage src={exc.images[0]} alt={exc.title} label={exc.title} fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     <div className="absolute bottom-4 left-4">
                       <h3 className="font-display text-xl font-bold text-tiki-gold drop-shadow-lg">{exc.title}</h3>
