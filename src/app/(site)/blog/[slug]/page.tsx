@@ -80,7 +80,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="absolute inset-0 bg-gradient-to-t from-tiki-ocean via-tiki-ocean/50 to-black/20" />
           <div className="absolute bottom-0 left-0 right-0 pb-8 px-5 sm:px-8">
             <div className="max-w-3xl mx-auto">
-              <Link href="/blog" className="inline-flex items-center gap-1.5 text-white/40 hover:text-slate-800 text-sm mb-4 transition-colors">
+              <Link href="/blog" className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-800 text-sm mb-4 transition-colors">
                 <ArrowLeft size={14} /> Retour au blog
               </Link>
               <h1 className="font-display font-black text-slate-800 text-2xl sm:text-3xl lg:text-4xl leading-tight">
@@ -95,7 +95,7 @@ export default async function BlogPostPage({ params }: Props) {
       <section className="bg-tiki-ocean py-12">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
 
-          <div className="flex flex-wrap items-center gap-4 mb-10 pb-6 border-b border-slate-200 text-sm text-white/40">
+          <div className="flex flex-wrap items-center gap-4 mb-10 pb-6 border-b border-slate-200 text-sm text-slate-400">
             <span className="text-tiki-gold font-medium">{post.category}</span>
             <span>{formatBlogDate(post.date)}</span>
             <span className="flex items-center gap-1.5"><Clock size={13} /> {post.readTime} min de lecture</span>
@@ -112,12 +112,12 @@ export default async function BlogPostPage({ params }: Props) {
                 <h3 key={i} className="font-bold text-tiki-gold text-lg mt-6 mb-1">{section.text}</h3>
               );
               if (section.type === "p") return (
-                <p key={i} className="text-white/65 text-base leading-relaxed">{section.text}</p>
+                <p key={i} className="text-slate-600 text-base leading-relaxed">{section.text}</p>
               );
               if (section.type === "ul") return (
                 <ul key={i} className="space-y-2 pl-1">
                   {section.items.map((item, j) => (
-                    <li key={j} className="flex items-start gap-3 text-white/65 text-sm leading-relaxed">
+                    <li key={j} className="flex items-start gap-3 text-slate-600 text-sm leading-relaxed">
                       <span className="text-tiki-gold mt-1 shrink-0">·</span>{item}
                     </li>
                   ))}
@@ -151,7 +151,7 @@ export default async function BlogPostPage({ params }: Props) {
                   <div className="min-w-0">
                     <p className="text-tiki-gold text-xs font-medium mb-1">{p.category}</p>
                     <p className="text-slate-800 text-sm font-bold leading-tight group-hover:text-tiki-gold transition-colors line-clamp-2">{p.title}</p>
-                    <p className="text-white/30 text-xs mt-1.5">{formatBlogDate(p.date)}</p>
+                    <p className="text-slate-400 text-xs mt-1.5">{formatBlogDate(p.date)}</p>
                   </div>
                 </Link>
               ))}

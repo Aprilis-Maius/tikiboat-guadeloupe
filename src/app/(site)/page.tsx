@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteImage from "@/components/SiteImage";
-import WaveDivider from "@/components/WaveDivider";
 import { Star, ChevronRight, Anchor, Fish, Utensils, Users, Shield, CheckCircle2, Waves } from "lucide-react";
 import { getExcursions } from "@/lib/excursions";
 import { reviews } from "@/data/reviews";
@@ -60,12 +59,12 @@ export default async function HomePage() {
 
             {/* GAUCHE — texte */}
             <div className="max-w-xl">
-              <h1 className="font-display font-black text-slate-800 leading-[1.08] mb-6"
+              <h1 className="font-display font-black text-white leading-[1.08] mb-6"
                   style={{ fontSize: "clamp(2rem, 3.8vw, 3.6rem)", textShadow: "0 2px 24px rgba(0,0,0,0.7)" }}>
                 Une journée en mer <span className="text-tiki-gold">inoubliable</span> en Guadeloupe.
               </h1>
 
-              <p className="text-white/80 text-base leading-relaxed mb-10 max-w-md"
+              <p className="text-slate-700 text-base leading-relaxed mb-10 max-w-md"
                  style={{ textShadow: "0 1px 12px rgba(0,0,0,0.8)" }}>
                 Snorkeling, îlets sauvages et repas créole les pieds dans l&apos;eau. Une expérience unique dans le Grand Cul de Sac Marin.
               </p>
@@ -78,19 +77,19 @@ export default async function HomePage() {
 
             {/* DROITE — cartes excursions (desktop uniquement) */}
             <div className="hidden lg:flex flex-col gap-2.5 w-80 xl:w-96 shrink-0">
-              <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-1">Nos excursions</p>
+              <p className="text-slate-400 text-xs uppercase tracking-[0.2em] mb-1">Nos excursions</p>
               {excursions.map((exc) => (
                 <Link key={exc.id} href={`/excursions/${exc.slug}`}
                   className="flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/10 hover:bg-white/18 backdrop-blur-md border border-slate-200 hover:border-tiki-gold/50 transition-all group">
                   <div>
-                    <div className="text-slate-800 font-bold text-sm group-hover:text-tiki-gold transition-colors">{exc.title}</div>
-                    <div className="text-white/40 text-xs mt-0.5">{exc.duration}</div>
+                    <div className="text-white font-bold text-sm group-hover:text-tiki-gold transition-colors">{exc.title}</div>
+                    <div className="text-slate-400 text-xs mt-0.5">{exc.duration}</div>
                   </div>
                   <div className="text-right shrink-0 ml-4">
                     <div className="text-tiki-gold font-black text-base">
                       {exc.pricePrivate ? "Sur devis" : formatPrice(exc.priceAdult)}
                     </div>
-                    {!exc.pricePrivate && <div className="text-white/30 text-xs">/ adulte</div>}
+                    {!exc.pricePrivate && <div className="text-slate-400 text-xs">/ adulte</div>}
                   </div>
                 </Link>
               ))}
@@ -103,7 +102,7 @@ export default async function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 z-10">
           <svg viewBox="0 0 1440 70" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
             className="block w-full" style={{ height: "clamp(40px, 5vw, 70px)" }}>
-            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,0 1440,35 L1440,70 L0,70 Z" fill="#0F2A3D" />
+            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,0 1440,35 L1440,70 L0,70 Z" fill="#ffffff" />
           </svg>
         </div>
       </section>
@@ -134,7 +133,7 @@ export default async function HomePage() {
               <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4 leading-tight">
                 Une expérience pensée dans les moindres détails
               </h2>
-              <p className="text-white/50 text-base leading-relaxed mb-8">
+              <p className="text-slate-500 text-base leading-relaxed mb-8">
                 À bord du Tiki Boat, tout est prévu pour que vous profitiez pleinement de votre journée — de l&apos;embarquement au retour.
               </p>
 
@@ -146,7 +145,7 @@ export default async function HomePage() {
                     </div>
                     <div>
                       <div className="font-bold text-slate-800 text-xs mb-0.5 leading-tight">{label}</div>
-                      <div className="text-white/40 text-xs leading-relaxed hidden sm:block">{desc}</div>
+                      <div className="text-slate-400 text-xs leading-relaxed hidden sm:block">{desc}</div>
                     </div>
                   </div>
                 ))}
@@ -156,9 +155,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-
-      <WaveDivider topColor="#0F2A3D" bottomColor="#0A1E2E" flip />
 
       {/* ══════════════════════════════════════════
           EXCURSIONS
@@ -173,14 +169,14 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {excursions.map((exc) => (
-              <div key={exc.id} className="relative bg-tiki-ocean-mid rounded-2xl overflow-hidden border border-slate-200 hover:border-tiki-gold/30 hover:shadow-xl hover:shadow-black/30 transition-all duration-300 hover:-translate-y-1 group flex flex-col">
+              <div key={exc.id} className="relative bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-tiki-gold/30 hover:shadow-xl hover:shadow-black/30 transition-all duration-300 hover:-translate-y-1 group flex flex-col">
                 {/* Overlay link — toute la carte pointe vers le détail */}
                 <Link href={`/excursions/${exc.slug}`} className="absolute inset-0 z-0" aria-label={exc.title} />
                 <div className="relative h-52 overflow-hidden">
                   <SiteImage src={exc.images[0]} alt={exc.title}
                     label={exc.title} fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-tiki-ocean-mid/80 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   {exc.popular && (
                     <div className="absolute top-3 left-3 bg-tiki-red text-white text-xs font-bold px-3 py-1 rounded-full">
                       Meilleure vente
@@ -195,7 +191,7 @@ export default async function HomePage() {
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-display font-black text-slate-800 text-lg leading-tight mb-1">{exc.title}</h3>
                   <p className="text-slate-500 text-xs mb-2">{exc.duration}</p>
-                  <p className="text-white/50 text-sm leading-relaxed mb-5 flex-1 line-clamp-2">{exc.description}</p>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-5 flex-1 line-clamp-2">{exc.description}</p>
                   <div className="relative z-10 flex items-center justify-between pt-4 border-t border-slate-200">
                     <div>
                       {exc.pricePrivate ? (
@@ -203,13 +199,13 @@ export default async function HomePage() {
                       ) : (
                         <div className="flex items-baseline gap-1">
                           <span className="text-tiki-gold font-black text-2xl">{formatPrice(exc.priceAdult)}</span>
-                          <span className="text-white/35 text-xs">/ adulte</span>
+                          <span className="text-slate-400 text-xs">/ adulte</span>
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Link href={`/excursions/${exc.slug}`}
-                        className="border border-white/20 text-white/60 hover:border-white/40 hover:text-slate-800 text-sm font-medium px-4 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
+                        className="border border-slate-200 text-slate-600 hover:border-white/40 hover:text-slate-800 text-sm font-medium px-4 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
                         Détails
                       </Link>
                       <Link href={exc.pricePrivate ? "/contact?type=privatisation" : `/reservation?excursion=${exc.slug}`}
@@ -225,9 +221,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-
-      <WaveDivider topColor="#0A1E2E" bottomColor="#0F2A3D" />
-
       {/* ══════════════════════════════════════════
           INCLUS
       ══════════════════════════════════════════ */}
@@ -239,7 +232,7 @@ export default async function HomePage() {
               <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-6 leading-tight">
                 Zéro mauvaise<br />surprise.
               </h2>
-              <p className="text-white/50 text-base leading-relaxed mb-8">
+              <p className="text-slate-500 text-base leading-relaxed mb-8">
                 Le prix affiché est le prix réel. Repas, boissons, snorkeling, guide — tout est inclus dans le tarif.
               </p>
               <ul className="space-y-4">
@@ -253,14 +246,14 @@ export default async function HomePage() {
                   "Guide naturaliste",
                   "Bar flottant unique en Guadeloupe",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-white/75 text-sm">
+                  <li key={item} className="flex items-center gap-3 text-slate-700 text-sm">
                     <CheckCircle2 size={16} className="text-tiki-gold shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="relative h-80 lg:h-[420px] rounded-2xl overflow-hidden border border-slate-200 bg-tiki-ocean">
+            <div className="relative h-80 lg:h-[420px] rounded-2xl overflow-hidden border border-slate-200 bg-sky-50">
               <SiteImage
                 src="/photos/bateau.jpg"
                 alt="Le Tiki Boat"
@@ -271,9 +264,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-
-      <WaveDivider topColor="#0F2A3D" bottomColor="#0A1E2E" flip />
 
       {/* ══════════════════════════════════════════
           LAGON
@@ -294,7 +284,7 @@ export default async function HomePage() {
               <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-6 leading-tight">
                 Le plus grand lagon<br />des Petites Antilles
               </h2>
-              <p className="text-white/50 text-base leading-relaxed mb-8">
+              <p className="text-slate-500 text-base leading-relaxed mb-8">
                 Le Grand Cul de Sac Marin est un paradis naturel classé Parc National. Eaux cristallines, biodiversité exceptionnelle, îlets sauvages — notre terrain de jeu exclusif.
               </p>
               <ul className="space-y-3">
@@ -305,7 +295,7 @@ export default async function HomePage() {
                   "Rivière salée & fonds marins",
                   "Snorkeling en cœur de Parc National",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-white/65 text-sm">
+                  <li key={item} className="flex items-center gap-3 text-slate-600 text-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-tiki-gold shrink-0" />
                     {item}
                   </li>
@@ -315,9 +305,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-
-      <WaveDivider topColor="#0A1E2E" bottomColor="#0F2A3D" />
 
       {/* ══════════════════════════════════════════
           AVIS
@@ -332,7 +319,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => <Star key={i} size={18} className="text-tiki-gold fill-tiki-gold" />)}
               <span className="ml-2 font-bold text-slate-800">4.9</span>
-              <span className="text-white/35 text-sm ml-1">/ 5 · 600+ avis</span>
+              <span className="text-slate-400 text-sm ml-1">/ 5 · 600+ avis</span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -340,9 +327,9 @@ export default async function HomePage() {
               <div key={review.id} className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-tiki-gold/30 transition-all">
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(review.rating)].map((_, i) => <Star key={i} size={13} className="text-tiki-gold fill-tiki-gold" />)}
-                  <span className="ml-auto text-xs text-white/30 capitalize">{review.platform}</span>
+                  <span className="ml-auto text-xs text-slate-400 capitalize">{review.platform}</span>
                 </div>
-                <p className="text-white/65 text-sm leading-relaxed italic mb-5">&ldquo;{review.comment}&rdquo;</p>
+                <p className="text-slate-600 text-sm leading-relaxed italic mb-5">&ldquo;{review.comment}&rdquo;</p>
                 <div className="pt-4 border-t border-slate-200">
                   <div className="font-semibold text-tiki-gold text-sm">{review.author}</div>
                 </div>
@@ -352,20 +339,17 @@ export default async function HomePage() {
           <div className="flex gap-4 justify-center mt-10">
             <a href="https://www.tripadvisor.fr/Attraction_Review-g644387-d23475410-Reviews-Tiki_Boat-Le_Gosier_Grande_Terre_Island_Guadeloupe.html"
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-slate-200 text-white/60 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
+              className="inline-flex items-center gap-2 border border-slate-200 text-slate-600 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
               Tripadvisor
             </a>
             <a href="https://www.google.com/search?q=tiki+boat+guadeloupe+avis"
               target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-slate-200 text-white/60 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
+              className="inline-flex items-center gap-2 border border-slate-200 text-slate-600 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-2.5 rounded-full transition-colors">
               Google Reviews
             </a>
           </div>
         </div>
       </section>
-
-
-      <WaveDivider topColor="#0F2A3D" bottomColor="#0A1E2E" flip />
 
       {/* ══════════════════════════════════════════
           TARIFS
@@ -377,19 +361,19 @@ export default async function HomePage() {
             <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">
               Transparent. Tout compris.
             </h2>
-            <p className="text-white/40 max-w-md mx-auto text-sm">Acompte de 30% à la réservation — solde le jour J.</p>
+            <p className="text-slate-400 max-w-md mx-auto text-sm">Acompte de 30% à la réservation — solde le jour J.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="border-2 border-tiki-gold/50 rounded-2xl p-7 relative bg-tiki-ocean-mid">
+            <div className="border-2 border-tiki-gold/50 rounded-2xl p-7 relative bg-white">
               <div className="absolute -top-3 left-6 bg-tiki-red text-white text-xs font-bold px-3 py-1 rounded-full">
                 Meilleure vente
               </div>
               <h3 className="font-display font-black text-slate-800 text-xl mb-1">Croisière journée</h3>
-              <p className="text-white/35 text-xs mb-6">Grand Cul de Sac Marin — 08h00→17h00</p>
+              <p className="text-slate-400 text-xs mb-6">Grand Cul de Sac Marin — 09h00→16h00</p>
               <div className="space-y-3 mb-7">
                 {[["Adulte", "95 €"], ["Enfant 3–12 ans", "55 €"], ["Moins de 3 ans", "Gratuit"]].map(([l, p]) => (
                   <div key={l} className="flex justify-between text-sm border-b border-slate-200 pb-3 last:border-0 last:pb-0">
-                    <span className="text-white/50">{l}</span>
+                    <span className="text-slate-500">{l}</span>
                     <span className="font-bold text-tiki-gold">{p}</span>
                   </div>
                 ))}
@@ -399,13 +383,13 @@ export default async function HomePage() {
                 Réserver cette excursion <ChevronRight size={16} />
               </Link>
             </div>
-            <div className="border border-slate-200 rounded-2xl p-7 bg-tiki-ocean-mid">
+            <div className="border border-slate-200 rounded-2xl p-7 bg-white">
               <h3 className="font-display font-black text-slate-800 text-xl mb-1">Privatisation</h3>
-              <p className="text-white/35 text-xs mb-6">Anniversaire · EVJF · Mariage · Entreprise</p>
+              <p className="text-slate-400 text-xs mb-6">Anniversaire · EVJF · Mariage · Entreprise</p>
               <div className="space-y-3 mb-7">
-                {[["Journée privée", "dès 800 €"], ["Sunset privé", "dès 400 €"]].map(([l, p]) => (
+                {[["Journée privée", "dès 800 €"]].map(([l, p]) => (
                   <div key={l} className="flex justify-between text-sm border-b border-slate-200 pb-3 last:border-0 last:pb-0">
-                    <span className="text-white/50">{l}</span>
+                    <span className="text-slate-500">{l}</span>
                     <span className="font-bold text-tiki-gold">{p}</span>
                   </div>
                 ))}
@@ -419,9 +403,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-
-      <WaveDivider topColor="#0A1E2E" bottomColor="#0F2A3D" />
-
       {/* ══════════════════════════════════════════
           CTA FINAL — fond sombre, simple
       ══════════════════════════════════════════ */}
@@ -430,7 +411,7 @@ export default async function HomePage() {
           <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">
             Prêt pour le grand large ?
           </h2>
-          <p className="text-white/50 text-base mb-10">
+          <p className="text-slate-500 text-base mb-10">
             Réservez maintenant et vivez une journée comme nulle part ailleurs.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -439,7 +420,7 @@ export default async function HomePage() {
               Réserver maintenant <ChevronRight size={18} />
             </Link>
             <a href="https://wa.me/590690495848" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border border-white/20 text-white/80 hover:text-slate-800 hover:border-white/40 font-medium py-4 px-8 rounded-full transition-all text-sm">
+              className="inline-flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:text-slate-800 hover:border-white/40 font-medium py-4 px-8 rounded-full transition-all text-sm">
               WhatsApp
             </a>
           </div>

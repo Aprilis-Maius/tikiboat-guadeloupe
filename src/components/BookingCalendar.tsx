@@ -82,22 +82,22 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
   const monthLabel = new Date(year, month).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
   return (
-    <div className="bg-tiki-ocean border border-white/15 rounded-2xl p-4 select-none">
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 select-none">
       {/* Header navigation */}
       <div className="flex items-center justify-between mb-4">
         <button
           type="button"
           onClick={prevMonth}
           disabled={year === today.getFullYear() && month <= today.getMonth()}
-          className="w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-white/60 hover:border-tiki-gold hover:text-tiki-gold transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:border-tiki-gold hover:text-tiki-gold transition-all disabled:opacity-20 disabled:cursor-not-allowed"
         >
           <ChevronLeft size={16} />
         </button>
-        <span className="text-white font-bold text-sm capitalize">{monthLabel}</span>
+        <span className="text-slate-800 font-bold text-sm capitalize">{monthLabel}</span>
         <button
           type="button"
           onClick={nextMonth}
-          className="w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-white/60 hover:border-tiki-gold hover:text-tiki-gold transition-all"
+          className="w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:border-tiki-gold hover:text-tiki-gold transition-all"
         >
           <ChevronRight size={16} />
         </button>
@@ -106,7 +106,7 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
       {/* Jours de la semaine */}
       <div className="grid grid-cols-7 mb-2">
         {DAYS.map((d) => (
-          <div key={d} className="text-center text-white/30 text-xs font-medium py-1">{d}</div>
+          <div key={d} className="text-center text-slate-400 text-xs font-medium py-1">{d}</div>
         ))}
       </div>
 
@@ -134,7 +134,7 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
                   : full
                   ? "bg-red-900/40 text-red-400/60 cursor-not-allowed"
                   : past
-                  ? "text-white/20 cursor-not-allowed"
+                  ? "text-slate-200 cursor-not-allowed"
                   : "text-white hover:bg-white/10 hover:text-tiki-gold cursor-pointer",
               ].join(" ")}
               title={full ? "Complet" : undefined}
@@ -150,11 +150,11 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
 
       {/* Légende */}
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/8">
-        <div className="flex items-center gap-1.5 text-xs text-white/40">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <div className="w-3 h-3 rounded-full bg-tiki-gold" />
           Sélectionné
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-white/40">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <div className="w-3 h-3 rounded-full bg-red-900/60" />
           Complet
         </div>

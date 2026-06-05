@@ -11,12 +11,12 @@ export default function MentionsLegalesPage() {
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-10">Mentions légales</h1>
 
-        <div className="space-y-10 text-white/65 text-sm leading-relaxed">
+        <div className="space-y-10 text-slate-600 text-sm leading-relaxed">
 
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">Éditeur du site</h2>
             <p>
-              <strong className="text-white/90">Tiki Boat</strong><br />
+              <strong className="text-slate-500">Tiki Boat</strong><br />
               Guadeloupe, France<br />
               Téléphone : +590 690 49 58 48<br />
               Email : tikiboatguadeloupe@gmail.com
@@ -26,7 +26,7 @@ export default function MentionsLegalesPage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">Hébergement</h2>
             <p>
-              Ce site est hébergé par <strong className="text-white/90">Vercel Inc.</strong><br />
+              Ce site est hébergé par <strong className="text-slate-500">Vercel Inc.</strong><br />
               440 N Barranca Ave #4133, Covina, CA 91723, États-Unis<br />
               <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-tiki-gold hover:underline">vercel.com</a>
             </p>

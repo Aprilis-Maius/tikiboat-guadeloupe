@@ -23,7 +23,7 @@ interface BookingData {
 }
 
 const inputCls =
-  "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-4 text-slate-800 placeholder-white/30 outline-none transition-colors";
+  "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-4 text-slate-800 placeholder-slate-400 outline-none transition-colors";
 
 function BookingFormInner() {
   const searchParams = useSearchParams();
@@ -78,7 +78,7 @@ function BookingFormInner() {
   };
 
   return (
-    <div className="bg-tiki-ocean-mid rounded-2xl border border-slate-200 p-5 sm:p-7">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-sm">
 
       {/* Barre de progression */}
       <div className="flex items-center mb-8">
@@ -88,16 +88,16 @@ function BookingFormInner() {
               <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all shrink-0 ${
                 step > s.num  ? "bg-tiki-gold text-tiki-ocean" :
                 step === s.num ? "bg-tiki-red text-white" :
-                "bg-white/10 border border-white/20 text-white/50"
+                "bg-slate-100 border border-slate-200 text-slate-400"
               }`}>
                 {step > s.num ? <CheckCircle2 size={16} /> : s.num}
               </div>
-              <span className={`text-[10px] sm:text-xs font-medium leading-none ${step >= s.num ? "text-tiki-gold" : "text-white/30"}`}>
+              <span className={`text-[10px] sm:text-xs font-medium leading-none ${step >= s.num ? "text-tiki-gold" : "text-slate-400"}`}>
                 {s.label}
               </span>
             </div>
             {idx < steps.length - 1 && (
-              <div className={`h-px flex-1 mx-1.5 sm:mx-2 mb-4 transition-all ${step > s.num ? "bg-tiki-gold" : "bg-white/10"}`} />
+              <div className={`h-px flex-1 mx-1.5 sm:mx-2 mb-4 transition-all ${step > s.num ? "bg-tiki-gold" : "bg-slate-200"}`} />
             )}
           </div>
         ))}
@@ -120,7 +120,7 @@ function BookingFormInner() {
                   onChange={() => setData({ ...data, excursionSlug: exc.slug })}
                   className="sr-only" />
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  data.excursionSlug === exc.slug ? "border-tiki-gold" : "border-white/30"
+                  data.excursionSlug === exc.slug ? "border-tiki-gold" : "border-slate-300"
                 }`}>
                   {data.excursionSlug === exc.slug && <div className="w-2.5 h-2.5 rounded-full bg-tiki-gold" />}
                 </div>
@@ -128,19 +128,19 @@ function BookingFormInner() {
                   <div className="flex justify-between items-start gap-2 flex-wrap">
                     <div>
                       <div className="font-bold text-slate-800 text-sm leading-tight">{exc.title}</div>
-                      <div className="text-white/40 text-xs mt-0.5">{exc.duration}</div>
+                      <div className="text-slate-400 text-xs mt-0.5">{exc.duration}</div>
                     </div>
                     <div className="text-right shrink-0">
                       <div className="text-tiki-gold font-bold text-sm">{formatPrice(exc.priceAdult)}</div>
-                      <div className="text-white/35 text-xs">/ adulte</div>
+                      <div className="text-slate-400 text-xs">/ adulte</div>
                     </div>
                   </div>
                 </div>
               </label>
             ))}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-slate-200">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-sky-50 border border-slate-200">
               <Info size={16} className="text-tiki-gold shrink-0 mt-0.5" />
-              <p className="text-white/50 text-sm">
+              <p className="text-slate-500 text-sm">
                 Pour une <strong className="text-slate-800">privatisation</strong>,{" "}
                 <a href="/contact?type=privatisation" className="text-tiki-gold underline">contactez-nous</a> pour un devis.
               </p>
@@ -157,7 +157,7 @@ function BookingFormInner() {
 
             {/* Date */}
             <div>
-              <label className="block text-white/70 text-sm font-medium mb-3">
+              <label className="block text-slate-600 text-sm font-medium mb-3">
                 <CalendarDays size={14} className="inline mr-1.5 text-tiki-gold" />
                 Date de l&apos;excursion *
               </label>
@@ -167,7 +167,7 @@ function BookingFormInner() {
                 onChange={(date) => setData({ ...data, date })}
               />
               {data.date && (
-                <p className="text-white/50 text-xs mt-2">
+                <p className="text-slate-500 text-xs mt-2">
                   {new Date(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   {" · "}Départ {excursion.departureTime} — Retour {excursion.returnTime}
                 </p>
@@ -176,7 +176,7 @@ function BookingFormInner() {
 
             {/* Passagers */}
             <div>
-              <label className="block text-white/70 text-sm font-medium mb-3">
+              <label className="block text-slate-600 text-sm font-medium mb-3">
                 <Users size={14} className="inline mr-1.5 text-tiki-gold" />
                 Nombre de passagers
               </label>
@@ -203,25 +203,25 @@ function BookingFormInner() {
                       {counters.map((p) => (
                         <div key={p.label} className="bg-white border border-slate-200 rounded-xl p-3 text-center">
                           <div className="text-slate-800 font-medium text-sm mb-0.5">{p.label}</div>
-                          <div className="text-white/35 text-xs mb-3 leading-tight">{p.sub}</div>
+                          <div className="text-slate-400 text-xs mb-3 leading-tight">{p.sub}</div>
                           <div className="flex items-center justify-center gap-2">
                             <button type="button" onClick={p.onDec}
-                              className="w-10 h-10 rounded-full border border-white/20 text-white hover:bg-tiki-red/20 hover:border-tiki-red/40 transition-colors font-bold text-lg flex items-center justify-center">
+                              className="w-10 h-10 rounded-full border border-slate-200 text-slate-700 hover:bg-tiki-red/10 hover:border-tiki-red/30 transition-colors font-bold text-lg flex items-center justify-center">
                               −
                             </button>
                             <span className="text-tiki-gold font-black text-2xl w-7 text-center tabular-nums">{p.count}</span>
                             <button type="button" onClick={p.onInc}
-                              className="w-10 h-10 rounded-full border border-tiki-gold/30 text-tiki-gold hover:bg-tiki-gold/20 transition-colors font-bold text-lg flex items-center justify-center">
+                              className="w-10 h-10 rounded-full border border-tiki-gold/40 text-tiki-gold hover:bg-tiki-gold/10 transition-colors font-bold text-lg flex items-center justify-center">
                               +
                             </button>
                           </div>
-                          <div className={`text-xs mt-2 ${p.free ? "text-emerald-400" : "text-white/40"}`}>
+                          <div className={`text-xs mt-2 ${p.free ? "text-emerald-400" : "text-slate-400"}`}>
                             {p.free ? "Gratuit" : `${p.price} / pers.`}
                           </div>
                         </div>
                       ))}
                     </div>
-                    <p className="text-white/30 text-xs mt-2 flex items-center gap-1.5">
+                    <p className="text-slate-400 text-xs mt-2 flex items-center gap-1.5">
                       <Info size={11} className="shrink-0" />
                       {total} / {excursion.maxPassengers} passagers
                       {remaining === 0
@@ -236,12 +236,12 @@ function BookingFormInner() {
             {/* Total */}
             {total > 0 && (
               <div className="bg-tiki-gold/10 border border-tiki-gold/25 rounded-xl p-4 space-y-1.5">
-                <div className="flex justify-between text-white/70 text-sm">
+                <div className="flex justify-between text-slate-600 text-sm">
                   <span>{data.adults} adulte{data.adults > 1 ? "s" : ""} × {formatPrice(excursion.priceAdult)}</span>
                   <span>{formatPrice(data.adults * excursion.priceAdult)}</span>
                 </div>
                 {data.children > 0 && (
-                  <div className="flex justify-between text-white/70 text-sm">
+                  <div className="flex justify-between text-slate-600 text-sm">
                     <span>{data.children} enfant{data.children > 1 ? "s" : ""} × {formatPrice(excursion.priceChild)}</span>
                     <span>{formatPrice(data.children * excursion.priceChild)}</span>
                   </div>
@@ -273,7 +273,7 @@ function BookingFormInner() {
               { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00",    key: "customerPhone" },
             ].map(({ label, type, ph, key }) => (
               <div key={key}>
-                <label className="block text-white/70 text-sm font-medium mb-1.5">{label}</label>
+                <label className="block text-slate-600 text-sm font-medium mb-1.5">{label}</label>
                 <input type={type} placeholder={ph}
                   value={data[key as keyof BookingData] as string}
                   onChange={(e) => setData({ ...data, [key]: e.target.value })}
@@ -282,7 +282,7 @@ function BookingFormInner() {
               </div>
             ))}
             <div>
-              <label className="block text-white/70 text-sm font-medium mb-1.5">Remarques particulières</label>
+              <label className="block text-slate-600 text-sm font-medium mb-1.5">Remarques particulières</label>
               <textarea placeholder="Allergie alimentaire, besoin spécifique..."
                 value={data.notes}
                 onChange={(e) => setData({ ...data, notes: e.target.value })}
@@ -311,7 +311,7 @@ function BookingFormInner() {
               ["Nom", data.customerName],
             ].map(([l, v]) => (
               <div key={l} className="flex justify-between gap-2">
-                <span className="text-white/40">{l}</span>
+                <span className="text-slate-400">{l}</span>
                 <span className="text-slate-800 text-right">{v}</span>
               </div>
             ))}
@@ -339,23 +339,23 @@ function BookingFormInner() {
                   onChange={() => setData({ ...data, paymentType: val })}
                   className="sr-only" />
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  data.paymentType === val ? "border-tiki-gold" : "border-white/30"
+                  data.paymentType === val ? "border-tiki-gold" : "border-slate-300"
                 }`}>
                   {data.paymentType === val && <div className="w-2.5 h-2.5 rounded-full bg-tiki-gold" />}
                 </div>
                 <div>
                   <div className="font-bold text-slate-800 text-sm">{title}</div>
-                  <div className="text-white/40 text-xs mt-0.5">{sub}</div>
+                  <div className="text-slate-400 text-xs mt-0.5">{sub}</div>
                 </div>
               </label>
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-white/35 text-xs mb-1">
+          <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CreditCard size={14} className="text-tiki-gold" />
             Paiement sécurisé — CB, Apple Pay, Google Pay
           </div>
-          <div className="flex items-center gap-2 text-white/35 text-xs">
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
             <CheckCircle2 size={14} className="text-tiki-gold" />
             Confirmation immédiate par email
           </div>
@@ -367,7 +367,7 @@ function BookingFormInner() {
         <button type="button"
           onClick={() => setStep((s) => (s - 1) as Step)}
           disabled={step === 1}
-          className="flex items-center gap-1.5 text-white/50 hover:text-slate-800 disabled:opacity-20 disabled:cursor-not-allowed transition-colors font-medium text-sm py-3 px-4 min-h-[48px]">
+          className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 disabled:opacity-20 disabled:cursor-not-allowed transition-colors font-medium text-sm py-3 px-4 min-h-[48px]">
           <ChevronLeft size={18} /> Retour
         </button>
 

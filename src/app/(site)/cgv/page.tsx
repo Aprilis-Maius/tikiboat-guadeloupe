@@ -11,7 +11,7 @@ export default function CGVPage() {
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-10">Conditions Générales de Vente</h1>
 
-        <div className="space-y-10 text-white/65 text-sm leading-relaxed">
+        <div className="space-y-10 text-slate-600 text-sm leading-relaxed">
 
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">1. Objet</h2>
@@ -23,7 +23,7 @@ export default function CGVPage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">2. Réservation et acompte</h2>
             <p>
-              La réservation est confirmée après versement d&apos;un acompte de <strong className="text-white/90">30 %</strong> du montant total. Le solde est réglé le jour de l&apos;excursion, avant l&apos;embarquement.
+              La réservation est confirmée après versement d&apos;un acompte de <strong className="text-slate-500">30 %</strong> du montant total. Le solde est réglé le jour de l&apos;excursion, avant l&apos;embarquement.
             </p>
           </div>
 
@@ -37,9 +37,9 @@ export default function CGVPage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">4. Annulation par le client</h2>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Annulation <strong className="text-white/90">plus de 7 jours</strong> avant la date : remboursement intégral de l&apos;acompte.</li>
-              <li>Annulation entre <strong className="text-white/90">3 et 7 jours</strong> avant : remboursement de 50 % de l&apos;acompte.</li>
-              <li>Annulation <strong className="text-white/90">moins de 3 jours</strong> avant : acompte non remboursable.</li>
+              <li>Annulation <strong className="text-slate-500">plus de 7 jours</strong> avant la date : remboursement intégral de l&apos;acompte.</li>
+              <li>Annulation entre <strong className="text-slate-500">3 et 7 jours</strong> avant : remboursement de 50 % de l&apos;acompte.</li>
+              <li>Annulation <strong className="text-slate-500">moins de 3 jours</strong> avant : acompte non remboursable.</li>
             </ul>
           </div>
 
@@ -67,7 +67,7 @@ export default function CGVPage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">8. Paiement en ligne</h2>
             <p>
-              Les paiements en ligne sont sécurisés et traités via <strong className="text-white/90">Stripe</strong>. Tiki Boat ne stocke aucune donnée bancaire.
+              Les paiements en ligne sont sécurisés et traités via <strong className="text-slate-500">Stripe</strong>. Tiki Boat ne stocke aucune donnée bancaire.
             </p>
           </div>
 

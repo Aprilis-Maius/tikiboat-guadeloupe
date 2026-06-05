@@ -11,12 +11,12 @@ export default function ConfidentialitePage() {
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-10">Politique de confidentialité</h1>
 
-        <div className="space-y-10 text-white/65 text-sm leading-relaxed">
+        <div className="space-y-10 text-slate-600 text-sm leading-relaxed">
 
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">1. Responsable du traitement</h2>
             <p>
-              <strong className="text-white/90">Tiki Boat</strong> — tikiboatguadeloupe@gmail.com — est responsable du traitement de vos données personnelles collectées via ce site.
+              <strong className="text-slate-500">Tiki Boat</strong> — tikiboatguadeloupe@gmail.com — est responsable du traitement de vos données personnelles collectées via ce site.
             </p>
           </div>
 
@@ -44,7 +44,7 @@ export default function ConfidentialitePage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">4. Durée de conservation</h2>
             <p>
-              Vos données sont conservées pendant <strong className="text-white/90">3 ans</strong> à compter de votre dernière interaction avec Tiki Boat, puis supprimées.
+              Vos données sont conservées pendant <strong className="text-slate-500">3 ans</strong> à compter de votre dernière interaction avec Tiki Boat, puis supprimées.
             </p>
           </div>
 

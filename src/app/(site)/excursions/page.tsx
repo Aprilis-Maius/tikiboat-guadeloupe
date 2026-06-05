@@ -140,15 +140,15 @@ export default function ExcursionsPage() {
               {/* Content */}
               <div className={index % 2 === 1 ? "lg:col-start-1 lg:row-start-1" : ""}>
                 <div className="flex flex-wrap gap-3 mb-5">
-                  <div className="flex items-center gap-1.5 text-white/45 text-sm">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
                     <Clock size={14} className="text-tiki-gold" />
                     {exc.duration}
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/45 text-sm">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
                     <Users size={14} className="text-tiki-gold" />
                     Max {exc.maxPassengers} personnes
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/45 text-sm">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
                     <MapPin size={14} className="text-tiki-gold" />
                     {exc.departurePoint.split("/")[0].trim()}
                   </div>
@@ -158,12 +158,12 @@ export default function ExcursionsPage() {
                   {exc.title}
                 </h2>
                 <p className="text-tiki-gold text-sm font-medium mb-4">{exc.subtitle}</p>
-                <p className="text-white/55 mb-7 leading-relaxed">{exc.description}</p>
+                <p className="text-slate-500 mb-7 leading-relaxed">{exc.description}</p>
 
                 {/* Highlights */}
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-8">
                   {exc.highlights.slice(0, 4).map((h) => (
-                    <li key={h} className="flex items-center gap-2.5 text-sm text-white/70">
+                    <li key={h} className="flex items-center gap-2.5 text-sm text-slate-600">
                       <div className="w-1.5 h-1.5 rounded-full bg-tiki-gold shrink-0" />
                       {h}
                     </li>
@@ -176,19 +176,19 @@ export default function ExcursionsPage() {
                     {exc.pricePrivate ? (
                       <div>
                         <span className="text-tiki-gold font-black text-2xl">Sur devis</span>
-                        <div className="text-white/40 text-xs mt-0.5">à partir de {formatPrice(exc.pricePrivate)}</div>
+                        <div className="text-slate-400 text-xs mt-0.5">à partir de {formatPrice(exc.pricePrivate)}</div>
                       </div>
                     ) : (
                       <div>
                         <span className="text-tiki-gold font-black text-3xl">{formatPrice(exc.priceAdult)}</span>
-                        <span className="text-white/40 text-sm"> / adulte</span>
-                        <div className="text-white/35 text-xs mt-0.5">Enfant : {formatPrice(exc.priceChild)}</div>
+                        <span className="text-slate-400 text-sm"> / adulte</span>
+                        <div className="text-slate-400 text-xs mt-0.5">Enfant : {formatPrice(exc.priceChild)}</div>
                       </div>
                     )}
                   </div>
                   <div className="flex gap-3">
                     <Link href={`/excursions/${exc.slug}`}
-                      className="border border-white/20 text-white/70 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
+                      className="border border-white/20 text-slate-600 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
                       Détails
                     </Link>
                     <Link
@@ -236,7 +236,7 @@ export default function ExcursionsPage() {
                   {item.q}
                   <ChevronRight size={16} className="text-tiki-gold group-open:rotate-90 transition-transform shrink-0 ml-3" />
                 </summary>
-                <p className="text-white/50 mt-3 text-sm leading-relaxed">{item.a}</p>
+                <p className="text-slate-500 mt-3 text-sm leading-relaxed">{item.a}</p>
               </details>
             ))}
           </div>

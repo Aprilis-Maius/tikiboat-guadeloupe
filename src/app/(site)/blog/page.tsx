@@ -40,7 +40,7 @@ export default async function BlogPage() {
           <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">
             Conseils & guides pour vos excursions en Guadeloupe
           </h1>
-          <p className="text-white/45 text-base max-w-xl mx-auto">
+          <p className="text-slate-500 text-base max-w-xl mx-auto">
             Spots de snorkeling, activités en famille, guide du Grand Cul de Sac Marin — tout pour préparer votre séjour en mer.
           </p>
         </div>
@@ -49,7 +49,7 @@ export default async function BlogPage() {
       <section className="bg-tiki-ocean-mid py-14">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           {posts.length === 0 ? (
-            <div className="text-center py-20 text-white/25 text-sm">
+            <div className="text-center py-20 text-slate-300 text-sm">
               Aucun article publié pour le moment.
             </div>
           ) : (
@@ -71,15 +71,15 @@ export default async function BlogPage() {
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${CATEGORY_COLORS[featured.category] ?? "bg-white/10 text-white/50 border-slate-200"}`}>
                           {featured.category}
                         </span>
-                        <span className="text-white/25 text-xs">À la une</span>
+                        <span className="text-slate-300 text-xs">À la une</span>
                       </div>
                       <h2 className="font-display font-black text-slate-800 text-xl leading-tight mb-3 group-hover:text-tiki-gold transition-colors">
                         {featured.title}
                       </h2>
-                      <p className="text-white/50 text-sm leading-relaxed mb-5 line-clamp-3">
+                      <p className="text-slate-500 text-sm leading-relaxed mb-5 line-clamp-3">
                         {featured.excerpt}
                       </p>
-                      <div className="flex items-center gap-4 text-white/30 text-xs">
+                      <div className="flex items-center gap-4 text-slate-400 text-xs">
                         <span>{formatBlogDate(featured.date)}</span>
                         <span className="flex items-center gap-1">
                           <Clock size={11} /> {featured.readTime} min
@@ -110,10 +110,10 @@ export default async function BlogPage() {
                         <h2 className="font-display font-black text-slate-800 text-base leading-tight mb-2 flex-1 group-hover:text-tiki-gold transition-colors">
                           {post.title}
                         </h2>
-                        <p className="text-white/45 text-sm leading-relaxed mb-4 line-clamp-2">
+                        <p className="text-slate-500 text-sm leading-relaxed mb-4 line-clamp-2">
                           {post.excerpt}
                         </p>
-                        <div className="flex items-center justify-between text-white/30 text-xs pt-3 border-t border-slate-200">
+                        <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-200">
                           <span>{formatBlogDate(post.date)}</span>
                           <span className="flex items-center gap-1"><Clock size={11} /> {post.readTime} min</span>
                         </div>
