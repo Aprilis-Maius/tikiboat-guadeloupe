@@ -35,8 +35,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Outfit", "Inter", "system-ui", "sans-serif"],
+        sans: ["Poppins", "system-ui", "sans-serif"],
+        display: ["Bebas Neue", "Poppins", "system-ui", "sans-serif"],
       },
       backgroundImage: {
         "tiki-gradient": "linear-gradient(135deg, #8B0000 0%, #C62828 50%, #D4A017 100%)",
