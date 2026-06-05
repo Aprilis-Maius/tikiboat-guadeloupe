@@ -58,7 +58,7 @@ export default async function HomePage() {
 
             {/* Mini-cartes excursions desktop */}
             <div className="hidden lg:flex flex-col gap-2.5 w-80 xl:w-96 shrink-0">
-              <p className="text-slate-400 text-xs uppercase tracking-[0.2em] mb-1">{t("excursions.badge")}</p>
+              <p className="text-white/70 text-xs uppercase tracking-[0.2em] mb-1">{t("excursions.badge")}</p>
               {excursions.map((exc) => (
                 <Link key={exc.id} href={`/excursions/${exc.slug}`}
                   className="flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/10 hover:bg-white/18 backdrop-blur-md border border-slate-200 hover:border-tiki-gold/50 transition-all group">
