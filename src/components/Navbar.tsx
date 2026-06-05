@@ -88,6 +88,11 @@ export default function Navbar() {
               <span>0690 49 58 48</span>
             </a>
 
+            <Link href="/reservation"
+              className="inline-flex items-center bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean text-xs sm:text-sm font-bold py-2 px-3 sm:px-5 rounded-full transition-all duration-200 whitespace-nowrap min-h-[36px]">
+              {t("reserver")}
+            </Link>
+
             {/* Sélecteur langue — dropdown globe */}
             <div ref={langRef} className="relative hidden md:block">
               <button
@@ -117,11 +122,6 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-
-            <Link href="/reservation"
-              className="inline-flex items-center bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean text-xs sm:text-sm font-bold py-2 px-3 sm:px-5 rounded-full transition-all duration-200 whitespace-nowrap min-h-[36px]">
-              {t("reserver")}
-            </Link>
           </div>
         </div>
       </div>
