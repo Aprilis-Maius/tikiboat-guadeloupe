@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteImage from "@/components/SiteImage";
 import { Star, ChevronRight, Anchor, Fish, Utensils, Users, Shield, CheckCircle2, Waves } from "lucide-react";
+import WaveDivider from "@/components/WaveDivider";
 import { getExcursions } from "@/lib/excursions";
 import { reviews } from "@/data/reviews";
 import { formatPrice } from "@/lib/utils";
@@ -156,6 +157,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <WaveDivider topColor="#ffffff" bottomColor="#f0f9ff" />
+
       {/* ══════════════════════════════════════════
           EXCURSIONS
       ══════════════════════════════════════════ */}
@@ -229,6 +232,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <WaveDivider topColor="#f0f9ff" bottomColor="#ffffff" flip />
+
       {/* ══════════════════════════════════════════
           INCLUS
       ══════════════════════════════════════════ */}
@@ -273,6 +278,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <WaveDivider topColor="#ffffff" bottomColor="#f0f9ff" />
+
       {/* ══════════════════════════════════════════
           LAGON
       ══════════════════════════════════════════ */}
@@ -313,6 +320,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <WaveDivider topColor="#f0f9ff" bottomColor="#ffffff" flip />
 
       {/* ══════════════════════════════════════════
           AVIS
@@ -358,6 +367,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <WaveDivider topColor="#ffffff" bottomColor="#f0f9ff" />
 
       {/* ══════════════════════════════════════════
           TARIFS
@@ -410,6 +421,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <WaveDivider topColor="#f0f9ff" bottomColor="#ffffff" flip />
 
       {/* ══════════════════════════════════════════
           CTA FINAL — fond sombre, simple
