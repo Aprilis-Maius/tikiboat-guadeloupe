@@ -167,7 +167,12 @@ export default async function HomePage() {
               Choisissez votre aventure
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={
+            excursions.length === 1 ? "max-w-md mx-auto" :
+            excursions.length === 2 ? "grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto" :
+            excursions.length === 4 ? "grid grid-cols-1 md:grid-cols-2 gap-6" :
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          }>
             {excursions.map((exc) => (
               <div key={exc.id} className="relative bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-tiki-gold/30 hover:shadow-xl hover:shadow-black/30 transition-all duration-300 hover:-translate-y-1 group flex flex-col">
                 {/* Overlay link — toute la carte pointe vers le détail */}
@@ -197,9 +202,12 @@ export default async function HomePage() {
                       {exc.pricePrivate ? (
                         <span className="text-tiki-gold font-black text-lg">Sur devis</span>
                       ) : (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-tiki-gold font-black text-2xl">{formatPrice(exc.priceAdult)}</span>
-                          <span className="text-slate-400 text-xs">/ adulte</span>
+                        <div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-tiki-gold font-black text-2xl">{formatPrice(exc.priceAdult)}</span>
+                            <span className="text-slate-400 text-xs">/ adulte</span>
+                          </div>
+                          <div className="text-slate-400 text-xs mt-0.5">Basse saison</div>
                         </div>
                       )}
                     </div>
