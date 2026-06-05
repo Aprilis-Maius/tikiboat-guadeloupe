@@ -13,7 +13,7 @@ const SUBJECTS = [
 ];
 
 const inputCls =
-  "w-full bg-tiki-ocean border border-white/15 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/30 outline-none transition-colors text-sm";
+  "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
 
 function ContactFormInner() {
   const searchParams = useSearchParams();
@@ -96,13 +96,13 @@ function ContactFormInner() {
             value={form.subject}
             onChange={(e) => setForm({ ...form, subject: e.target.value })}
             className={`${inputCls} appearance-none cursor-pointer pr-10`}
-            style={{ backgroundColor: "#0A1E2E", color: "white" }}
+            style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
           >
             {SUBJECTS.map((s) => (
               <option
                 key={s.value}
                 value={s.value}
-                style={{ backgroundColor: "#0A1E2E", color: "white" }}
+                style={{ backgroundColor: "#ffffff", color: "#0f172a" }}
               >
                 {s.label}
               </option>
