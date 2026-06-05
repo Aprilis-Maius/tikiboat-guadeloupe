@@ -95,7 +95,7 @@ export default function ExcursionsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       {/* Header */}
-      <section className="pt-32 pb-16 bg-tiki-ocean relative overflow-hidden">
+      <section className="pt-32 pb-16 bg-sky-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-tiki-red/10 to-transparent" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="section-title mb-4">Nos excursions</h1>
@@ -109,7 +109,7 @@ export default function ExcursionsPage() {
       {excursions.map((exc, index) => (
         <section
           key={exc.id}
-          className={`py-20 ${index % 2 === 0 ? "bg-tiki-ocean-mid" : "bg-tiki-ocean"}`}
+          className={`py-20 ${index % 2 === 0 ? "bg-white" : "bg-sky-50"}`}
         >
           <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
             <div
@@ -182,13 +182,14 @@ export default function ExcursionsPage() {
                       <div>
                         <span className="text-tiki-gold font-black text-3xl">{formatPrice(exc.priceAdult)}</span>
                         <span className="text-slate-400 text-sm"> / adulte</span>
-                        <div className="text-slate-400 text-xs mt-0.5">Enfant : {formatPrice(exc.priceChild)}</div>
+                        <div className="text-tiki-lagon text-xs font-medium mt-0.5">Basse saison</div>
+                        <div className="text-slate-400 text-xs">Enfant : {formatPrice(exc.priceChild)}</div>
                       </div>
                     )}
                   </div>
                   <div className="flex gap-3">
                     <Link href={`/excursions/${exc.slug}`}
-                      className="border border-white/20 text-slate-600 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
+                      className="border border-slate-200 text-slate-600 hover:border-tiki-gold hover:text-tiki-gold text-sm font-medium px-5 py-3 rounded-full transition-colors min-h-[44px] flex items-center">
                       Détails
                     </Link>
                     <Link
@@ -207,7 +208,7 @@ export default function ExcursionsPage() {
       ))}
 
       {/* FAQ */}
-      <section className="py-16 bg-tiki-ocean-mid">
+      <section className="py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-display font-black text-slate-800 text-2xl sm:text-3xl text-center mb-10">
             Questions fréquentes
@@ -231,7 +232,7 @@ export default function ExcursionsPage() {
                 a: "En ligne sur ce site (paiement sécurisé), par WhatsApp au +590 690 49 58 48, ou par téléphone.",
               },
             ].map((item) => (
-              <details key={item.q} className="group border border-slate-200 rounded-xl bg-tiki-ocean p-5">
+              <details key={item.q} className="group border border-slate-200 rounded-xl bg-white p-5 shadow-sm">
                 <summary className="font-semibold text-slate-800 cursor-pointer flex justify-between items-center text-sm">
                   {item.q}
                   <ChevronRight size={16} className="text-tiki-gold group-open:rotate-90 transition-transform shrink-0 ml-3" />

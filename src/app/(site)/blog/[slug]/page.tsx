@@ -70,7 +70,7 @@ export default async function BlogPostPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}
-      <section className="pt-20 bg-tiki-ocean">
+      <section className="pt-20 bg-slate-900">
         <div className="relative h-[45vh] min-h-[280px]">
           <SiteImage
             src={post.coverImage} alt={post.title}
@@ -92,7 +92,7 @@ export default async function BlogPostPage({ params }: Props) {
       </section>
 
       {/* Contenu */}
-      <section className="bg-tiki-ocean py-12">
+      <section className="bg-sky-50 py-12">
         <div className="max-w-3xl mx-auto px-5 sm:px-8">
 
           <div className="flex flex-wrap items-center gap-4 mb-10 pb-6 border-b border-slate-200 text-sm text-slate-400">
@@ -138,13 +138,13 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Articles liés */}
       {related.length > 0 && (
-        <section className="bg-tiki-ocean-mid py-14">
+        <section className="bg-white py-14">
           <div className="max-w-3xl mx-auto px-5 sm:px-8">
             <h2 className="font-display font-black text-slate-800 text-xl mb-7">À lire aussi</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {related.map((p) => (
                 <Link key={p.slug} href={`/blog/${p.slug}`}
-                  className="group flex gap-4 bg-tiki-ocean rounded-xl p-4 border border-slate-200 hover:border-tiki-gold/30 transition-all">
+                  className="group flex gap-4 bg-white rounded-xl p-4 border border-slate-200 hover:border-tiki-gold/30 transition-all">
                   <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0">
                     <SiteImage src={p.coverImage} alt={p.title} label={p.coverLabel || p.title} fill className="object-cover" />
                   </div>

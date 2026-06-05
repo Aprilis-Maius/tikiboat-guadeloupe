@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function CGVPage() {
   return (
-    <section className="bg-tiki-ocean min-h-screen pt-32 pb-20">
+    <section className="bg-sky-50 min-h-screen pt-32 pb-20">
       <div className="max-w-3xl mx-auto px-5 sm:px-8">
         <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-10">Conditions Générales de Vente</h1>
 

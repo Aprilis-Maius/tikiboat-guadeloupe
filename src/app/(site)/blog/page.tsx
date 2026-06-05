@@ -34,7 +34,7 @@ export default async function BlogPage() {
 
   return (
     <>
-      <section className="pt-32 pb-14 bg-tiki-ocean">
+      <section className="pt-32 pb-14 bg-sky-50">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 text-center">
           <p className="text-tiki-gold text-xs font-bold tracking-[0.25em] uppercase mb-4">Blog</p>
           <h1 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-4">
@@ -46,7 +46,7 @@ export default async function BlogPage() {
         </div>
       </section>
 
-      <section className="bg-tiki-ocean-mid py-14">
+      <section className="bg-white py-14">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           {posts.length === 0 ? (
             <div className="text-center py-20 text-slate-300 text-sm">

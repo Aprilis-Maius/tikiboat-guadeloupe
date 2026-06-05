@@ -135,7 +135,7 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
                   ? "bg-red-900/40 text-red-400/60 cursor-not-allowed"
                   : past
                   ? "text-slate-200 cursor-not-allowed"
-                  : "text-white hover:bg-white/10 hover:text-tiki-gold cursor-pointer",
+                  : "text-slate-700 hover:bg-tiki-gold/10 hover:text-tiki-gold cursor-pointer",
               ].join(" ")}
               title={full ? "Complet" : undefined}
             >
@@ -149,7 +149,7 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
       </div>
 
       {/* Légende */}
-      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/8">
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-200">
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <div className="w-3 h-3 rounded-full bg-tiki-gold" />
           Sélectionné
