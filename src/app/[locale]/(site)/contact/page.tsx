@@ -34,7 +34,7 @@ export default function ContactPage() {
               <ul className="space-y-6 mb-10">
                 <li>
                   <a href="tel:+590690495848" className="flex items-start gap-4 group">
-                    <div className="w-12 h-12 bg-tiki-red/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-tiki-red/30 transition-colors">
+                    <div className="w-12 h-12 bg-tiki-lagon/15 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-tiki-lagon/25 transition-colors">
                       <Phone className="text-tiki-gold" size={22} />
                     </div>
                     <div>
@@ -46,7 +46,7 @@ export default function ContactPage() {
                 </li>
                 <li>
                   <a href="mailto:tikiboatguadeloupe@gmail.com" className="flex items-start gap-4 group">
-                    <div className="w-12 h-12 bg-tiki-red/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-tiki-red/30 transition-colors">
+                    <div className="w-12 h-12 bg-tiki-lagon/15 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-tiki-lagon/25 transition-colors">
                       <Mail className="text-tiki-gold" size={22} />
                     </div>
                     <div>
@@ -57,7 +57,7 @@ export default function ContactPage() {
                 </li>
                 <li>
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-tiki-red/20 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 bg-tiki-lagon/15 rounded-xl flex items-center justify-center shrink-0">
                       <MapPin className="text-tiki-gold" size={22} />
                     </div>
                     <div>
@@ -69,7 +69,7 @@ export default function ContactPage() {
                 </li>
                 <li>
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-tiki-red/20 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 bg-tiki-lagon/15 rounded-xl flex items-center justify-center shrink-0">
                       <Clock className="text-tiki-gold" size={22} />
                     </div>
                     <div>
