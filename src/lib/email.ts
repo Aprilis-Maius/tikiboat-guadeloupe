@@ -63,7 +63,7 @@ function generateICS(data: ReservationData, exc: typeof excursions[0] | undefine
 // ─── Bloc logo réutilisable ─────────────────────────────────────────────────
 function logoHeader(subtitle: string, badgeBg = "#16a34a", badgeText = "✅ Réservation confirmée") {
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0077b6;border-radius:14px 14px 0 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0088cc;border-radius:14px 14px 0 0;">
     <tr>
       <td style="padding:20px 16px 20px 28px;vertical-align:middle;width:55%;">
         <img src="${LOGO}" alt="TIKI BOAT" width="160"
@@ -115,7 +115,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
           ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
           ${divider()}
           ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
-          ${row("Départ", `<strong style="color:#0077b6;">${depTime}</strong>`)}
+          ${row("Départ", `<strong style="color:#0088cc;">${depTime}</strong>`)}
           ${row("Retour prévu", retTime)}
           ${row("Point de RDV", depPoint)}
           ${divider()}
@@ -157,7 +157,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
     </table>` : ""}
 
     <!-- Contact -->
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0077b6;border-radius:10px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0088cc;border-radius:10px;">
       <tr><td style="padding:18px 20px;">
         <p style="font-size:10px;font-weight:700;color:#F5C842;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 12px;">📞 Une question ?</p>
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;">
@@ -220,7 +220,7 @@ export async function sendAdminNotification(data: ReservationData) {
     <!-- Client -->
     <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">👤 Client</p>
     <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${data.customerName}</p>
-    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${data.customerPhone}" style="color:#0077b6;text-decoration:none;font-weight:600;">${data.customerPhone}</a></p>
+    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${data.customerPhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${data.customerPhone}</a></p>
     <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${data.customerEmail}" style="color:#2563eb;text-decoration:none;">${data.customerEmail}</a></p>
 
     <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 20px;" />
@@ -250,7 +250,7 @@ export async function sendAdminNotification(data: ReservationData) {
     <!-- CTA -->
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr><td align="center" style="background:#F5C842;border-radius:8px;padding:14px 20px;">
-        <a href="${SITE_URL}/admin/reservations" style="color:#0077b6;font-weight:800;font-size:14px;text-decoration:none;">
+        <a href="${SITE_URL}/admin/reservations" style="color:#0088cc;font-weight:800;font-size:14px;text-decoration:none;">
           Voir la réservation dans l'admin →
         </a>
       </td></tr>

@@ -19,15 +19,15 @@ const config: Config = {
           "gold-light": "#F5D060",
           "gold-dark": "#A07810",
           // Bleu nuit mer (navbar, footer, hero)
-          ocean: "#0A1E2E",
-          "ocean-mid": "#0F2A3D",
-          "ocean-light": "#163347",
+          ocean: "#0E2030",
+          "ocean-mid": "#132538",
+          "ocean-light": "#192E42",
           // Sections claires
           dark: "#ffffff",
           "dark-2": "#f0f9ff",
           // Lagon turquoise
-          lagon: "#0077b6",
-          "lagon-light": "#0096c7",
+          lagon: "#0088cc",
+          "lagon-light": "#00a3de",
           "lagon-pale": "#caf0f8",
           // Textes
           cream: "#E8F4F8",
@@ -41,7 +41,7 @@ const config: Config = {
       backgroundImage: {
         "tiki-gradient": "linear-gradient(135deg, #8B0000 0%, #C62828 50%, #D4A017 100%)",
         "ocean-gradient": "linear-gradient(180deg, #0A1E2E 0%, #0F2A3D 100%)",
-        "lagon-gradient": "linear-gradient(135deg, #0A1E2E 0%, #0891B2 100%)",
+        "lagon-gradient": "linear-gradient(135deg, #0E2030 0%, #0099CC 100%)",
       },
       animation: {
         "fade-in": "fadeIn 0.6s ease-out",
