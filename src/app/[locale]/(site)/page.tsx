@@ -92,11 +92,11 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="relative hidden lg:block h-[480px]">
-              <div className="absolute top-0 left-0 w-[75%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
+              <div className="absolute top-0 left-0 w-[75%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border border-slate-200">
                 <SiteImage src="/photos/grandculdesacmarin-excursion.png" alt="Excursion Tiki Boat"
                   label="Excursion lagon" fill className="object-cover" />
               </div>
-              <div className="absolute bottom-0 right-0 w-[60%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
+              <div className="absolute bottom-0 right-0 w-[60%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border border-slate-200">
                 <SiteImage src="/photos/lagon.jpg" alt="Grand Cul de Sac Marin"
                   label="Lagon Guadeloupe" fill className="object-cover" />
               </div>
