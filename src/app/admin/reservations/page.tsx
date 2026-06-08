@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, AlertCircle, MessageCircle } from "lucide-react";
+import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, MessageCircle, Copy, Check } from "lucide-react";
 import { excursions } from "@/data/excursions";
 
 interface Reservation {
@@ -50,6 +50,13 @@ export default function ReservationsPage() {
     notes: string; status: string; isPaid: boolean; paymentType: string;
   } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  const copyEmail = (email: string) => {
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
 
   const selectedExc = excursions.find(e => e.slug === createForm.excursionSlug);
   const calcTotal = () => selectedExc
@@ -543,11 +550,15 @@ export default function ReservationsPage() {
                       className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm hover:border-tiki-lagon/40 transition-colors">
                       <Phone size={14} className="text-tiki-lagon" /> {selected.customerPhone}
                     </a>
-                    <a href={`mailto:${selected.customerEmail}`}
-                      className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm hover:border-tiki-lagon/40 transition-colors truncate">
-                      <Mail size={14} className="text-tiki-lagon" />
-                      <span className="truncate">{selected.customerEmail}</span>
-                    </a>
+                    <div className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm min-w-0">
+                      <Mail size={14} className="text-tiki-lagon shrink-0" />
+                      <span className="truncate flex-1">{selected.customerEmail}</span>
+                      <button onClick={() => copyEmail(selected.customerEmail)}
+                        className="shrink-0 text-slate-400 hover:text-tiki-lagon transition-colors"
+                        title="Copier l'email">
+                        {copiedEmail ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Détails */}
