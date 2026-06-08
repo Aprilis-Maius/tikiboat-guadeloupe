@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil } from "lucide-react";
+import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, AlertCircle, MessageCircle } from "lucide-react";
 import { excursions } from "@/data/excursions";
 
 interface Reservation {
@@ -26,10 +26,10 @@ const emptyCreate = () => ({
 const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
 const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
 
-const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-  confirmed: { label: "Confirmé",    cls: "bg-green-500/15 text-green-400 border-green-500/20" },
-  pending:   { label: "En attente", cls: "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" },
-  cancelled: { label: "Annulé",     cls: "bg-red-500/15 text-red-400 border-red-500/20" },
+const STATUS_MAP: Record<string, { label: string; cls: string; dot: string }> = {
+  confirmed: { label: "Confirmé",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200",  dot: "bg-emerald-500" },
+  pending:   { label: "En attente", cls: "bg-amber-50 text-amber-700 border-amber-200",        dot: "bg-amber-500"   },
+  cancelled: { label: "Annulé",     cls: "bg-red-50 text-red-600 border-red-200",              dot: "bg-red-500"     },
 };
 
 export default function ReservationsPage() {
@@ -43,13 +43,13 @@ export default function ReservationsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState(emptyCreate());
   const [creating, setCreating] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<{
     date: string; adults: number; children: number; infants: number;
     customerName: string; customerEmail: string; customerPhone: string;
     notes: string; status: string; isPaid: boolean; paymentType: string;
   } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const selectedExc = excursions.find(e => e.slug === createForm.excursionSlug);
   const calcTotal = () => selectedExc
@@ -58,26 +58,17 @@ export default function ReservationsPage() {
 
   const MAX_PASSENGERS = 12;
 
-  // Vérifie la capacité et les conflits pour le jour sélectionné
   const capacityCheck = useMemo(() => {
     if (!createForm.date || !createForm.excursionSlug) return null;
-
-    const dateResas = reservations.filter(r =>
-      r.date === createForm.date && r.status !== "cancelled"
-    );
-
-    // Places déjà prises pour cette excursion ce jour-là
+    const dateResas = reservations.filter(r => r.date === createForm.date && r.status !== "cancelled");
     const sameTitle = selectedExc?.title ?? "";
     const sameExcResas = dateResas.filter(r => r.excursionTitle === sameTitle);
-    const bookedSpots  = sameExcResas.reduce((s, r) => s + r.adults + r.children, 0);
-    const newSpots     = createForm.adults + createForm.children;
-    const remaining    = MAX_PASSENGERS - bookedSpots;
-    const wouldExceed  = bookedSpots + newSpots > MAX_PASSENGERS;
-
-    // Excursion différente déjà réservée ce jour-là
-    const otherResa   = dateResas.find(r => r.excursionTitle !== sameTitle && r.excursionTitle !== "");
+    const bookedSpots = sameExcResas.reduce((s, r) => s + r.adults + r.children, 0);
+    const newSpots = createForm.adults + createForm.children;
+    const remaining = MAX_PASSENGERS - bookedSpots;
+    const wouldExceed = bookedSpots + newSpots > MAX_PASSENGERS;
+    const otherResa = dateResas.find(r => r.excursionTitle !== sameTitle && r.excursionTitle !== "");
     const conflictExc = otherResa?.excursionTitle ?? null;
-
     return { bookedSpots, remaining, wouldExceed, conflictExc, newSpots };
   }, [createForm.date, createForm.excursionSlug, createForm.adults, createForm.children, reservations, selectedExc]);
 
@@ -107,11 +98,8 @@ export default function ReservationsPage() {
     setLoading(true);
     const url = filter === "all" ? "/api/admin/reservations" : `/api/admin/reservations?status=${filter}`;
     const res = await fetch(url);
-    const data = await res.json();
-    setReservations(data);
+    setReservations(await res.json());
     setLoading(false);
-    // Auto-sélectionne la première réservation si rien n'est sélectionné
-    setSelected(prev => prev ?? (data.length > 0 ? data[0] : null));
   }, [filter]);
 
   useEffect(() => { if (session) fetchReservations(); }, [session, fetchReservations]);
@@ -140,8 +128,6 @@ export default function ReservationsPage() {
     setEditMode(true);
   };
 
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
   const deleteReservation = async () => {
     if (!selected) return;
     setSaving(true);
@@ -165,6 +151,7 @@ export default function ReservationsPage() {
       body: JSON.stringify({ id: selected.id, ...editForm }),
     });
     await fetchReservations();
+    if (selected) setSelected(prev => prev ? { ...prev, ...editForm } : null);
     setEditMode(false);
     setEditForm(null);
     setSaving(false);
@@ -195,26 +182,41 @@ export default function ReservationsPage() {
     const a = document.createElement("a"); a.href = url; a.download = "reservations.csv"; a.click();
   };
 
-  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
+  const closeModal = () => { setSelected(null); setEditMode(false); setEditForm(null); setConfirmDelete(false); };
+
+  if (status === "loading" || !session) return (
+    <div className="p-8 text-slate-400 text-sm">Chargement...</div>
+  );
+
+  const today = new Date(new Date().toDateString());
+
+  const groupByDate = (resas: Reservation[]) => {
+    const sorted = [...resas].sort((a, b) => a.date.localeCompare(b.date));
+    const map = new Map<string, Reservation[]>();
+    for (const r of sorted) { const g = map.get(r.date) ?? []; g.push(r); map.set(r.date, g); }
+    return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
+  };
+
+  const upcoming = groupByDate(reservations.filter(r => new Date(r.date) >= today));
+  const past     = groupByDate(reservations.filter(r => new Date(r.date) <  today));
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+    <div className="p-6 lg:p-8 max-w-5xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-white text-2xl">Réservations</h1>
+          <h1 className="font-bold text-slate-800 text-2xl">Réservations</h1>
           <p className="text-slate-400 text-sm mt-0.5">{reservations.length} résultat{reservations.length !== 1 ? "s" : ""}</p>
         </div>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           <button onClick={() => { setShowCreate(v => !v); setCreateForm(emptyCreate()); }}
             className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
             <Plus size={15} /> Nouvelle réservation
           </button>
-          {/* Filtre */}
-          <div className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
             <Filter size={14} className="text-slate-400" />
             <select value={filter} onChange={e => setFilter(e.target.value)}
-              className="bg-transparent text-slate-600 text-sm outline-none cursor-pointer"
-              style={{ backgroundColor: "white", color: "#1e293b" }}>
+              className="bg-transparent text-slate-700 text-sm outline-none cursor-pointer">
               <option value="all">Tous</option>
               <option value="pending">En attente</option>
               <option value="confirmed">Confirmés</option>
@@ -222,21 +224,20 @@ export default function ReservationsPage() {
             </select>
           </div>
           <button onClick={exportCSV}
-            className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm hover:border-tiki-lagon/30 rounded-xl px-4 py-2 text-slate-500 hover:text-tiki-lagon text-sm transition-colors">
+            className="flex items-center gap-2 bg-white border border-slate-200 hover:border-tiki-lagon/40 rounded-xl px-4 py-2 text-slate-500 hover:text-tiki-lagon text-sm transition-colors">
             <Download size={14} /> Export CSV
           </button>
         </div>
       </div>
 
-      {/* Formulaire création manuelle */}
+      {/* Formulaire création */}
       {showCreate && (
-        <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl mb-5 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-            <h2 className="font-bold text-white text-sm">Nouvelle réservation manuelle (téléphone / physique)</h2>
-            <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+        <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl mb-6 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <h2 className="font-bold text-slate-800 text-sm">Nouvelle réservation (téléphone / physique)</h2>
+            <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={18} /></button>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Excursion */}
             <div>
               <label className={labelCls}>Excursion *</label>
               <select value={createForm.excursionSlug}
@@ -247,14 +248,12 @@ export default function ReservationsPage() {
                 ))}
               </select>
             </div>
-            {/* Date */}
             <div>
               <label className={labelCls}>Date *</label>
               <input type="date" value={createForm.date}
                 onChange={e => setCreateForm(p => ({ ...p, date: e.target.value }))}
                 className={inputCls} />
             </div>
-            {/* Passagers */}
             <div className="grid grid-cols-3 gap-2">
               {([["Adultes", "adults"], ["Enfants", "children"], ["Bébés", "infants"]] as [string, keyof typeof createForm][]).map(([label, key]) => (
                 <div key={key}>
@@ -265,28 +264,24 @@ export default function ReservationsPage() {
                 </div>
               ))}
             </div>
-            {/* Nom */}
             <div>
               <label className={labelCls}>Nom complet *</label>
               <input value={createForm.customerName} placeholder="Jean Dupont"
                 onChange={e => setCreateForm(p => ({ ...p, customerName: e.target.value }))}
                 className={inputCls} />
             </div>
-            {/* Email */}
             <div>
               <label className={labelCls}>Email *</label>
               <input type="email" value={createForm.customerEmail} placeholder="jean@email.com"
                 onChange={e => setCreateForm(p => ({ ...p, customerEmail: e.target.value }))}
                 className={inputCls} />
             </div>
-            {/* Téléphone */}
             <div>
               <label className={labelCls}>Téléphone *</label>
               <input type="tel" value={createForm.customerPhone} placeholder="+590 690 00 00 00"
                 onChange={e => setCreateForm(p => ({ ...p, customerPhone: e.target.value }))}
                 className={inputCls} />
             </div>
-            {/* Statut paiement */}
             <div>
               <label className={labelCls}>Paiement</label>
               <select value={createForm.paymentType}
@@ -296,56 +291,47 @@ export default function ReservationsPage() {
                 <option value="deposit">Acompte 30%</option>
               </select>
             </div>
-            {/* Total calculé */}
             <div>
               <label className={labelCls}>Total estimé</label>
-              <div className={`${inputCls} text-tiki-lagon font-bold`}>{calcTotal()} €</div>
+              <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-tiki-lagon font-bold text-sm">{calcTotal()} €</div>
             </div>
-            {/* Payé */}
             <div className="flex items-center gap-3 pt-5">
               <input type="checkbox" id="isPaid" checked={createForm.isPaid}
                 onChange={e => setCreateForm(p => ({ ...p, isPaid: e.target.checked }))}
                 className="w-4 h-4 accent-tiki-lagon" />
-              <label htmlFor="isPaid" className="text-slate-500 text-sm cursor-pointer">Déjà encaissé</label>
+              <label htmlFor="isPaid" className="text-slate-600 text-sm cursor-pointer">Déjà encaissé</label>
             </div>
-            {/* Notes — pleine largeur */}
             <div className="md:col-span-2 lg:col-span-3">
               <label className={labelCls}>Notes internes</label>
               <textarea rows={2} value={createForm.notes} placeholder="Remarques, demandes spécifiques..."
                 onChange={e => setCreateForm(p => ({ ...p, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
             </div>
-
-            {/* Alerte capacité — pleine largeur */}
             {capacityCheck && (
               <div className="md:col-span-2 lg:col-span-3">
                 {capacityCheck.conflictExc && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-2">
-                    <span className="text-lg leading-none">⚠️</span>
-                    <span>
-                      <strong>Conflit :</strong> il y a déjà une réservation pour <strong>{capacityCheck.conflictExc}</strong> ce jour-là. Le bateau ne peut pas faire deux excursions différentes le même jour.
-                    </span>
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm mb-2">
+                    <span>⚠️</span>
+                    <span><strong>Conflit :</strong> réservation <strong>{capacityCheck.conflictExc}</strong> déjà ce jour.</span>
                   </div>
                 )}
                 {capacityCheck.wouldExceed ? (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                    <span className="text-lg leading-none">🚫</span>
-                    <span>
-                      <strong>Capacité dépassée :</strong> {capacityCheck.bookedSpots} place{capacityCheck.bookedSpots > 1 ? "s" : ""} déjà réservée{capacityCheck.bookedSpots > 1 ? "s" : ""} ce jour + {capacityCheck.newSpots} nouvelles = {capacityCheck.bookedSpots + capacityCheck.newSpots} / {MAX_PASSENGERS} max.
-                    </span>
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+                    <span>🚫</span>
+                    <span><strong>Capacité dépassée :</strong> {capacityCheck.bookedSpots} + {capacityCheck.newSpots} = {capacityCheck.bookedSpots + capacityCheck.newSpots} / {MAX_PASSENGERS} max.</span>
                   </div>
                 ) : capacityCheck.bookedSpots > 0 ? (
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
                     <span>📊</span>
-                    <span>{capacityCheck.bookedSpots} place{capacityCheck.bookedSpots > 1 ? "s" : ""} déjà prise{capacityCheck.bookedSpots > 1 ? "s" : ""} ce jour — il reste <strong>{capacityCheck.remaining}</strong> place{capacityCheck.remaining > 1 ? "s" : ""}</span>
+                    <span>{capacityCheck.bookedSpots} place{capacityCheck.bookedSpots > 1 ? "s" : ""} prises — <strong>{capacityCheck.remaining}</strong> restante{capacityCheck.remaining > 1 ? "s" : ""}</span>
                   </div>
                 ) : null}
               </div>
             )}
           </div>
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100">
             <button onClick={() => setShowCreate(false)}
-              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
+              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
               Annuler
             </button>
             <button onClick={submitCreate} disabled={creating || !createForm.customerName || !createForm.date || !createForm.customerEmail || !!capacityCheck?.wouldExceed || !!capacityCheck?.conflictExc}
@@ -356,314 +342,305 @@ export default function ReservationsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        {/* Liste groupée par jour */}
-        <div className="xl:col-span-2 space-y-6">
-          {loading ? (
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center text-slate-400 text-sm">Chargement...</div>
-          ) : reservations.length === 0 ? (
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center text-slate-400 text-sm">Aucune réservation trouvée</div>
-          ) : (() => {
-            const today = new Date(new Date().toDateString());
-
-            // Groupement par date
-            const groupByDate = (resas: Reservation[]) => {
-              const sorted = [...resas].sort((a, b) => a.date.localeCompare(b.date));
-              const map = new Map<string, Reservation[]>();
-              for (const r of sorted) {
-                const g = map.get(r.date) ?? [];
-                g.push(r);
-                map.set(r.date, g);
-              }
-              return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
-            };
-
-            const upcoming = groupByDate(reservations.filter(r => new Date(r.date) >= today));
-            const past     = groupByDate(reservations.filter(r => new Date(r.date) <  today));
-
-            const DayGroup = ({ date, items, isPast }: { date: string; items: Reservation[]; isPast: boolean }) => {
-              const MAX = 12;
-              const total = items.filter(r => r.status !== "cancelled").reduce((s, r) => s + r.adults + r.children, 0);
-              const fillRate = total / MAX;
-              const fillColor = fillRate >= 1 ? "bg-red-500" : fillRate >= 0.7 ? "bg-yellow-500" : "bg-green-500";
-              const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
-              return (
-                <div>
-                  {/* Header jour */}
-                  <div className={`flex items-center justify-between mb-2 pb-2 border-b ${isPast ? "border-slate-200" : "border-tiki-lagon/30"}`}>
-                    <div>
-                      <span className={`font-bold text-sm capitalize ${isPast ? "text-slate-400" : "text-slate-800"}`}>{dateLabel}</span>
-                      <span className="text-slate-400 text-xs ml-2">{items.length} groupe{items.length > 1 ? "s" : ""}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-slate-100 rounded-full h-1.5">
-                        <div className={`h-1.5 rounded-full transition-all ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
-                      </div>
-                      <span className={`text-xs font-bold ${fillRate >= 1 ? "text-red-400" : fillRate >= 0.7 ? "text-yellow-400" : "text-green-400"}`}>
-                        {total}/{MAX}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Cards du jour */}
-                  <div className="space-y-1.5 pl-2 border-l-2 border-slate-200">
-                    {items.map(r => {
-                      const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
-                      const isSelected = selected?.id === r.id;
-                      return (
-                        <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); }}
-                          className={`w-full text-left rounded-xl border px-4 py-3 transition-all ${
-                            isSelected ? "border-tiki-gold bg-tiki-lagon/8 shadow-sm" :
-                            isPast ? "border-slate-100 bg-slate-50 hover:border-slate-300" :
-                            "border-slate-200 bg-white hover:border-slate-300"
-                          }`}>
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`font-semibold text-sm ${isSelected ? "text-tiki-lagon" : isPast ? "text-slate-500" : "text-slate-800"}`}>
-                                  {r.customerName}
-                                </span>
-                                <span className={`text-xs px-2 py-0.5 rounded-full border ${s.cls}`}>{s.label}</span>
-                                {r.isPaid
-                                  ? <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 size={10} /> Soldé</span>
-                                  : <span className="text-xs text-yellow-400 flex items-center gap-1"><Clock size={10} /> Acompte</span>}
-                              </div>
-                              <div className="text-slate-400 text-xs mt-0.5">
-                                {r.excursionTitle} &nbsp;·&nbsp; {r.adults + r.children} pers.
-                              </div>
+      {/* Liste réservations */}
+      {loading ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-400 text-sm shadow-sm">Chargement...</div>
+      ) : reservations.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-400 text-sm shadow-sm">Aucune réservation trouvée</div>
+      ) : (
+        <div className="space-y-8">
+          {upcoming.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">À venir</span>
+                <span className="text-xs bg-tiki-lagon/10 text-tiki-lagon border border-tiki-lagon/20 px-2 py-0.5 rounded-full font-bold">
+                  {reservations.filter(r => new Date(r.date) >= today).length}
+                </span>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                {upcoming.map(({ date, items }, gi) => {
+                  const total = items.filter(r => r.status !== "cancelled").reduce((s, r) => s + r.adults + r.children, 0);
+                  const fillRate = total / MAX_PASSENGERS;
+                  const fillColor = fillRate >= 1 ? "bg-red-500" : fillRate >= 0.7 ? "bg-amber-500" : "bg-emerald-500";
+                  const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  return (
+                    <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
+                      {/* Ligne date */}
+                      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50 border-b border-slate-100">
+                        <span className="font-semibold text-slate-700 text-sm capitalize">{dateLabel}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 bg-slate-200 rounded-full h-1.5">
+                              <div className={`h-1.5 rounded-full ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
                             </div>
-                            <div className={`font-bold text-sm shrink-0 ${isSelected ? "text-tiki-lagon" : isPast ? "text-slate-300" : "text-slate-500"}`}>
-                              {r.totalPrice} €
-                            </div>
+                            <span className={`text-xs font-bold ${fillRate >= 1 ? "text-red-500" : fillRate >= 0.7 ? "text-amber-500" : "text-emerald-600"}`}>
+                              {total}/{MAX_PASSENGERS}
+                            </span>
                           </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            };
-
-            return (
-              <>
-                {upcoming.length > 0 && (
-                  <div className="space-y-5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">À venir</span>
-                      <span className="text-xs bg-tiki-lagon/10 text-tiki-lagon border border-tiki-lagon/25 px-2 py-0.5 rounded-full font-bold">
-                        {reservations.filter(r => new Date(r.date) >= today).length}
-                      </span>
+                        </div>
+                      </div>
+                      {/* Réservations du jour */}
+                      {items.map(r => {
+                        const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+                        return (
+                          <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); setConfirmDelete(false); }}
+                            className="w-full text-left flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${s.dot}`} />
+                            <div className="flex-1 min-w-0">
+                              <span className="font-semibold text-slate-800 text-sm">{r.customerName}</span>
+                              <span className="text-slate-400 text-xs ml-2">{r.excursionTitle} · {r.adults + r.children} pers.</span>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${s.cls}`}>{s.label}</span>
+                              {r.isPaid
+                                ? <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 size={11} /> Soldé</span>
+                                : <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> Acompte</span>}
+                              <span className="text-tiki-lagon font-bold text-sm">{r.totalPrice} €</span>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                    {upcoming.map(({ date, items }) => <DayGroup key={date} date={date} items={items} isPast={false} />)}
-                  </div>
-                )}
-                {past.length > 0 && (
-                  <div className="space-y-5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Passées</span>
-                      <span className="text-xs bg-slate-100 text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full font-bold">
-                        {reservations.filter(r => new Date(r.date) < today).length}
-                      </span>
-                    </div>
-                    {past.map(({ date, items }) => <DayGroup key={date} date={date} items={items} isPast={true} />)}
-                  </div>
-                )}
-              </>
-            );
-          })()}
-        </div>
-
-        {/* Détail / Édition */}
-        <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 sticky top-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
-          {!selected ? (
-            <div className="text-center text-slate-300 text-sm py-12">
-              Cliquez sur une réservation pour voir le détail
-            </div>
-          ) : editMode && editForm ? (
-            /* ── MODE ÉDITION ── */
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-bold text-tiki-lagon text-sm">Modifier la réservation</h2>
-                <button onClick={() => { setEditMode(false); setEditForm(null); }}
-                  className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <label className={labelCls}>Nom complet *</label>
-                  <input value={editForm.customerName} onChange={e => setEditForm(p => p ? { ...p, customerName: e.target.value } : p)}
-                    className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Email *</label>
-                  <input type="email" value={editForm.customerEmail} onChange={e => setEditForm(p => p ? { ...p, customerEmail: e.target.value } : p)}
-                    className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Téléphone *</label>
-                  <input type="tel" value={editForm.customerPhone} onChange={e => setEditForm(p => p ? { ...p, customerPhone: e.target.value } : p)}
-                    className={inputCls} />
-                </div>
-                <div>
-                  <label className={labelCls}>Date</label>
-                  <input type="date" value={editForm.date} onChange={e => setEditForm(p => p ? { ...p, date: e.target.value } : p)}
-                    className={inputCls} />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {([["Adultes", "adults"], ["Enfants", "children"], ["Bébés", "infants"]] as [string, keyof typeof editForm][]).map(([label, key]) => (
-                    <div key={key}>
-                      <label className={labelCls}>{label}</label>
-                      <input type="number" min={0} value={editForm[key] as number}
-                        onChange={e => setEditForm(p => p ? { ...p, [key]: +e.target.value } : p)}
-                        className={inputCls} />
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <label className={labelCls}>Statut</label>
-                  <select value={editForm.status} onChange={e => setEditForm(p => p ? { ...p, status: e.target.value } : p)} className={inputCls}>
-                    <option value="confirmed">Confirmé</option>
-                    <option value="pending">En attente</option>
-                    <option value="cancelled">Annulé</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>Paiement</label>
-                  <select value={editForm.paymentType} onChange={e => setEditForm(p => p ? { ...p, paymentType: e.target.value } : p)} className={inputCls}>
-                    <option value="full">Total réglé</option>
-                    <option value="deposit">Acompte 30%</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-2 pt-1">
-                  <input type="checkbox" id="editIsPaid" checked={editForm.isPaid}
-                    onChange={e => setEditForm(p => p ? { ...p, isPaid: e.target.checked } : p)}
-                    className="w-4 h-4 accent-tiki-lagon" />
-                  <label htmlFor="editIsPaid" className="text-slate-500 text-sm cursor-pointer">Déjà encaissé</label>
-                </div>
-                <div>
-                  <label className={labelCls}>Notes internes</label>
-                  <textarea rows={2} value={editForm.notes} onChange={e => setEditForm(p => p ? { ...p, notes: e.target.value } : p)}
-                    className={`${inputCls} resize-none`} />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button onClick={submitEdit} disabled={saving || !editForm.customerName || !editForm.customerEmail}
-                    className="flex-1 flex items-center justify-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
-                    <Save size={14} /> {saving ? "Enregistrement..." : "Enregistrer"}
-                  </button>
-                  <button onClick={() => { setEditMode(false); setEditForm(null); }}
-                    className="px-4 border border-slate-300 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
-                    Annuler
-                  </button>
-                </div>
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            /* ── MODE LECTURE ── */
+          )}
+
+          {past.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-white">{selected.customerName}</h2>
-                <button onClick={openEdit}
-                  className="flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-tiki-lagon/10 hover:text-tiki-lagon border border-slate-200 hover:border-tiki-lagon/30 text-slate-500 px-3 py-1.5 rounded-lg transition-all">
-                  <Pencil size={11} /> Modifier
-                </button>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Passées</span>
+                <span className="text-xs bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full font-bold">
+                  {reservations.filter(r => new Date(r.date) < today).length}
+                </span>
               </div>
-
-              <div className="space-y-2 mb-5">
-                <a href={`tel:${selected.customerPhone}`} className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
-                  <Phone size={13} /> {selected.customerPhone}
-                </a>
-                <a href={`mailto:${selected.customerEmail}`} className="flex items-center gap-2 text-tiki-lagon-light text-sm hover:underline">
-                  <Mail size={13} /> {selected.customerEmail}
-                </a>
-              </div>
-
-              <div className="space-y-2 text-sm mb-5 border-y border-slate-200 py-4">
-                {([
-                  ["Excursion", selected.excursionTitle],
-                  ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
-                  ["Adultes", selected.adults],
-                  ["Enfants", selected.children],
-                  ["Total", `${selected.totalPrice} €`],
-                  ["Acompte versé", `${selected.depositAmount} €`],
-                  ["Paiement", selected.paymentType === "deposit" ? "Acompte 30%" : "Total réglé"],
-                  ["Réservé le", new Date(selected.createdAt).toLocaleDateString("fr-FR")],
-                ] as [string, string | number][]).map(([l, v]) => (
-                  <div key={l} className="flex justify-between gap-2">
-                    <span className="text-slate-400">{l}</span>
-                    <span className="text-white text-right">{String(v)}</span>
-                  </div>
-                ))}
-
-                {/* Solde restant — visible uniquement si acompte non soldé */}
-                {selected.paymentType === "deposit" && !selected.isPaid && (
-                  <div className="flex justify-between gap-2 pt-2 mt-1 border-t border-slate-200">
-                    <span className="text-yellow-400 font-medium text-sm">Solde restant à encaisser</span>
-                    <span className="text-yellow-400 font-black text-sm">
-                      {(selected.totalPrice - selected.depositAmount).toFixed(2)} €
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {selected.notes && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600 text-xs mb-5">
-                  <div className="text-slate-400 text-xs mb-1">Notes</div>
-                  {selected.notes}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-2">Actions rapides</p>
-                {[
-                  { val: "confirmed", label: "✓ Confirmer",   cls: "bg-green-600 hover:bg-green-700 text-white" },
-                  { val: "pending",   label: "⏳ En attente", cls: "bg-yellow-600 hover:bg-yellow-700 text-white" },
-                  { val: "cancelled", label: "✗ Annuler",     cls: "bg-red-600 hover:bg-red-700 text-white" },
-                ].map(({ val, label, cls }) => (
-                  <button key={val} disabled={saving || selected.status === val}
-                    onClick={() => updateStatus(selected.id, val)}
-                    className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-40 ${selected.status === val ? "opacity-40 cursor-default " : ""}${cls}`}>
-                    {label}
-                  </button>
-                ))}
-                <button disabled={saving} onClick={() => markPaid(selected.id, !selected.isPaid)}
-                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-tiki-lagon/30 text-tiki-lagon hover:bg-tiki-lagon/10 transition-colors disabled:opacity-40 mt-1">
-                  {selected.isPaid ? "Marquer non soldé" : "Marquer soldé"}
-                </button>
-                <a href={`https://wa.me/${selected.customerPhone.replace(/\D/g, "")}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-400 transition-colors flex items-center justify-center gap-2 mt-1">
-                  Contacter sur WhatsApp
-                </a>
-
-                {/* Suppression avec confirmation */}
-                {!confirmDelete ? (
-                  <button onClick={() => setConfirmDelete(true)}
-                    className="w-full py-2.5 rounded-xl text-sm font-medium border border-red-500/20 text-red-400/50 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/5 transition-all mt-3">
-                    Supprimer la réservation
-                  </button>
-                ) : (
-                  <div className="mt-3 p-4 rounded-xl bg-red-500/10 border border-red-500/30 space-y-3">
-                    <p className="text-red-300 text-sm font-medium">
-                      Êtes-vous sûr de vouloir supprimer la réservation de <strong>{selected.customerName}</strong> ?
-                    </p>
-                    <p className="text-slate-400 text-xs">Cette action est irréversible — la réservation sera définitivement effacée.</p>
-                    <div className="flex gap-2">
-                      <button onClick={deleteReservation} disabled={saving}
-                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-slate-800 font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
-                        {saving ? "Suppression..." : "Oui, supprimer"}
-                      </button>
-                      <button onClick={() => setConfirmDelete(false)}
-                        className="flex-1 py-2 border border-slate-300 text-slate-500 hover:text-white rounded-lg text-sm transition-colors">
-                        Annuler
-                      </button>
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-75">
+                {past.map(({ date, items }, gi) => {
+                  const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  return (
+                    <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
+                      <div className="flex items-center px-5 py-2 bg-slate-50 border-b border-slate-100">
+                        <span className="font-medium text-slate-500 text-sm capitalize">{dateLabel}</span>
+                      </div>
+                      {items.map(r => {
+                        const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+                        return (
+                          <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); setConfirmDelete(false); }}
+                            className="w-full text-left flex items-center gap-4 px-5 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${s.dot}`} />
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium text-slate-600 text-sm">{r.customerName}</span>
+                              <span className="text-slate-400 text-xs ml-2">{r.excursionTitle} · {r.adults + r.children} pers.</span>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${s.cls}`}>{s.label}</span>
+                              <span className="text-slate-500 font-semibold text-sm">{r.totalPrice} €</span>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  </div>
-                )}
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/* ── MODAL DÉTAIL ── */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={closeModal}>
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+
+            {/* Header modal */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div>
+                <h2 className="font-bold text-slate-800 text-base">{selected.customerName}</h2>
+                <p className="text-slate-400 text-xs mt-0.5">
+                  {new Date(selected.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 transition-colors p-1">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {editMode && editForm ? (
+                /* ── ÉDITION ── */
+                <div className="space-y-3">
+                  <div>
+                    <label className={labelCls}>Nom complet *</label>
+                    <input value={editForm.customerName} onChange={e => setEditForm(p => p ? { ...p, customerName: e.target.value } : p)} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Email *</label>
+                    <input type="email" value={editForm.customerEmail} onChange={e => setEditForm(p => p ? { ...p, customerEmail: e.target.value } : p)} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Téléphone *</label>
+                    <input type="tel" value={editForm.customerPhone} onChange={e => setEditForm(p => p ? { ...p, customerPhone: e.target.value } : p)} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Date</label>
+                    <input type="date" value={editForm.date} onChange={e => setEditForm(p => p ? { ...p, date: e.target.value } : p)} className={inputCls} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([["Adultes", "adults"], ["Enfants", "children"], ["Bébés", "infants"]] as [string, keyof typeof editForm][]).map(([label, key]) => (
+                      <div key={key}>
+                        <label className={labelCls}>{label}</label>
+                        <input type="number" min={0} value={editForm[key] as number}
+                          onChange={e => setEditForm(p => p ? { ...p, [key]: +e.target.value } : p)} className={inputCls} />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <label className={labelCls}>Statut</label>
+                    <select value={editForm.status} onChange={e => setEditForm(p => p ? { ...p, status: e.target.value } : p)} className={inputCls}>
+                      <option value="confirmed">Confirmé</option>
+                      <option value="pending">En attente</option>
+                      <option value="cancelled">Annulé</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Paiement</label>
+                    <select value={editForm.paymentType} onChange={e => setEditForm(p => p ? { ...p, paymentType: e.target.value } : p)} className={inputCls}>
+                      <option value="full">Total réglé</option>
+                      <option value="deposit">Acompte 30%</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="editIsPaid" checked={editForm.isPaid}
+                      onChange={e => setEditForm(p => p ? { ...p, isPaid: e.target.checked } : p)}
+                      className="w-4 h-4 accent-tiki-lagon" />
+                    <label htmlFor="editIsPaid" className="text-slate-600 text-sm cursor-pointer">Déjà encaissé</label>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Notes internes</label>
+                    <textarea rows={2} value={editForm.notes} onChange={e => setEditForm(p => p ? { ...p, notes: e.target.value } : p)}
+                      className={`${inputCls} resize-none`} />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={submitEdit} disabled={saving || !editForm.customerName || !editForm.customerEmail}
+                      className="flex-1 flex items-center justify-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors">
+                      <Save size={14} /> {saving ? "Enregistrement..." : "Enregistrer"}
+                    </button>
+                    <button onClick={() => { setEditMode(false); setEditForm(null); }}
+                      className="px-4 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── LECTURE ── */
+                <div>
+                  {/* Contact */}
+                  <div className="flex gap-3 mb-5">
+                    <a href={`tel:${selected.customerPhone}`}
+                      className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm hover:border-tiki-lagon/40 transition-colors">
+                      <Phone size={14} className="text-tiki-lagon" /> {selected.customerPhone}
+                    </a>
+                    <a href={`mailto:${selected.customerEmail}`}
+                      className="flex-1 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 text-sm hover:border-tiki-lagon/40 transition-colors truncate">
+                      <Mail size={14} className="text-tiki-lagon" />
+                      <span className="truncate">{selected.customerEmail}</span>
+                    </a>
+                  </div>
+
+                  {/* Détails */}
+                  <div className="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 mb-5">
+                    {([
+                      ["Excursion", selected.excursionTitle],
+                      ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
+                      ["Adultes", selected.adults],
+                      ["Enfants", selected.children],
+                      ["Total", `${selected.totalPrice} €`],
+                      ["Acompte versé", `${selected.depositAmount} €`],
+                      ["Paiement", selected.paymentType === "deposit" ? "Acompte 30%" : "Total réglé"],
+                      ["Réservé le", new Date(selected.createdAt).toLocaleDateString("fr-FR")],
+                    ] as [string, string | number][]).map(([l, v]) => (
+                      <div key={l} className="flex justify-between items-center px-4 py-2.5">
+                        <span className="text-slate-500 text-sm">{l}</span>
+                        <span className="text-slate-800 font-medium text-sm text-right">{String(v)}</span>
+                      </div>
+                    ))}
+                    {selected.paymentType === "deposit" && !selected.isPaid && (
+                      <div className="flex justify-between items-center px-4 py-2.5 bg-amber-50">
+                        <span className="text-amber-700 font-medium text-sm">Solde à encaisser</span>
+                        <span className="text-amber-700 font-black text-sm">{(selected.totalPrice - selected.depositAmount).toFixed(2)} €</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {selected.notes && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600 text-xs mb-5">
+                      <div className="text-slate-400 text-xs mb-1 font-semibold uppercase tracking-wide">Notes</div>
+                      {selected.notes}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { val: "confirmed", label: "Confirmer",   cls: "bg-emerald-600 hover:bg-emerald-700 text-white" },
+                        { val: "pending",   label: "En attente",  cls: "bg-amber-500 hover:bg-amber-600 text-white" },
+                        { val: "cancelled", label: "Annuler",     cls: "bg-red-600 hover:bg-red-700 text-white" },
+                      ].map(({ val, label, cls }) => (
+                        <button key={val} disabled={saving || selected.status === val}
+                          onClick={() => updateStatus(selected.id, val)}
+                          className={`py-2.5 rounded-xl text-xs font-bold transition-colors disabled:opacity-40 ${selected.status === val ? "opacity-40 cursor-default " : ""}${cls}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button disabled={saving} onClick={() => markPaid(selected.id, !selected.isPaid)}
+                        className="py-2.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40">
+                        {selected.isPaid ? "Non soldé" : "Marquer soldé"}
+                      </button>
+                      <button onClick={openEdit}
+                        className="py-2.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors">
+                        <Pencil size={12} /> Modifier
+                      </button>
+                      <a href={`https://wa.me/${selected.customerPhone.replace(/\D/g, "")}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="py-2.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors">
+                        <MessageCircle size={12} /> WhatsApp
+                      </a>
+                    </div>
+
+                    {!confirmDelete ? (
+                      <button onClick={() => setConfirmDelete(true)}
+                        className="w-full py-2.5 rounded-xl text-xs font-medium text-red-400 hover:text-red-600 hover:bg-red-50 border border-red-100 hover:border-red-200 transition-all flex items-center justify-center gap-1.5">
+                        <Trash2 size={12} /> Supprimer la réservation
+                      </button>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-3">
+                        <p className="text-red-700 text-sm font-medium">Supprimer la réservation de <strong>{selected.customerName}</strong> ?</p>
+                        <p className="text-red-400 text-xs">Cette action est irréversible.</p>
+                        <div className="flex gap-2">
+                          <button onClick={deleteReservation} disabled={saving}
+                            className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
+                            {saving ? "..." : "Oui, supprimer"}
+                          </button>
+                          <button onClick={() => setConfirmDelete(false)}
+                            className="flex-1 py-2 border border-slate-200 text-slate-600 hover:text-slate-800 rounded-lg text-sm transition-colors">
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

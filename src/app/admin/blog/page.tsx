@@ -96,7 +96,7 @@ export default function BlogAdminPage() {
       {editId !== null && (
         <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl mb-6 overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-            <h2 className="font-bold text-white text-sm">
+            <h2 className="font-bold text-slate-800 text-sm">
               {editId === "new" ? "Nouvel article" : `Modifier : ${form.title}`}
             </h2>
             <button onClick={closeEdit} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
@@ -192,7 +192,7 @@ export default function BlogAdminPage() {
             <div key={p.id} className="bg-white border border-slate-200 shadow-sm rounded-xl flex items-center gap-4 px-5 py-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-white text-sm">{p.title}</span>
+                  <span className="font-semibold text-slate-800 text-sm">{p.title}</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-tiki-lagon/10 text-tiki-lagon/70 border border-tiki-gold/15">
                     {p.category}
                   </span>

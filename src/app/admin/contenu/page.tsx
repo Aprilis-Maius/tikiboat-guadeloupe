@@ -65,7 +65,7 @@ export default function ContentPage() {
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-white text-2xl">Contenu du site</h1>
+          <h1 className="font-display font-black text-slate-800 text-2xl">Contenu du site</h1>
           <p className="text-slate-400 text-sm mt-0.5">Modifiez les textes, prix et informations</p>
         </div>
         <button onClick={handleSave} disabled={saving}

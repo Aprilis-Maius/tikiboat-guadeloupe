@@ -88,7 +88,7 @@ export default function CalendarPage() {
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-white text-2xl">Calendrier</h1>
+          <h1 className="font-display font-black text-slate-800 text-2xl">Calendrier</h1>
           <p className="text-slate-400 text-sm mt-0.5">Gérez les disponibilités et créneaux</p>
         </div>
         {/* Légende */}
@@ -115,7 +115,7 @@ export default function CalendarPage() {
               className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-white hover:border-slate-300 transition-colors">
               <ChevronLeft size={18} />
             </button>
-            <h2 className="font-bold text-white">{MONTHS_FR[mon]} {year}</h2>
+            <h2 className="font-bold text-slate-800">{MONTHS_FR[mon]} {year}</h2>
             <button onClick={() => setCurrentDate(new Date(year, mon + 1, 1))}
               className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-white hover:border-slate-300 transition-colors">
               <ChevronRight size={18} />
@@ -225,7 +225,7 @@ export default function CalendarPage() {
           {selectedDay && !editingDay && (
             <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-white text-sm">
+                <h3 className="font-bold text-slate-800 text-sm">
                   {new Date(selectedDay).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })}
                 </h3>
                 <button onClick={() => openEdit(selectedDay)}
