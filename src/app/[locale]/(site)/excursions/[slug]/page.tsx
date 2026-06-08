@@ -13,10 +13,6 @@ interface Props {
   params: Promise<{ slug: string; locale: string }>;
 }
 
-export async function generateStaticParams() {
-  return excursions.map((e) => ({ slug: e.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const exc = getExcursionBySlug(slug);
