@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Save, CheckCircle2, Type, Anchor, Phone, MapPin, Clock, Euro } from "lucide-react";
+import { Save, CheckCircle2, Type, Phone, MapPin, Euro } from "lucide-react";
 
 const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3.5 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
 const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
@@ -65,40 +65,22 @@ export default function ContentPage() {
         <div className="space-y-5">
 
           {/* ── Section Textes ── */}
-          <Section icon={<Type size={15} className="text-violet-500" />} iconBg="bg-violet-50 border-violet-200" title="Textes du site" subtitle="Hero, CTA, titres visibles sur le site public">
-            <Field label="Titre principal (hero)" id="hero.headline" placeholder="L'excursion en bateau qui change tout." values={values} onChange={set} />
-            <Field label="Sous-titre hero" id="hero.subtitle" placeholder="Snorkeling · Îlets · Repas créole…" values={values} onChange={set} />
+          <Section icon={<Type size={15} className="text-violet-500" />} iconBg="bg-violet-50 border-violet-200" title="Textes du site" subtitle="Hero, CTA — textes visibles sur le site public">
+            <Field label="Titre principal (hero)" id="hero.headline" placeholder="Une journée en mer inoubliable en Guadeloupe." values={values} onChange={set} />
+            <Field label="Sous-titre hero" id="hero.subtitle" placeholder="Snorkeling, îlets sauvages et repas créole les pieds dans l'eau." values={values} onChange={set} />
             <div className="grid grid-cols-2 gap-4">
               <Field label="Pré-titre (petite caps)" id="hero.pretitle" placeholder="Guadeloupe · Grand Cul de Sac Marin" values={values} onChange={set} />
               <Field label="Titre section CTA final" id="cta.final.title" placeholder="Prêt pour le grand large ?" values={values} onChange={set} />
             </div>
-            <Field label="Sous-titre CTA final" id="cta.final.sub" placeholder="Réservez maintenant et vivez…" values={values} onChange={set} />
-          </Section>
-
-          {/* ── Section Excursion ── */}
-          <Section icon={<Anchor size={15} className="text-tiki-lagon" />} iconBg="bg-tiki-lagon/10 border-tiki-lagon/20" title="Excursion principale" subtitle="Informations affichées sur la page de l'excursion">
-            <Field label="Titre de l'excursion" id="excursion.1.title" placeholder="Croisière Grand Cul de Sac Marin" values={values} onChange={set} />
-            <Field label="Description" id="excursion.1.description" placeholder="Embarquez pour une journée inoubliable…" values={values} onChange={set} textarea />
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Prix adulte (€)" id="excursion.1.price.adult" placeholder="95" type="number" values={values} onChange={set}
-                icon={<Euro size={13} className="text-slate-400" />} />
-              <Field label="Prix enfant (€)" id="excursion.1.price.child" placeholder="55" type="number" values={values} onChange={set}
-                icon={<Euro size={13} className="text-slate-400" />} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Heure de départ" id="excursion.1.departure" placeholder="08h00" values={values} onChange={set}
-                icon={<Clock size={13} className="text-slate-400" />} />
-              <Field label="Heure de retour" id="excursion.1.return" placeholder="17h00" values={values} onChange={set}
-                icon={<Clock size={13} className="text-slate-400" />} />
-            </div>
+            <Field label="Sous-titre CTA final" id="cta.final.sub" placeholder="Réservez maintenant et vivez une expérience unique." values={values} onChange={set} />
           </Section>
 
           {/* ── Section Contact ── */}
-          <Section icon={<Phone size={15} className="text-emerald-600" />} iconBg="bg-emerald-50 border-emerald-200" title="Contact & Infos pratiques" subtitle="Coordonnées et paramètres de réservation">
+          <Section icon={<Phone size={15} className="text-emerald-600" />} iconBg="bg-emerald-50 border-emerald-200" title="Contact & Infos pratiques" subtitle="Coordonnées affichées sur le site et paramètres de réservation">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Téléphone" id="contact.phone" placeholder="+590 690 49 58 48" values={values} onChange={set}
+              <Field label="Téléphone / WhatsApp" id="contact.phone" placeholder="+590 690 49 58 48" values={values} onChange={set}
                 icon={<Phone size={13} className="text-slate-400" />} />
-              <Field label="Email" id="contact.email" placeholder="tikiboatguadeloupe@gmail.com" values={values} onChange={set} />
+              <Field label="Email de contact" id="contact.email" placeholder="tikiboatguadeloupe@gmail.com" values={values} onChange={set} />
             </div>
             <Field label="Point de départ" id="contact.departure" placeholder="Marina de Pointe-à-Pitre / Le Gosier" values={values} onChange={set}
               icon={<MapPin size={13} className="text-slate-400" />} />
