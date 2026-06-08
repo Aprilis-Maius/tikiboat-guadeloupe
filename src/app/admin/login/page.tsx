@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-tiki-ocean flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -38,47 +38,47 @@ export default function AdminLoginPage() {
             className="h-14 w-auto object-contain" />
         </div>
 
-        <div className="bg-tiki-ocean-mid rounded-2xl border border-white/10 p-8">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-tiki-gold/15 flex items-center justify-center">
-              <Lock size={18} className="text-tiki-gold" />
+            <div className="w-9 h-9 rounded-xl bg-tiki-lagon/10 flex items-center justify-center">
+              <Lock size={18} className="text-tiki-lagon" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-none">Espace Admin</h1>
-              <p className="text-white/40 text-xs mt-0.5">Tiki Boat — Accès restreint</p>
+              <h1 className="font-bold text-slate-800 text-lg leading-none">Espace Admin</h1>
+              <p className="text-slate-400 text-xs mt-0.5">Tiki Boat — Accès restreint</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-white/60 text-sm mb-1.5">Email</label>
+              <label className="block text-slate-600 text-sm mb-1.5">Email</label>
               <input type="email" required value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@tikiboat.fr"
-                className="w-full bg-tiki-ocean border border-white/15 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/25 outline-none transition-colors" />
+                className="w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-colors" />
             </div>
             <div>
-              <label className="block text-white/60 text-sm mb-1.5">Mot de passe</label>
+              <label className="block text-slate-600 text-sm mb-1.5">Mot de passe</label>
               <div className="relative">
                 <input type={showPw ? "text" : "password"} required value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-tiki-ocean border border-white/15 focus:border-tiki-gold rounded-xl px-4 py-3 pr-11 text-white placeholder-white/25 outline-none transition-colors" />
+                  className="w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-4 py-3 pr-11 text-slate-800 placeholder-slate-400 outline-none transition-colors" />
                 <button type="button" onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors p-1">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1">
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-500/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm">
                 {error}
               </div>
             )}
 
             <button type="submit" disabled={loading}
-              className="w-full bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50 text-sm mt-2">
+              className="w-full bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50 text-sm mt-2">
               {loading ? "Connexion..." : "Se connecter"}
             </button>
           </form>

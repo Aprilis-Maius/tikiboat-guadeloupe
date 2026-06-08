@@ -59,45 +59,45 @@ export default function ContentPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  if (status === "loading" || !session) return <div className="p-8 text-white/30">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-white text-2xl">Contenu du site</h1>
-          <p className="text-white/40 text-sm mt-0.5">Modifiez les textes, prix et informations</p>
+          <p className="text-slate-400 text-sm mt-0.5">Modifiez les textes, prix et informations</p>
         </div>
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-6 rounded-xl transition-colors disabled:opacity-50 text-sm">
+          className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl transition-colors disabled:opacity-50 text-sm">
           {saved ? <><CheckCircle2 size={16} /> Enregistré !</> : <><Save size={16} /> {saving ? "Enregistrement..." : "Enregistrer"}</>}
         </button>
       </div>
 
       {loading ? (
-        <div className="text-white/30 text-sm">Chargement...</div>
+        <div className="text-slate-400 text-sm">Chargement...</div>
       ) : (
         <div className="space-y-6 max-w-3xl">
           {Object.entries(CONTENT_FIELDS).map(([section, fields]) => (
-            <div key={section} className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-6">
-              <h2 className="font-bold text-white mb-5 pb-3 border-b border-white/8">{section}</h2>
+            <div key={section} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
+              <h2 className="font-bold text-white mb-5 pb-3 border-b border-slate-200">{section}</h2>
               <div className="space-y-4">
                 {fields.map(({ id, label, type, ph }) => (
                   <div key={id}>
-                    <label className="block text-white/55 text-xs font-medium mb-1.5">{label}</label>
+                    <label className="block text-slate-500 text-xs font-medium mb-1.5">{label}</label>
                     {type === "textarea" ? (
                       <textarea
                         value={values[id] ?? ""}
                         onChange={e => setValues(prev => ({ ...prev, [id]: e.target.value }))}
                         placeholder={ph} rows={3}
-                        className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none transition-colors text-sm resize-none"
+                        className="w-full bg-tiki-ocean border border-slate-200 focus:border-tiki-lagon rounded-xl px-4 py-3 text-white placeholder-slate-400 outline-none transition-colors text-sm resize-none"
                       />
                     ) : (
                       <input
                         type={type} value={values[id] ?? ""}
                         onChange={e => setValues(prev => ({ ...prev, [id]: e.target.value }))}
                         placeholder={ph}
-                        className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none transition-colors text-sm"
+                        className="w-full bg-tiki-ocean border border-slate-200 focus:border-tiki-lagon rounded-xl px-4 py-3 text-white placeholder-slate-400 outline-none transition-colors text-sm"
                       />
                     )}
                   </div>
@@ -108,7 +108,7 @@ export default function ContentPage() {
 
           <div className="flex justify-end">
             <button onClick={handleSave} disabled={saving}
-              className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3 px-8 rounded-xl transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-3 px-8 rounded-xl transition-colors disabled:opacity-50">
               {saved ? <><CheckCircle2 size={16} /> Enregistré !</> : <><Save size={16} /> {saving ? "Enregistrement..." : "Enregistrer tout"}</>}
             </button>
           </div>

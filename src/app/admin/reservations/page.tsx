@@ -23,8 +23,8 @@ const emptyCreate = () => ({
   isPaid: true, status: "confirmed", notes: "",
 });
 
-const inputCls = "w-full bg-[#111111] border border-white/10 focus:border-tiki-gold rounded-xl px-3 py-2.5 text-white placeholder-white/20 outline-none transition-colors text-sm";
-const labelCls = "block text-white/40 text-xs font-medium mb-1";
+const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
+const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   confirmed: { label: "Confirmé",    cls: "bg-green-500/15 text-green-400 border-green-500/20" },
@@ -195,26 +195,26 @@ export default function ReservationsPage() {
     const a = document.createElement("a"); a.href = url; a.download = "reservations.csv"; a.click();
   };
 
-  if (status === "loading" || !session) return <div className="p-8 text-white/30">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-white text-2xl">Réservations</h1>
-          <p className="text-white/40 text-sm mt-0.5">{reservations.length} résultat{reservations.length !== 1 ? "s" : ""}</p>
+          <p className="text-slate-400 text-sm mt-0.5">{reservations.length} résultat{reservations.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex gap-3 flex-wrap">
           <button onClick={() => { setShowCreate(v => !v); setCreateForm(emptyCreate()); }}
-            className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
+            className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
             <Plus size={15} /> Nouvelle réservation
           </button>
           {/* Filtre */}
-          <div className="flex items-center gap-2 bg-tiki-ocean-mid border border-white/10 rounded-xl px-3 py-2">
-            <Filter size={14} className="text-white/40" />
+          <div className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-xl px-3 py-2">
+            <Filter size={14} className="text-slate-400" />
             <select value={filter} onChange={e => setFilter(e.target.value)}
-              className="bg-transparent text-white/70 text-sm outline-none cursor-pointer"
-              style={{ backgroundColor: "#0F2A3D" }}>
+              className="bg-transparent text-slate-600 text-sm outline-none cursor-pointer"
+              style={{ backgroundColor: "white", color: "#1e293b" }}>
               <option value="all">Tous</option>
               <option value="pending">En attente</option>
               <option value="confirmed">Confirmés</option>
@@ -222,7 +222,7 @@ export default function ReservationsPage() {
             </select>
           </div>
           <button onClick={exportCSV}
-            className="flex items-center gap-2 bg-tiki-ocean-mid border border-white/10 hover:border-tiki-gold/30 rounded-xl px-4 py-2 text-white/60 hover:text-tiki-gold text-sm transition-colors">
+            className="flex items-center gap-2 bg-white border border-slate-200 shadow-sm hover:border-tiki-lagon/30 rounded-xl px-4 py-2 text-slate-500 hover:text-tiki-lagon text-sm transition-colors">
             <Download size={14} /> Export CSV
           </button>
         </div>
@@ -230,10 +230,10 @@ export default function ReservationsPage() {
 
       {/* Formulaire création manuelle */}
       {showCreate && (
-        <div className="bg-[#1A1A1A] border border-tiki-gold/30 rounded-2xl mb-5 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl mb-5 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <h2 className="font-bold text-white text-sm">Nouvelle réservation manuelle (téléphone / physique)</h2>
-            <button onClick={() => setShowCreate(false)} className="text-white/30 hover:text-white transition-colors"><X size={18} /></button>
+            <button onClick={() => setShowCreate(false)} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Excursion */}
@@ -299,14 +299,14 @@ export default function ReservationsPage() {
             {/* Total calculé */}
             <div>
               <label className={labelCls}>Total estimé</label>
-              <div className={`${inputCls} text-tiki-gold font-bold`}>{calcTotal()} €</div>
+              <div className={`${inputCls} text-tiki-lagon font-bold`}>{calcTotal()} €</div>
             </div>
             {/* Payé */}
             <div className="flex items-center gap-3 pt-5">
               <input type="checkbox" id="isPaid" checked={createForm.isPaid}
                 onChange={e => setCreateForm(p => ({ ...p, isPaid: e.target.checked }))}
-                className="w-4 h-4 accent-tiki-gold" />
-              <label htmlFor="isPaid" className="text-white/60 text-sm cursor-pointer">Déjà encaissé</label>
+                className="w-4 h-4 accent-tiki-lagon" />
+              <label htmlFor="isPaid" className="text-slate-500 text-sm cursor-pointer">Déjà encaissé</label>
             </div>
             {/* Notes — pleine largeur */}
             <div className="md:col-span-2 lg:col-span-3">
@@ -343,13 +343,13 @@ export default function ReservationsPage() {
               </div>
             )}
           </div>
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
             <button onClick={() => setShowCreate(false)}
-              className="px-5 py-2.5 border border-white/10 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
               Annuler
             </button>
             <button onClick={submitCreate} disabled={creating || !createForm.customerName || !createForm.date || !createForm.customerEmail || !!capacityCheck?.wouldExceed || !!capacityCheck?.conflictExc}
-              className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
               <Save size={15} /> {creating ? "Enregistrement..." : "Créer la réservation"}
             </button>
           </div>
@@ -360,9 +360,9 @@ export default function ReservationsPage() {
         {/* Liste groupée par jour */}
         <div className="xl:col-span-2 space-y-6">
           {loading ? (
-            <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-8 text-center text-white/30 text-sm">Chargement...</div>
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center text-slate-400 text-sm">Chargement...</div>
           ) : reservations.length === 0 ? (
-            <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-8 text-center text-white/30 text-sm">Aucune réservation trouvée</div>
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center text-slate-400 text-sm">Aucune réservation trouvée</div>
           ) : (() => {
             const today = new Date(new Date().toDateString());
 
@@ -391,13 +391,13 @@ export default function ReservationsPage() {
               return (
                 <div>
                   {/* Header jour */}
-                  <div className={`flex items-center justify-between mb-2 pb-2 border-b ${isPast ? "border-white/8" : "border-tiki-gold/20"}`}>
+                  <div className={`flex items-center justify-between mb-2 pb-2 border-b ${isPast ? "border-slate-200" : "border-tiki-lagon/30"}`}>
                     <div>
-                      <span className={`font-bold text-sm capitalize ${isPast ? "text-white/40" : "text-white"}`}>{dateLabel}</span>
-                      <span className="text-white/30 text-xs ml-2">{items.length} groupe{items.length > 1 ? "s" : ""}</span>
+                      <span className={`font-bold text-sm capitalize ${isPast ? "text-slate-400" : "text-slate-800"}`}>{dateLabel}</span>
+                      <span className="text-slate-400 text-xs ml-2">{items.length} groupe{items.length > 1 ? "s" : ""}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-20 bg-white/10 rounded-full h-1.5">
+                      <div className="w-20 bg-slate-100 rounded-full h-1.5">
                         <div className={`h-1.5 rounded-full transition-all ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
                       </div>
                       <span className={`text-xs font-bold ${fillRate >= 1 ? "text-red-400" : fillRate >= 0.7 ? "text-yellow-400" : "text-green-400"}`}>
@@ -407,21 +407,21 @@ export default function ReservationsPage() {
                   </div>
 
                   {/* Cards du jour */}
-                  <div className="space-y-1.5 pl-2 border-l-2 border-white/8">
+                  <div className="space-y-1.5 pl-2 border-l-2 border-slate-200">
                     {items.map(r => {
                       const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
                       const isSelected = selected?.id === r.id;
                       return (
                         <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); }}
                           className={`w-full text-left rounded-xl border px-4 py-3 transition-all ${
-                            isSelected ? "border-tiki-gold bg-tiki-gold/8 shadow-sm" :
-                            isPast ? "border-white/5 bg-[#111820] hover:border-white/12" :
-                            "border-white/8 bg-tiki-ocean-mid hover:border-white/20"
+                            isSelected ? "border-tiki-gold bg-tiki-lagon/8 shadow-sm" :
+                            isPast ? "border-slate-100 bg-slate-50 hover:border-slate-300" :
+                            "border-slate-200 bg-white hover:border-slate-300"
                           }`}>
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`font-semibold text-sm ${isSelected ? "text-tiki-gold" : isPast ? "text-white/50" : "text-white"}`}>
+                                <span className={`font-semibold text-sm ${isSelected ? "text-tiki-lagon" : isPast ? "text-slate-500" : "text-slate-800"}`}>
                                   {r.customerName}
                                 </span>
                                 <span className={`text-xs px-2 py-0.5 rounded-full border ${s.cls}`}>{s.label}</span>
@@ -429,11 +429,11 @@ export default function ReservationsPage() {
                                   ? <span className="text-xs text-green-400 flex items-center gap-1"><CheckCircle2 size={10} /> Soldé</span>
                                   : <span className="text-xs text-yellow-400 flex items-center gap-1"><Clock size={10} /> Acompte</span>}
                               </div>
-                              <div className="text-white/35 text-xs mt-0.5">
+                              <div className="text-slate-400 text-xs mt-0.5">
                                 {r.excursionTitle} &nbsp;·&nbsp; {r.adults + r.children} pers.
                               </div>
                             </div>
-                            <div className={`font-bold text-sm shrink-0 ${isSelected ? "text-tiki-gold" : isPast ? "text-white/25" : "text-white/60"}`}>
+                            <div className={`font-bold text-sm shrink-0 ${isSelected ? "text-tiki-lagon" : isPast ? "text-slate-300" : "text-slate-500"}`}>
                               {r.totalPrice} €
                             </div>
                           </div>
@@ -450,8 +450,8 @@ export default function ReservationsPage() {
                 {upcoming.length > 0 && (
                   <div className="space-y-5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white/50 uppercase tracking-widest">À venir</span>
-                      <span className="text-xs bg-tiki-gold/15 text-tiki-gold border border-tiki-gold/25 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">À venir</span>
+                      <span className="text-xs bg-tiki-lagon/10 text-tiki-lagon border border-tiki-lagon/25 px-2 py-0.5 rounded-full font-bold">
                         {reservations.filter(r => new Date(r.date) >= today).length}
                       </span>
                     </div>
@@ -461,8 +461,8 @@ export default function ReservationsPage() {
                 {past.length > 0 && (
                   <div className="space-y-5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white/30 uppercase tracking-widest">Passées</span>
-                      <span className="text-xs bg-white/5 text-white/30 border border-white/10 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Passées</span>
+                      <span className="text-xs bg-slate-100 text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full font-bold">
                         {reservations.filter(r => new Date(r.date) < today).length}
                       </span>
                     </div>
@@ -475,18 +475,18 @@ export default function ReservationsPage() {
         </div>
 
         {/* Détail / Édition */}
-        <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5 sticky top-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 sticky top-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
           {!selected ? (
-            <div className="text-center text-white/25 text-sm py-12">
+            <div className="text-center text-slate-300 text-sm py-12">
               Cliquez sur une réservation pour voir le détail
             </div>
           ) : editMode && editForm ? (
             /* ── MODE ÉDITION ── */
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="font-bold text-tiki-gold text-sm">Modifier la réservation</h2>
+                <h2 className="font-bold text-tiki-lagon text-sm">Modifier la réservation</h2>
                 <button onClick={() => { setEditMode(false); setEditForm(null); }}
-                  className="text-white/30 hover:text-white transition-colors"><X size={16} /></button>
+                  className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
               </div>
               <div className="space-y-3">
                 <div>
@@ -537,8 +537,8 @@ export default function ReservationsPage() {
                 <div className="flex items-center gap-2 pt-1">
                   <input type="checkbox" id="editIsPaid" checked={editForm.isPaid}
                     onChange={e => setEditForm(p => p ? { ...p, isPaid: e.target.checked } : p)}
-                    className="w-4 h-4 accent-tiki-gold" />
-                  <label htmlFor="editIsPaid" className="text-white/60 text-sm cursor-pointer">Déjà encaissé</label>
+                    className="w-4 h-4 accent-tiki-lagon" />
+                  <label htmlFor="editIsPaid" className="text-slate-500 text-sm cursor-pointer">Déjà encaissé</label>
                 </div>
                 <div>
                   <label className={labelCls}>Notes internes</label>
@@ -547,11 +547,11 @@ export default function ReservationsPage() {
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button onClick={submitEdit} disabled={saving || !editForm.customerName || !editForm.customerEmail}
-                    className="flex-1 flex items-center justify-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
+                    className="flex-1 flex items-center justify-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50">
                     <Save size={14} /> {saving ? "Enregistrement..." : "Enregistrer"}
                   </button>
                   <button onClick={() => { setEditMode(false); setEditForm(null); }}
-                    className="px-4 border border-white/15 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+                    className="px-4 border border-slate-300 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
                     Annuler
                   </button>
                 </div>
@@ -563,7 +563,7 @@ export default function ReservationsPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-white">{selected.customerName}</h2>
                 <button onClick={openEdit}
-                  className="flex items-center gap-1.5 text-xs bg-white/8 hover:bg-tiki-gold/15 hover:text-tiki-gold border border-white/10 hover:border-tiki-gold/30 text-white/60 px-3 py-1.5 rounded-lg transition-all">
+                  className="flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-tiki-lagon/10 hover:text-tiki-lagon border border-slate-200 hover:border-tiki-lagon/30 text-slate-500 px-3 py-1.5 rounded-lg transition-all">
                   <Pencil size={11} /> Modifier
                 </button>
               </div>
@@ -577,7 +577,7 @@ export default function ReservationsPage() {
                 </a>
               </div>
 
-              <div className="space-y-2 text-sm mb-5 border-y border-white/8 py-4">
+              <div className="space-y-2 text-sm mb-5 border-y border-slate-200 py-4">
                 {([
                   ["Excursion", selected.excursionTitle],
                   ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
@@ -589,14 +589,14 @@ export default function ReservationsPage() {
                   ["Réservé le", new Date(selected.createdAt).toLocaleDateString("fr-FR")],
                 ] as [string, string | number][]).map(([l, v]) => (
                   <div key={l} className="flex justify-between gap-2">
-                    <span className="text-white/40">{l}</span>
+                    <span className="text-slate-400">{l}</span>
                     <span className="text-white text-right">{String(v)}</span>
                   </div>
                 ))}
 
                 {/* Solde restant — visible uniquement si acompte non soldé */}
                 {selected.paymentType === "deposit" && !selected.isPaid && (
-                  <div className="flex justify-between gap-2 pt-2 mt-1 border-t border-white/8">
+                  <div className="flex justify-between gap-2 pt-2 mt-1 border-t border-slate-200">
                     <span className="text-yellow-400 font-medium text-sm">Solde restant à encaisser</span>
                     <span className="text-yellow-400 font-black text-sm">
                       {(selected.totalPrice - selected.depositAmount).toFixed(2)} €
@@ -606,14 +606,14 @@ export default function ReservationsPage() {
               </div>
 
               {selected.notes && (
-                <div className="bg-white/5 rounded-xl p-3 text-white/50 text-xs mb-5">
-                  <div className="text-white/30 text-xs mb-1">Notes</div>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600 text-xs mb-5">
+                  <div className="text-slate-400 text-xs mb-1">Notes</div>
                   {selected.notes}
                 </div>
               )}
 
               <div className="space-y-2">
-                <p className="text-white/30 text-xs font-medium uppercase tracking-wide mb-2">Actions rapides</p>
+                <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-2">Actions rapides</p>
                 {[
                   { val: "confirmed", label: "✓ Confirmer",   cls: "bg-green-600 hover:bg-green-700 text-white" },
                   { val: "pending",   label: "⏳ En attente", cls: "bg-yellow-600 hover:bg-yellow-700 text-white" },
@@ -626,12 +626,12 @@ export default function ReservationsPage() {
                   </button>
                 ))}
                 <button disabled={saving} onClick={() => markPaid(selected.id, !selected.isPaid)}
-                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-tiki-gold/30 text-tiki-gold hover:bg-tiki-gold/10 transition-colors disabled:opacity-40 mt-1">
+                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-tiki-lagon/30 text-tiki-lagon hover:bg-tiki-lagon/10 transition-colors disabled:opacity-40 mt-1">
                   {selected.isPaid ? "Marquer non soldé" : "Marquer soldé"}
                 </button>
                 <a href={`https://wa.me/${selected.customerPhone.replace(/\D/g, "")}`}
                   target="_blank" rel="noopener noreferrer"
-                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center gap-2 mt-1">
+                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-400 transition-colors flex items-center justify-center gap-2 mt-1">
                   Contacter sur WhatsApp
                 </a>
 
@@ -646,14 +646,14 @@ export default function ReservationsPage() {
                     <p className="text-red-300 text-sm font-medium">
                       Êtes-vous sûr de vouloir supprimer la réservation de <strong>{selected.customerName}</strong> ?
                     </p>
-                    <p className="text-white/40 text-xs">Cette action est irréversible — la réservation sera définitivement effacée.</p>
+                    <p className="text-slate-400 text-xs">Cette action est irréversible — la réservation sera définitivement effacée.</p>
                     <div className="flex gap-2">
                       <button onClick={deleteReservation} disabled={saving}
-                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-slate-800 font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
                         {saving ? "Suppression..." : "Oui, supprimer"}
                       </button>
                       <button onClick={() => setConfirmDelete(false)}
-                        className="flex-1 py-2 border border-white/15 text-white/60 hover:text-white rounded-lg text-sm transition-colors">
+                        className="flex-1 py-2 border border-slate-300 text-slate-500 hover:text-white rounded-lg text-sm transition-colors">
                         Annuler
                       </button>
                     </div>

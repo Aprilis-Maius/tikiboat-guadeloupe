@@ -17,15 +17,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <AdminSessionProvider>
       {session ? (
         // Layout plein écran avec sidebar — aucun élément du site public
-        <div className="flex h-screen bg-[#0D0D0D] overflow-hidden">
+        <div className="flex h-screen bg-slate-50 overflow-hidden">
           <AdminSidebar />
           <div className="flex-1 flex flex-col min-w-0 overflow-auto">
             {children}
           </div>
         </div>
       ) : (
-        // Page login — plein écran, fond sombre
-        <div className="min-h-screen bg-[#0D0D0D]">
+        <div className="min-h-screen bg-slate-100">
           <AdminGuard>{children}</AdminGuard>
         </div>
       )}

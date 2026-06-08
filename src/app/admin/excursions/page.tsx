@@ -36,8 +36,8 @@ const parseArr = (json: string): string[] => {
   try { return JSON.parse(json); } catch { return []; }
 };
 
-const inputCls = "w-full bg-[#111111] border border-white/10 focus:border-tiki-gold rounded-xl px-3 py-2.5 text-white placeholder-white/20 outline-none transition-colors text-sm";
-const labelCls = "block text-white/40 text-xs font-medium mb-1";
+const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
+const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
 
 export default function ExcursionsAdminPage() {
   const { data: session, status } = useSession();
@@ -137,7 +137,7 @@ export default function ExcursionsAdminPage() {
       <div className="flex items-center justify-between mb-1.5">
         <label className={labelCls}>{label}</label>
         <button type="button" onClick={() => onChange([...arr, ""])}
-          className="text-xs text-tiki-gold hover:underline">+ Ajouter</button>
+          className="text-xs text-tiki-lagon hover:underline">+ Ajouter</button>
       </div>
       <div className="space-y-1.5">
         {arr.map((v, i) => (
@@ -145,7 +145,7 @@ export default function ExcursionsAdminPage() {
             <input value={v} onChange={e => { const n = [...arr]; n[i] = e.target.value; onChange(n); }}
               className={inputCls} placeholder={`Ligne ${i + 1}`} />
             <button type="button" onClick={() => onChange(arr.filter((_, j) => j !== i))}
-              className="text-white/25 hover:text-red-400 transition-colors shrink-0 px-1">
+              className="text-slate-300 hover:text-red-400 transition-colors shrink-0 px-1">
               <X size={14} />
             </button>
           </div>
@@ -154,30 +154,30 @@ export default function ExcursionsAdminPage() {
     </div>
   );
 
-  if (status === "loading" || !session) return <div className="p-8 text-white/30">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
 
   return (
     <div className="p-7 lg:p-9">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-white font-bold text-2xl tracking-tight">Excursions</h1>
-          <p className="text-white/30 text-sm mt-0.5">{excursions.length} excursion{excursions.length !== 1 ? "s" : ""}</p>
+          <h1 className="text-slate-800 font-bold text-2xl tracking-tight">Excursions</h1>
+          <p className="text-slate-400 text-sm mt-0.5">{excursions.length} excursion{excursions.length !== 1 ? "s" : ""}</p>
         </div>
         <button onClick={openNew}
-          className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
+          className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
           <Plus size={16} /> Nouvelle excursion
         </button>
       </div>
 
       {/* Formulaire (nouveau ou édition) */}
       {editId !== null && (
-        <div className="bg-[#1A1A1A] border border-tiki-gold/30 rounded-2xl mb-6 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl mb-6 overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <h2 className="font-bold text-white text-sm">
               {editId === "new" ? "Nouvelle excursion" : `Modifier : ${form.title}`}
             </h2>
-            <button onClick={closeEdit} className="text-white/30 hover:text-white transition-colors"><X size={18} /></button>
+            <button onClick={closeEdit} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -267,14 +267,14 @@ export default function ExcursionsAdminPage() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.popular}
                     onChange={e => setForm(p => ({ ...p, popular: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-tiki-gold" />
-                  <span className="text-white/60 text-sm">Populaire</span>
+                    className="w-4 h-4 rounded accent-tiki-lagon" />
+                  <span className="text-slate-500 text-sm">Populaire</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.isActive}
                     onChange={e => setForm(p => ({ ...p, isActive: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-tiki-gold" />
-                  <span className="text-white/60 text-sm">Visible sur le site</span>
+                    className="w-4 h-4 rounded accent-tiki-lagon" />
+                  <span className="text-slate-500 text-sm">Visible sur le site</span>
                 </label>
               </div>
             </div>
@@ -292,13 +292,13 @@ export default function ExcursionsAdminPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
             <button onClick={closeEdit}
-              className="px-5 py-2.5 border border-white/10 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
               Annuler
             </button>
             <button onClick={save} disabled={saving || !form.title}
-              className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
               <Save size={15} /> {saving ? "Enregistrement..." : "Enregistrer"}
             </button>
           </div>
@@ -307,25 +307,25 @@ export default function ExcursionsAdminPage() {
 
       {/* Liste excursions */}
       {loading ? (
-        <div className="text-white/30 text-sm">Chargement...</div>
+        <div className="text-slate-400 text-sm">Chargement...</div>
       ) : excursions.length === 0 ? (
-        <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-10 text-center">
-          <p className="text-white/25 text-sm mb-3">Aucune excursion</p>
-          <button onClick={openNew} className="text-tiki-gold text-sm hover:underline">Créer la première</button>
+        <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-10 text-center">
+          <p className="text-slate-300 text-sm mb-3">Aucune excursion</p>
+          <button onClick={openNew} className="text-tiki-lagon text-sm hover:underline">Créer la première</button>
         </div>
       ) : (
         <div className="space-y-3">
           {excursions.map((exc) => (
-            <div key={exc.id} className="bg-[#1A1A1A] border border-white/5 rounded-2xl overflow-hidden">
+            <div key={exc.id} className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
               {/* En-tête de la carte */}
               <div className="flex items-center gap-4 px-5 py-4">
-                <GripVertical size={16} className="text-white/15 cursor-grab shrink-0" />
+                <GripVertical size={16} className="text-slate-300 cursor-grab shrink-0" />
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-white text-sm">{exc.title}</span>
                     {exc.badge && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-tiki-gold/15 text-tiki-gold border border-tiki-gold/20">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-tiki-lagon/10 text-tiki-lagon border border-tiki-lagon/20">
                         {exc.badge}
                       </span>
                     )}
@@ -335,12 +335,12 @@ export default function ExcursionsAdminPage() {
                       </span>
                     )}
                     {!exc.isActive && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-white/30 border border-white/10">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200">
                         Masqué
                       </span>
                     )}
                   </div>
-                  <div className="text-white/30 text-xs mt-0.5">
+                  <div className="text-slate-400 text-xs mt-0.5">
                     {exc.duration} · {exc.pricePrivate ? `Privatisation dès ${exc.pricePrivate} €` : `${exc.priceAdult} € adulte · ${exc.priceChild} € enfant`}
                   </div>
                 </div>
@@ -349,19 +349,19 @@ export default function ExcursionsAdminPage() {
                 <div className="flex items-center gap-2 shrink-0">
                   <button onClick={() => toggleActive(exc)}
                     title={exc.isActive ? "Masquer" : "Afficher"}
-                    className={`p-2 rounded-lg transition-colors ${exc.isActive ? "text-emerald-400 hover:bg-emerald-400/10" : "text-white/25 hover:bg-white/5"}`}>
+                    className={`p-2 rounded-lg transition-colors ${exc.isActive ? "text-emerald-400 hover:bg-emerald-400/10" : "text-slate-300 hover:bg-slate-50"}`}>
                     {exc.isActive ? <Eye size={15} /> : <EyeOff size={15} />}
                   </button>
                   <button onClick={() => openEdit(exc)}
-                    className="p-2 rounded-lg text-white/30 hover:text-tiki-gold hover:bg-tiki-gold/10 transition-colors">
+                    className="p-2 rounded-lg text-slate-400 hover:text-tiki-lagon hover:bg-tiki-lagon/10 transition-colors">
                     <Pencil size={15} />
                   </button>
                   <button onClick={() => deleteExc(exc)}
-                    className="p-2 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                    className="p-2 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                     <Trash2 size={15} />
                   </button>
                   <button onClick={() => setExpandedId(expandedId === exc.id ? null : exc.id)}
-                    className="p-2 rounded-lg text-white/25 hover:text-white/60 transition-colors">
+                    className="p-2 rounded-lg text-slate-300 hover:text-slate-500 transition-colors">
                     {expandedId === exc.id ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   </button>
                 </div>
@@ -369,32 +369,32 @@ export default function ExcursionsAdminPage() {
 
               {/* Détail expandable */}
               {expandedId === exc.id && (
-                <div className="border-t border-white/5 px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div className="border-t border-slate-200 px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                   <div>
-                    <div className="text-white/25 mb-1">Au programme</div>
+                    <div className="text-slate-300 mb-1">Au programme</div>
                     <ul className="space-y-0.5">
                       {parseArr(exc.highlights).slice(0, 4).map((h, i) => (
-                        <li key={i} className="text-white/55 flex gap-1.5"><span className="text-tiki-gold">·</span>{h}</li>
+                        <li key={i} className="text-slate-500 flex gap-1.5"><span className="text-tiki-lagon">·</span>{h}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1">Inclus</div>
+                    <div className="text-slate-300 mb-1">Inclus</div>
                     <ul className="space-y-0.5">
                       {parseArr(exc.included).slice(0, 4).map((h, i) => (
-                        <li key={i} className="text-white/55 flex gap-1.5"><span className="text-emerald-400">✓</span>{h}</li>
+                        <li key={i} className="text-slate-500 flex gap-1.5"><span className="text-emerald-400">✓</span>{h}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1">Images</div>
-                    <div className="text-white/40">{parseArr(exc.images).length} image{parseArr(exc.images).length !== 1 ? "s" : ""}</div>
-                    {exc.youtubeId && <div className="text-white/40 mt-1">YouTube : {exc.youtubeId}</div>}
+                    <div className="text-slate-300 mb-1">Images</div>
+                    <div className="text-slate-400">{parseArr(exc.images).length} image{parseArr(exc.images).length !== 1 ? "s" : ""}</div>
+                    {exc.youtubeId && <div className="text-slate-400 mt-1">YouTube : {exc.youtubeId}</div>}
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1">Infos départ</div>
-                    <div className="text-white/50">{exc.departureTime} → {exc.returnTime}</div>
-                    <div className="text-white/35 mt-1">{exc.departurePoint}</div>
+                    <div className="text-slate-300 mb-1">Infos départ</div>
+                    <div className="text-slate-500">{exc.departureTime} → {exc.returnTime}</div>
+                    <div className="text-slate-400 mt-1">{exc.departurePoint}</div>
                   </div>
                 </div>
               )}

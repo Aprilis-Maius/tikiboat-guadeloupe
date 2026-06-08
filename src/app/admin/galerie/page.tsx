@@ -59,25 +59,25 @@ export default function GalleriePage() {
     return m ? m[1] : null;
   };
 
-  if (status === "loading" || !session) return <div className="p-8 text-white/30">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-white text-2xl">Galerie</h1>
-          <p className="text-white/40 text-sm mt-0.5">{items.length} élément{items.length !== 1 ? "s" : ""}</p>
+          <h1 className="font-display font-black text-slate-800 text-2xl">Galerie</h1>
+          <p className="text-slate-400 text-sm mt-0.5">{items.length} élément{items.length !== 1 ? "s" : ""}</p>
         </div>
         <button onClick={() => setAdding(true)}
-          className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
+          className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-slate-800 font-bold py-2.5 px-5 rounded-xl text-sm transition-colors">
           <Plus size={16} /> Ajouter
         </button>
       </div>
 
       {/* Formulaire ajout */}
       {adding && (
-        <div className="bg-tiki-ocean-mid border border-tiki-gold/30 rounded-2xl p-6 mb-6">
-          <h2 className="font-bold text-white mb-4 text-sm">Nouvel élément</h2>
+        <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl p-6 mb-6">
+          <h2 className="font-bold text-slate-800 mb-4 text-sm">Nouvel élément</h2>
           <div className="space-y-4">
             {/* Type */}
             <div className="flex gap-3">
@@ -87,7 +87,7 @@ export default function GalleriePage() {
               ].map(({ val, icon: Icon, label }) => (
                 <label key={val}
                   className={`flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-xl border transition-all ${
-                    form.type === val ? "border-tiki-gold bg-tiki-gold/10 text-tiki-gold" : "border-white/15 text-white/50"
+                    form.type === val ? "border-tiki-lagon bg-tiki-lagon/10 text-tiki-lagon" : "border-slate-300 text-slate-500"
                   }`}>
                   <input type="radio" value={val} checked={form.type === val}
                     onChange={e => setForm(p => ({ ...p, type: e.target.value }))} className="sr-only" />
@@ -105,30 +105,30 @@ export default function GalleriePage() {
               />
             ) : (
               <div>
-                <label className="block text-white/50 text-xs mb-1.5">
-                  Lien YouTube <span className="text-white/25">(ex: https://youtu.be/xxx)</span>
+                <label className="block text-slate-500 text-xs mb-1.5">
+                  Lien YouTube <span className="text-slate-300">(ex: https://youtu.be/xxx)</span>
                 </label>
                 <input type="url" value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))}
                   placeholder="https://youtu.be/..."
-                  className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none text-sm" />
-                <p className="text-white/25 text-xs mt-1">Copiez le lien de la vidéo YouTube et collez-le ici</p>
+                  className="w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 outline-none text-sm" />
+                <p className="text-slate-300 text-xs mt-1">Copiez le lien de la vidéo YouTube et collez-le ici</p>
               </div>
             )}
 
             <div>
-              <label className="block text-white/50 text-xs mb-1.5">Légende (optionnel)</label>
+              <label className="block text-slate-500 text-xs mb-1.5">Légende (optionnel)</label>
               <input type="text" value={form.caption} onChange={e => setForm(p => ({ ...p, caption: e.target.value }))}
                 placeholder="Description de la photo..."
-                className="w-full bg-tiki-ocean border border-white/12 focus:border-tiki-gold rounded-xl px-4 py-3 text-white placeholder-white/20 outline-none text-sm" />
+                className="w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 outline-none text-sm" />
             </div>
 
             <div className="flex gap-3 pt-2">
               <button onClick={addItem} disabled={saving || !form.url}
-                className="bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
+                className="bg-tiki-lagon hover:bg-tiki-lagon-light text-slate-800 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
                 {saving ? "Ajout..." : "Ajouter"}
               </button>
               <button onClick={() => setAdding(false)}
-                className="px-5 border border-white/15 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+                className="px-5 border border-slate-300 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
                 Annuler
               </button>
             </div>
@@ -138,12 +138,12 @@ export default function GalleriePage() {
 
       {/* Grille galerie */}
       {loading ? (
-        <div className="text-white/30 text-sm">Chargement...</div>
+        <div className="text-slate-400 text-sm">Chargement...</div>
       ) : items.length === 0 ? (
-        <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-12 text-center">
-          <ImageIcon size={32} className="text-white/20 mx-auto mb-3" />
-          <p className="text-white/30 text-sm">Aucun élément dans la galerie</p>
-          <button onClick={() => setAdding(true)} className="text-tiki-gold text-sm hover:underline mt-2">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-12 text-center">
+          <ImageIcon size={32} className="text-slate-300 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm">Aucun élément dans la galerie</p>
+          <button onClick={() => setAdding(true)} className="text-tiki-lagon text-sm hover:underline mt-2">
             Ajouter le premier
           </button>
         </div>
@@ -154,7 +154,7 @@ export default function GalleriePage() {
             const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : item.url;
 
             return (
-              <div key={item.id} className="group relative bg-tiki-ocean-mid rounded-xl overflow-hidden border border-white/8 hover:border-white/20 transition-all">
+              <div key={item.id} className="group relative bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-slate-300 transition-all">
                 {/* Thumbnail */}
                 <div className="relative aspect-video">
                   <Image src={thumbUrl} alt={item.caption || ""} fill className="object-cover" sizes="300px"
@@ -162,7 +162,7 @@ export default function GalleriePage() {
                   {item.type === "video" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                       <div className="w-10 h-10 rounded-full bg-tiki-red/80 flex items-center justify-center">
-                        <PlayCircle size={18} className="text-white" />
+                        <PlayCircle size={18} className="text-slate-800" />
                       </div>
                     </div>
                   )}
@@ -170,20 +170,20 @@ export default function GalleriePage() {
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button onClick={() => deleteItem(item.id)}
                       className="w-9 h-9 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors">
-                      <Trash2 size={15} className="text-white" />
+                      <Trash2 size={15} className="text-slate-800" />
                     </button>
                   </div>
                 </div>
                 {/* Info */}
                 <div className="p-2.5">
                   <div className="flex items-center gap-1.5">
-                    <GripVertical size={12} className="text-white/20 cursor-grab" />
+                    <GripVertical size={12} className="text-slate-300 cursor-grab" />
                     {item.type === "video" ? (
                       <PlayCircle size={11} className="text-red-400" />
                     ) : (
                       <ImageIcon size={11} className="text-tiki-lagon-light" />
                     )}
-                    <span className="text-white/40 text-xs truncate">{item.caption || item.url.split("/").pop()}</span>
+                    <span className="text-slate-400 text-xs truncate">{item.caption || item.url.split("/").pop()}</span>
                   </div>
                 </div>
               </div>

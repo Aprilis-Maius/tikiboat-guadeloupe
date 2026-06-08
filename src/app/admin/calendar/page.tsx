@@ -82,14 +82,14 @@ export default function CalendarPage() {
 
   const selectedDayResas = selectedDay ? getDayData(selectedDay).dayResas : [];
 
-  if (status === "loading" || !session) return <div className="p-8 text-white/30">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
 
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-white text-2xl">Calendrier</h1>
-          <p className="text-white/40 text-sm mt-0.5">Gérez les disponibilités et créneaux</p>
+          <p className="text-slate-400 text-sm mt-0.5">Gérez les disponibilités et créneaux</p>
         </div>
         {/* Légende */}
         <div className="flex gap-4 text-xs">
@@ -100,7 +100,7 @@ export default function CalendarPage() {
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded border ${color}`} />
-              <span className="text-white/40">{label}</span>
+              <span className="text-slate-500">{label}</span>
             </div>
           ))}
         </div>
@@ -108,16 +108,16 @@ export default function CalendarPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Calendrier */}
-        <div className="xl:col-span-2 bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5">
+        <div className="xl:col-span-2 bg-white border border-slate-200 shadow-sm rounded-2xl p-5">
           {/* Navigation mois */}
           <div className="flex items-center justify-between mb-5">
             <button onClick={() => setCurrentDate(new Date(year, mon - 1, 1))}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-colors">
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-white hover:border-slate-300 transition-colors">
               <ChevronLeft size={18} />
             </button>
             <h2 className="font-bold text-white">{MONTHS_FR[mon]} {year}</h2>
             <button onClick={() => setCurrentDate(new Date(year, mon + 1, 1))}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-colors">
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:text-white hover:border-slate-300 transition-colors">
               <ChevronRight size={18} />
             </button>
           </div>
@@ -125,7 +125,7 @@ export default function CalendarPage() {
           {/* Jours de la semaine */}
           <div className="grid grid-cols-7 mb-2">
             {DAYS_FR.map(d => (
-              <div key={d} className="text-center text-white/25 text-xs font-medium py-1">{d}</div>
+              <div key={d} className="text-center text-slate-300 text-xs font-medium py-1">{d}</div>
             ))}
           </div>
 
@@ -141,7 +141,7 @@ export default function CalendarPage() {
               const isToday = dateStr === todayStr;
               const isSelected = dateStr === selectedDay;
 
-              let bg = "bg-tiki-ocean border-white/8";
+              let bg = "bg-white border-slate-200";
               if (isBlocked) bg = "bg-red-500/15 border-red-500/25";
               else if (booked >= max) bg = "bg-red-500/10 border-red-500/20";
               else if (fillRate >= 0.5) bg = "bg-yellow-500/10 border-yellow-500/20";
@@ -154,11 +154,11 @@ export default function CalendarPage() {
                     setSelectedDay(dateStr === selectedDay ? null : dateStr);
                   }}
                   className={`relative aspect-square rounded-xl border text-sm font-medium transition-all ${bg} ${
-                    isPast ? "opacity-30 cursor-default" : "hover:border-tiki-gold/40 cursor-pointer"
-                  } ${isToday ? "ring-2 ring-tiki-gold/40" : ""} ${isSelected ? "ring-2 ring-white/40" : ""}`}>
-                  <span className={isToday ? "text-tiki-gold font-bold" : "text-white/80"}>{day}</span>
+                    isPast ? "opacity-30 cursor-default" : "hover:border-tiki-lagon/50 cursor-pointer"
+                  } ${isToday ? "ring-2 ring-tiki-lagon/50" : ""} ${isSelected ? "ring-2 ring-white/40" : ""}`}>
+                  <span className={isToday ? "text-tiki-lagon font-bold" : "text-slate-700"}>{day}</span>
                   {dayResas.length > 0 && (
-                    <span className="absolute bottom-1 right-1 text-[9px] text-white/50">{booked}/{max}</span>
+                    <span className="absolute bottom-1 right-1 text-[9px] text-slate-500">{booked}/{max}</span>
                   )}
                   {isBlocked && (
                     <span className="absolute top-0.5 left-0.5">
@@ -169,51 +169,51 @@ export default function CalendarPage() {
               );
             })}
           </div>
-          <p className="text-white/25 text-xs mt-3 text-center">Cliquez sur une date pour modifier ses disponibilités</p>
+          <p className="text-slate-300 text-xs mt-3 text-center">Cliquez sur une date pour modifier ses disponibilités</p>
         </div>
 
         {/* Panneau droit */}
         <div className="space-y-4">
           {/* Édition d'une date */}
           {editingDay && (
-            <div className="bg-tiki-ocean-mid border border-tiki-gold/30 rounded-2xl p-5">
-              <h3 className="font-bold text-tiki-gold mb-4 text-sm">
+            <div className="bg-white border border-tiki-lagon/30 shadow-sm rounded-2xl p-5">
+              <h3 className="font-bold text-tiki-lagon mb-4 text-sm">
                 Modifier — {new Date(editingDay.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })}
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-white/50 text-xs mb-1.5">Places maximum</label>
+                  <label className="block text-slate-500 text-xs mb-1.5">Places maximum</label>
                   <input type="number" min={0} max={50} value={editingDay.maxSpots}
                     onChange={e => setEditingDay(prev => prev ? { ...prev, maxSpots: +e.target.value } : null)}
-                    className="w-full bg-tiki-ocean border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-gold" />
+                    className="w-full bg-tiki-ocean border border-slate-300 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-lagon" />
                 </div>
                 <div>
-                  <label className="block text-white/50 text-xs mb-1.5">Places déjà prises (tél/perso)</label>
+                  <label className="block text-slate-500 text-xs mb-1.5">Places déjà prises (tél/perso)</label>
                   <input type="number" min={0} max={editingDay.maxSpots} value={editingDay.bookedSpots}
                     onChange={e => setEditingDay(prev => prev ? { ...prev, bookedSpots: +e.target.value } : null)}
-                    className="w-full bg-tiki-ocean border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-gold" />
+                    className="w-full bg-tiki-ocean border border-slate-300 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-lagon" />
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" checked={editingDay.isBlocked}
                     onChange={e => setEditingDay(prev => prev ? { ...prev, isBlocked: e.target.checked } : null)}
                     className="w-4 h-4 rounded accent-tiki-red" />
-                  <span className="text-white/70 text-sm">Bloquer cette date</span>
+                  <span className="text-slate-600 text-sm">Bloquer cette date</span>
                 </label>
                 {editingDay.isBlocked && (
                   <div>
-                    <label className="block text-white/50 text-xs mb-1.5">Raison (optionnel)</label>
+                    <label className="block text-slate-500 text-xs mb-1.5">Raison (optionnel)</label>
                     <input type="text" placeholder="Météo, maintenance..." value={editingDay.blockReason}
                       onChange={e => setEditingDay(prev => prev ? { ...prev, blockReason: e.target.value } : null)}
-                      className="w-full bg-tiki-ocean border border-white/15 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-gold placeholder-white/25" />
+                      className="w-full bg-tiki-ocean border border-slate-300 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-tiki-lagon placeholder-slate-400" />
                   </div>
                 )}
                 <div className="flex gap-2 pt-2">
                   <button onClick={saveDay} disabled={saving}
-                    className="flex-1 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50">
+                    className="flex-1 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50">
                     {saving ? "..." : "Enregistrer"}
                   </button>
                   <button onClick={() => setEditingDay(null)}
-                    className="px-4 border border-white/15 text-white/50 hover:text-white rounded-xl text-sm transition-colors">
+                    className="px-4 border border-slate-300 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
                     Annuler
                   </button>
                 </div>
@@ -223,13 +223,13 @@ export default function CalendarPage() {
 
           {/* Détail jour sélectionné */}
           {selectedDay && !editingDay && (
-            <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-5">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-white text-sm">
                   {new Date(selectedDay).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })}
                 </h3>
                 <button onClick={() => openEdit(selectedDay)}
-                  className="text-xs text-tiki-gold hover:underline">Modifier</button>
+                  className="text-xs text-tiki-lagon hover:underline">Modifier</button>
               </div>
 
               {(() => {
@@ -242,11 +242,11 @@ export default function CalendarPage() {
                       </div>
                     ) : (
                       <div className="mb-4">
-                        <div className="flex items-center justify-between text-xs text-white/40 mb-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
                           <span className="flex items-center gap-1"><Users size={11} /> Remplissage</span>
                           <span>{booked} / {max} places</span>
                         </div>
-                        <div className="w-full bg-tiki-ocean rounded-full h-2">
+                        <div className="w-full bg-slate-200 rounded-full h-2">
                           <div className={`h-2 rounded-full transition-all ${
                             booked >= max ? "bg-red-500" : booked >= max * 0.7 ? "bg-yellow-500" : "bg-green-500"
                           }`} style={{ width: `${Math.min(100, (booked / max) * 100)}%` }} />
@@ -255,13 +255,13 @@ export default function CalendarPage() {
                     )}
 
                     {dayResas.length === 0 ? (
-                      <p className="text-white/25 text-xs">Aucune réservation</p>
+                      <p className="text-slate-300 text-xs">Aucune réservation</p>
                     ) : (
                       <div className="space-y-2">
                         {dayResas.map((r) => (
-                          <div key={r.id} className="bg-tiki-ocean rounded-xl px-3 py-2.5">
-                            <div className="text-white text-sm font-medium">{r.customerName}</div>
-                            <div className="text-white/40 text-xs">{r.adults + (r as { children: number }).children} pers. · {r.excursionTitle}</div>
+                          <div key={r.id} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
+                            <div className="text-slate-800 text-sm font-medium">{r.customerName}</div>
+                            <div className="text-slate-400 text-xs">{r.adults + (r as { children: number }).children} pers. · {r.excursionTitle}</div>
                           </div>
                         ))}
                       </div>
@@ -273,8 +273,8 @@ export default function CalendarPage() {
           )}
 
           {!selectedDay && !editingDay && (
-            <div className="bg-tiki-ocean-mid border border-white/8 rounded-2xl p-6 text-center">
-              <p className="text-white/25 text-sm">Cliquez sur une date pour voir le détail</p>
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 text-center">
+              <p className="text-slate-300 text-sm">Cliquez sur une date pour voir le détail</p>
             </div>
           )}
         </div>
