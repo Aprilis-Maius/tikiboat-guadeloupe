@@ -96,7 +96,7 @@ export default async function HomePage() {
                 <SiteImage src="/photos/grandculdesacmarin-excursion.png" alt="Excursion Tiki Boat"
                   label="Excursion lagon" fill className="object-cover" />
               </div>
-              <div className="absolute bottom-0 right-0 w-[60%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border-4 border-tiki-ocean-mid">
+              <div className="absolute bottom-0 right-0 w-[60%] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
                 <SiteImage src="/photos/lagon.jpg" alt="Grand Cul de Sac Marin"
                   label="Lagon Guadeloupe" fill className="object-cover" />
               </div>
