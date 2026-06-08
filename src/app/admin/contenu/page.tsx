@@ -3,32 +3,10 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Save, CheckCircle2 } from "lucide-react";
+import { Save, CheckCircle2, Type, Anchor, Phone, MapPin, Clock, Euro } from "lucide-react";
 
-const CONTENT_FIELDS = {
-  "Textes du site": [
-    { id: "hero.headline",   label: "Titre principal hero",    type: "text",     ph: "L'excursion en bateau qui change tout." },
-    { id: "hero.subtitle",   label: "Sous-titre hero",         type: "text",     ph: "Snorkeling · Îlets · Repas créole..." },
-    { id: "hero.pretitle",   label: "Pré-titre hero (petite caps)", type: "text", ph: "Guadeloupe · Grand Cul de Sac Marin" },
-    { id: "cta.final.title", label: "Titre section CTA final", type: "text",     ph: "Prêt pour le grand large ?" },
-    { id: "cta.final.sub",   label: "Sous-titre CTA final",    type: "text",     ph: "Réservez maintenant et vivez..." },
-  ],
-  "Excursion principale": [
-    { id: "excursion.1.title",       label: "Titre",         type: "text",     ph: "Croisière Grand Cul de Sac Marin" },
-    { id: "excursion.1.description", label: "Description",   type: "textarea", ph: "Embarquez pour une journée..." },
-    { id: "excursion.1.price.adult", label: "Prix adulte (€)",    type: "number", ph: "95" },
-    { id: "excursion.1.price.child", label: "Prix enfant (€)",    type: "number", ph: "55" },
-    { id: "excursion.1.departure",   label: "Heure de départ",    type: "text",   ph: "08h00" },
-    { id: "excursion.1.return",      label: "Heure de retour",    type: "text",   ph: "17h00" },
-  ],
-  "Contact & Infos pratiques": [
-    { id: "contact.phone",     label: "Téléphone",              type: "text", ph: "+590 690 49 58 48" },
-    { id: "contact.email",     label: "Email",                  type: "text", ph: "tikiboatguadeloupe@gmail.com" },
-    { id: "contact.departure", label: "Point de départ",        type: "text", ph: "Marina de Pointe-à-Pitre / Le Gosier" },
-    { id: "contact.zone",      label: "Zone géographique",      type: "text", ph: "Guadeloupe" },
-    { id: "deposit.percent",   label: "Acompte (%)",            type: "number", ph: "30" },
-  ],
-};
+const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3.5 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
+const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
 
 export default function ContentPage() {
   const { data: session, status } = useSession();
@@ -47,6 +25,9 @@ export default function ContentPage() {
       .then(data => { setValues(data); setLoading(false); });
   }, [session]);
 
+  const set = (id: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setValues(prev => ({ ...prev, [id]: e.target.value }));
+
   const handleSave = async () => {
     setSaving(true);
     await fetch("/api/admin/content", {
@@ -59,60 +40,125 @@ export default function ContentPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  if (status === "loading" || !session) return <div className="p-8 text-slate-400">Chargement...</div>;
+  if (status === "loading" || !session) return <div className="p-8 text-slate-400 text-sm">Chargement...</div>;
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8 max-w-3xl">
+
+      {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-slate-800 text-2xl">Contenu du site</h1>
+          <h1 className="font-bold text-slate-800 text-2xl">Contenu du site</h1>
           <p className="text-slate-400 text-sm mt-0.5">Modifiez les textes, prix et informations</p>
         </div>
         <button onClick={handleSave} disabled={saving}
-          className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl transition-colors disabled:opacity-50 text-sm">
-          {saved ? <><CheckCircle2 size={16} /> Enregistré !</> : <><Save size={16} /> {saving ? "Enregistrement..." : "Enregistrer"}</>}
+          className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl transition-colors disabled:opacity-50 text-sm shadow-sm">
+          {saved
+            ? <><CheckCircle2 size={15} /> Enregistré !</>
+            : <><Save size={15} /> {saving ? "Enregistrement…" : "Enregistrer"}</>}
         </button>
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-sm">Chargement...</div>
+        <div className="text-slate-400 text-sm">Chargement…</div>
       ) : (
-        <div className="space-y-6 max-w-3xl">
-          {Object.entries(CONTENT_FIELDS).map(([section, fields]) => (
-            <div key={section} className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6">
-              <h2 className="font-bold text-white mb-5 pb-3 border-b border-slate-200">{section}</h2>
-              <div className="space-y-4">
-                {fields.map(({ id, label, type, ph }) => (
-                  <div key={id}>
-                    <label className="block text-slate-500 text-xs font-medium mb-1.5">{label}</label>
-                    {type === "textarea" ? (
-                      <textarea
-                        value={values[id] ?? ""}
-                        onChange={e => setValues(prev => ({ ...prev, [id]: e.target.value }))}
-                        placeholder={ph} rows={3}
-                        className="w-full bg-tiki-ocean border border-slate-200 focus:border-tiki-lagon rounded-xl px-4 py-3 text-white placeholder-slate-400 outline-none transition-colors text-sm resize-none"
-                      />
-                    ) : (
-                      <input
-                        type={type} value={values[id] ?? ""}
-                        onChange={e => setValues(prev => ({ ...prev, [id]: e.target.value }))}
-                        placeholder={ph}
-                        className="w-full bg-tiki-ocean border border-slate-200 focus:border-tiki-lagon rounded-xl px-4 py-3 text-white placeholder-slate-400 outline-none transition-colors text-sm"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="space-y-5">
 
-          <div className="flex justify-end">
-            <button onClick={handleSave} disabled={saving}
-              className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-3 px-8 rounded-xl transition-colors disabled:opacity-50">
-              {saved ? <><CheckCircle2 size={16} /> Enregistré !</> : <><Save size={16} /> {saving ? "Enregistrement..." : "Enregistrer tout"}</>}
-            </button>
-          </div>
+          {/* ── Section Textes ── */}
+          <Section icon={<Type size={15} className="text-violet-500" />} iconBg="bg-violet-50 border-violet-200" title="Textes du site" subtitle="Hero, CTA, titres visibles sur le site public">
+            <Field label="Titre principal (hero)" id="hero.headline" placeholder="L'excursion en bateau qui change tout." values={values} onChange={set} />
+            <Field label="Sous-titre hero" id="hero.subtitle" placeholder="Snorkeling · Îlets · Repas créole…" values={values} onChange={set} />
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Pré-titre (petite caps)" id="hero.pretitle" placeholder="Guadeloupe · Grand Cul de Sac Marin" values={values} onChange={set} />
+              <Field label="Titre section CTA final" id="cta.final.title" placeholder="Prêt pour le grand large ?" values={values} onChange={set} />
+            </div>
+            <Field label="Sous-titre CTA final" id="cta.final.sub" placeholder="Réservez maintenant et vivez…" values={values} onChange={set} />
+          </Section>
+
+          {/* ── Section Excursion ── */}
+          <Section icon={<Anchor size={15} className="text-tiki-lagon" />} iconBg="bg-tiki-lagon/10 border-tiki-lagon/20" title="Excursion principale" subtitle="Informations affichées sur la page de l'excursion">
+            <Field label="Titre de l'excursion" id="excursion.1.title" placeholder="Croisière Grand Cul de Sac Marin" values={values} onChange={set} />
+            <Field label="Description" id="excursion.1.description" placeholder="Embarquez pour une journée inoubliable…" values={values} onChange={set} textarea />
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Prix adulte (€)" id="excursion.1.price.adult" placeholder="95" type="number" values={values} onChange={set}
+                icon={<Euro size={13} className="text-slate-400" />} />
+              <Field label="Prix enfant (€)" id="excursion.1.price.child" placeholder="55" type="number" values={values} onChange={set}
+                icon={<Euro size={13} className="text-slate-400" />} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Heure de départ" id="excursion.1.departure" placeholder="08h00" values={values} onChange={set}
+                icon={<Clock size={13} className="text-slate-400" />} />
+              <Field label="Heure de retour" id="excursion.1.return" placeholder="17h00" values={values} onChange={set}
+                icon={<Clock size={13} className="text-slate-400" />} />
+            </div>
+          </Section>
+
+          {/* ── Section Contact ── */}
+          <Section icon={<Phone size={15} className="text-emerald-600" />} iconBg="bg-emerald-50 border-emerald-200" title="Contact & Infos pratiques" subtitle="Coordonnées et paramètres de réservation">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Téléphone" id="contact.phone" placeholder="+590 690 49 58 48" values={values} onChange={set}
+                icon={<Phone size={13} className="text-slate-400" />} />
+              <Field label="Email" id="contact.email" placeholder="tikiboatguadeloupe@gmail.com" values={values} onChange={set} />
+            </div>
+            <Field label="Point de départ" id="contact.departure" placeholder="Marina de Pointe-à-Pitre / Le Gosier" values={values} onChange={set}
+              icon={<MapPin size={13} className="text-slate-400" />} />
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Zone géographique" id="contact.zone" placeholder="Guadeloupe" values={values} onChange={set}
+                icon={<MapPin size={13} className="text-slate-400" />} />
+              <Field label="Acompte requis (%)" id="deposit.percent" placeholder="30" type="number" values={values} onChange={set}
+                icon={<Euro size={13} className="text-slate-400" />} />
+            </div>
+          </Section>
+
         </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Composants helper ── */
+
+function Section({ icon, iconBg, title, subtitle, children }: {
+  icon: React.ReactNode; iconBg: string;
+  title: string; subtitle: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
+        <div className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
+          {icon}
+        </div>
+        <div>
+          <h2 className="font-bold text-slate-800 text-sm">{title}</h2>
+          <p className="text-slate-400 text-xs mt-0.5">{subtitle}</p>
+        </div>
+      </div>
+      <div className="p-6 space-y-4">{children}</div>
+    </div>
+  );
+}
+
+function Field({ label, id, placeholder, type = "text", textarea, icon, values, onChange }: {
+  label: string; id: string; placeholder: string;
+  type?: string; textarea?: boolean; icon?: React.ReactNode;
+  values: Record<string, string>;
+  onChange: (id: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}) {
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      {textarea ? (
+        <textarea value={values[id] ?? ""} onChange={onChange(id)} placeholder={placeholder} rows={3}
+          className={`${inputCls} resize-none`} />
+      ) : icon ? (
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2">{icon}</span>
+          <input type={type} value={values[id] ?? ""} onChange={onChange(id)} placeholder={placeholder}
+            className={`${inputCls} pl-8`} />
+        </div>
+      ) : (
+        <input type={type} value={values[id] ?? ""} onChange={onChange(id)} placeholder={placeholder}
+          className={inputCls} />
       )}
     </div>
   );
