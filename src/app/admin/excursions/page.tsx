@@ -177,7 +177,7 @@ export default function ExcursionsAdminPage() {
             <h2 className="font-bold text-slate-800 text-sm">
               {editId === "new" ? "Nouvelle excursion" : `Modifier : ${form.title}`}
             </h2>
-            <button onClick={closeEdit} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+            <button onClick={closeEdit} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={18} /></button>
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -294,7 +294,7 @@ export default function ExcursionsAdminPage() {
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
             <button onClick={closeEdit}
-              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-white rounded-xl text-sm transition-colors">
+              className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
               Annuler
             </button>
             <button onClick={save} disabled={saving || !form.title}

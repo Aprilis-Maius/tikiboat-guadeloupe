@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import WaveDivider from "@/components/WaveDivider";
 import { ChevronRight, Clock, Users, MapPin } from "lucide-react";
-import { excursions } from "@/data/excursions";
+import { getExcursions } from "@/lib/excursions";
 import { formatPrice } from "@/lib/utils";
 
 const BASE = "https://tikiboat.fr";
@@ -88,7 +88,8 @@ const faqJsonLd = {
   ],
 };
 
-export default function ExcursionsPage() {
+export default async function ExcursionsPage() {
+  const excursions = await getExcursions();
   return (
     <>
       <script

@@ -99,7 +99,7 @@ export default function BlogAdminPage() {
             <h2 className="font-bold text-slate-800 text-sm">
               {editId === "new" ? "Nouvel article" : `Modifier : ${form.title}`}
             </h2>
-            <button onClick={closeEdit} className="text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+            <button onClick={closeEdit} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={18} /></button>
           </div>
 
           <div className="p-6 space-y-5">

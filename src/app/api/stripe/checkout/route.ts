@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { excursions } from "@/data/excursions";
+import { getExcursionBySlug } from "@/lib/excursions";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       notes,
     } = body;
 
-    const excursion = excursions.find((e) => e.slug === excursionSlug);
+    const excursion = await getExcursionBySlug(excursionSlug);
     if (!excursion) return NextResponse.json({ error: "Excursion not found" }, { status: 404 });
 
     const isDeposit = paymentType === "deposit";

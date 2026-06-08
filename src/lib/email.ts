@@ -2,11 +2,11 @@ import { Resend } from "resend";
 import { excursions } from "@/data/excursions";
 
 const resend   = new Resend(process.env.RESEND_API_KEY);
-const FROM     = "Tiki Boat <onboarding@resend.dev>"; // TODO → reservations@tikiboat.fr après vérif domaine
+const FROM     = process.env.EMAIL_FROM ?? "Tiki Boat <onboarding@resend.dev>";
 const ADMIN    = process.env.ADMIN_EMAIL_NOTIF ?? "tikiboatguadeloupe@gmail.com";
-const SITE_URL = "https://tiki-boat-iota.vercel.app"; // TODO → https://tikiboat.fr
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://tikiboat.fr";
 
-const LOGO = "https://raw.githubusercontent.com/MaxenceF972/tiki-boat/main/public/logo.png";
+const LOGO = `${SITE_URL}/logo.png`;
 
 export interface ReservationData {
   customerName:   string;
