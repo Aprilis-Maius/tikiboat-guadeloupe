@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Lock, Users, Settings2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Users, Settings2, X, Phone } from "lucide-react";
 
 interface Availability {
   id: string; date: string; excursionId: string;
@@ -13,7 +13,9 @@ interface Availability {
 
 interface Reservation {
   id: string; date: string; excursionTitle: string;
-  customerName: string; adults: number; children: number; status: string;
+  customerName: string; customerEmail: string; customerPhone: string;
+  adults: number; children: number; status: string;
+  totalPrice: number; depositAmount: number; isPaid: boolean; paymentType: string;
 }
 
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -237,13 +239,6 @@ export default function CalendarPage() {
             const { booked, max, isBlocked, dayResas } = getDayData(selectedDay);
             const fillRate = max > 0 ? booked / max : 0;
 
-            // Grouper par excursion
-            const byExc = dayResas.reduce<Record<string, { title: string; resas: Reservation[] }>>((acc, r) => {
-              if (!acc[r.excursionTitle]) acc[r.excursionTitle] = { title: r.excursionTitle, resas: [] };
-              acc[r.excursionTitle].resas.push(r);
-              return acc;
-            }, {});
-
             return (
               <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
                 {/* Header */}
@@ -257,11 +252,11 @@ export default function CalendarPage() {
                   </button>
                 </div>
 
-                <div className="p-5">
+                <div className="p-4 space-y-4">
                   {/* Barre capacité */}
                   {!isBlocked ? (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
                         <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                           <Users size={12} /> Remplissage
                         </span>
@@ -269,48 +264,87 @@ export default function CalendarPage() {
                           booked >= max ? "text-red-500" : fillRate >= 0.7 ? "text-amber-600" : "text-emerald-600"
                         }`}>{booked} / {max} places</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div className={`h-2 rounded-full transition-all ${
+                      <div className="w-full bg-slate-100 rounded-full h-1.5">
+                        <div className={`h-1.5 rounded-full transition-all ${
                           booked >= max ? "bg-red-500" : fillRate >= 0.7 ? "bg-amber-500" : "bg-emerald-500"
                         }`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-red-500 text-sm mb-4 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                    <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-200 rounded-xl px-3 py-2">
                       <Lock size={14} /> Date bloquée
                     </div>
                   )}
 
-                  {/* Réservations groupées par excursion */}
+                  {/* Cartes réservations */}
                   {dayResas.length === 0 ? (
                     <p className="text-slate-400 text-xs text-center py-3">Aucune réservation ce jour</p>
                   ) : (
-                    <div className="space-y-3">
-                      {Object.values(byExc).map(({ title, resas }) => {
-                        const totalPax = resas.reduce((s, r) => s + r.adults + r.children, 0);
+                    <div className="space-y-2.5">
+                      {dayResas.map((r) => {
+                        const pax = r.adults + r.children;
+                        const paxDetail = [
+                          r.adults > 0 ? `${r.adults} adulte${r.adults > 1 ? "s" : ""}` : null,
+                          r.children > 0 ? `${r.children} enfant${r.children > 1 ? "s" : ""}` : null,
+                        ].filter(Boolean).join(" + ");
+                        const isPaid = r.isPaid;
+                        const isDeposit = r.paymentType === "deposit" && !isPaid;
+                        const remaining = r.totalPrice - r.depositAmount;
+
                         return (
-                          <div key={title} className="border border-slate-200 rounded-xl overflow-hidden">
-                            {/* Header excursion */}
-                            <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border-b border-slate-200">
-                              <span className="font-semibold text-slate-700 text-xs">{title}</span>
-                              <span className="text-xs font-bold text-tiki-lagon bg-tiki-lagon/10 px-2 py-0.5 rounded-full">
-                                {totalPax} pers.
-                              </span>
-                            </div>
-                            {/* Lignes réservations */}
-                            {resas.map((r, idx) => {
-                              const pax = r.adults + r.children;
-                              const detail = [
-                                r.adults > 0 ? `${r.adults} adulte${r.adults > 1 ? "s" : ""}` : null,
-                                r.children > 0 ? `${r.children} enfant${r.children > 1 ? "s" : ""}` : null,
-                              ].filter(Boolean).join(" · ");
-                              return (
-                                <div key={r.id} className={`flex items-center justify-between px-3.5 py-2.5 ${idx < resas.length - 1 ? "border-b border-slate-100" : ""}`}>
-                                  <span className="text-slate-500 text-xs">{detail}</span>
-                                  <span className="text-slate-700 font-bold text-xs">{pax} pers.</span>
+                          <div key={r.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                            {/* Nom + excursion */}
+                            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-bold text-slate-800 text-sm">{r.customerName}</p>
+                                  <p className="text-slate-400 text-xs mt-0.5">{r.excursionTitle}</p>
                                 </div>
-                              );
-                            })}
+                                <span className="shrink-0 text-xs font-bold text-tiki-lagon bg-tiki-lagon/10 px-2 py-0.5 rounded-full">
+                                  {pax} pers.
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Détails */}
+                            <div className="px-4 py-3 space-y-2">
+                              {/* Passagers */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400 text-xs">Passagers</span>
+                                <span className="text-slate-700 text-xs font-medium">{paxDetail}</span>
+                              </div>
+
+                              {/* Téléphone */}
+                              {r.customerPhone && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-slate-400 text-xs">Téléphone</span>
+                                  <a href={`tel:${r.customerPhone}`}
+                                    className="flex items-center gap-1 text-tiki-lagon text-xs font-medium hover:underline">
+                                    <Phone size={10} />
+                                    {r.customerPhone}
+                                  </a>
+                                </div>
+                              )}
+
+                              {/* Montant */}
+                              <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-1">
+                                <span className="text-slate-400 text-xs">Montant</span>
+                                <div className="text-right">
+                                  <span className="text-slate-800 text-xs font-bold">{r.totalPrice.toLocaleString("fr-FR")} €</span>
+                                  {isPaid && (
+                                    <span className="ml-2 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Soldé</span>
+                                  )}
+                                  {isDeposit && (
+                                    <span className="ml-2 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                                      Reste {remaining.toLocaleString("fr-FR")} €
+                                    </span>
+                                  )}
+                                  {!isPaid && !isDeposit && (
+                                    <span className="ml-2 text-[10px] font-semibold text-red-500 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">Non payé</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
