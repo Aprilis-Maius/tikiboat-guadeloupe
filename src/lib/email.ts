@@ -77,6 +77,140 @@ function logoHeader(subtitle: string, badgeBg = "#16a34a", badgeText = "✅ Rés
   </table>`;
 }
 
+// ─── Email demande reçue (en attente de validation) ────────────────────────
+export async function sendPendingEmail(data: ReservationData) {
+  const pax = `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f9ff;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f9ff;padding:32px 16px;">
+<tr><td align="center">
+<table width="580" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;width:100%;">
+
+  <tr><td>${logoHeader("Excursions en mer · Guadeloupe", "#d97706", "⏳ Demande reçue")}</td></tr>
+
+  <tr><td style="background:#ffffff;padding:32px;">
+    <p style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 6px;">Bonjour ${data.customerName},</p>
+    <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0 0 20px;">
+      Nous avons bien reçu votre demande de réservation pour <strong style="color:#0f172a;">${data.excursionTitle}</strong>.<br/>
+      <strong style="color:#d97706;">Votre réservation sera confirmée sous 24 à 48h</strong>, selon le remplissage du bateau ce jour-là.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:20px;">
+      <tr><td style="padding:16px 20px 10px;">
+        <p style="font-size:10px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 14px;">📋 Récapitulatif</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+          ${divider()}
+          ${row("Date souhaitée", `<strong>${formatDate(data.date)}</strong>`)}
+          ${divider()}
+          ${row("Passagers", pax)}
+          ${divider()}
+          ${row("Total", `<strong style="color:#d97706;font-size:17px;">${data.totalPrice.toFixed(2)} €</strong>`)}
+          ${data.paymentType === "deposit"
+            ? row("Acompte (30%)", `<span style="color:#16a34a;font-weight:600;">✓ ${data.depositAmount.toFixed(2)} € encaissé</span>`)
+            : row("Paiement", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
+        </table>
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;margin-bottom:20px;">
+      <tr><td style="padding:16px 20px;">
+        <p style="font-size:13px;color:#0369a1;line-height:1.7;margin:0;">
+          📩 Vous recevrez un <strong>email de confirmation</strong> dès que votre réservation est validée.<br/>
+          En cas de question, contactez-nous au <a href="tel:+590690495848" style="color:#0088cc;font-weight:700;text-decoration:none;">+590 690 49 58 48</a>.
+        </p>
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0088cc;border-radius:10px;">
+      <tr><td style="padding:18px 20px;">
+        <p style="font-size:10px;font-weight:700;color:#F5C842;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 12px;">📞 Contact</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;">
+          <tr><td style="color:rgba(255,255,255,0.5);padding:4px 0;">Tél / WhatsApp</td><td align="right"><a href="tel:+590690495848" style="color:#F5C842;font-weight:600;text-decoration:none;">+590 690 49 58 48</a></td></tr>
+          <tr><td style="color:rgba(255,255,255,0.5);padding:4px 0;">Email</td><td align="right"><a href="mailto:tikiboatguadeloupe@gmail.com" style="color:rgba(255,255,255,0.6);text-decoration:none;">tikiboatguadeloupe@gmail.com</a></td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="background:#e0f2fe;border-radius:0 0 14px 14px;padding:14px 32px;text-align:center;">
+    <p style="font-size:11px;color:#94a3b8;margin:0;">Tiki Boat · Marina de Pointe-à-Pitre, Guadeloupe</p>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`;
+
+  return resend.emails.send({
+    from: FROM,
+    to:   data.customerEmail,
+    subject: `⏳ Demande reçue — ${data.excursionTitle} · ${formatDate(data.date)}`,
+    html,
+  });
+}
+
+// ─── Notification admin (réservation en attente) ────────────────────────────
+export async function sendAdminPendingNotification(data: ReservationData) {
+  const pax = data.adults + (data.children ?? 0);
+
+  const html = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f0f9ff;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f9ff;padding:32px 16px;">
+<tr><td align="center">
+<table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
+
+  <tr><td>${logoHeader(`${data.excursionTitle} · ${formatDate(data.date)}`, "#d97706", "⏳ En attente de validation")}</td></tr>
+  <tr><td style="background:#d97706;padding:10px 24px;">
+    <p style="color:#fff;font-size:13px;font-weight:700;margin:0;">
+      ${pax} passager${pax > 1 ? "s" : ""} · ${data.paymentType === "deposit" ? `Acompte de ${data.depositAmount.toFixed(2)} € encaissé` : `Paiement intégral ${data.totalPrice.toFixed(2)} €`}
+    </p>
+  </td></tr>
+
+  <tr><td style="background:#ffffff;padding:24px;">
+    <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">👤 Client</p>
+    <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${data.customerName}</p>
+    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${data.customerPhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${data.customerPhone}</a></p>
+    <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${data.customerEmail}" style="color:#2563eb;text-decoration:none;">${data.customerEmail}</a></p>
+
+    <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 20px;" />
+
+    <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">📅 Réservation</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;margin-bottom:24px;">
+      ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+      ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
+      ${row("Passagers", `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""} <strong>(${pax} pers.)</strong>`)}
+      ${row("Total", `<strong style="color:#d97706;font-size:17px;">${data.totalPrice.toFixed(2)} €</strong>`)}
+      ${data.notes ? row("Notes", `<em style="color:#64748b;">${data.notes}</em>`) : ""}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td align="center" style="background:#F5C842;border-radius:8px;padding:14px 20px;">
+        <a href="${SITE_URL}/admin/calendar" style="color:#0088cc;font-weight:800;font-size:14px;text-decoration:none;">
+          Voir le calendrier et confirmer →
+        </a>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="background:#e0f2fe;border-radius:0 0 14px 14px;padding:12px 24px;text-align:center;">
+    <p style="font-size:11px;color:#94a3b8;margin:0;">Tiki Boat Administration · tikiboat.fr</p>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`;
+
+  return resend.emails.send({
+    from: FROM,
+    to:   ADMIN,
+    subject: `⏳ Nouvelle demande — ${data.customerName} · ${data.excursionTitle} · ${formatDate(data.date)} (${pax} pers.)`,
+    html,
+  });
+}
+
 // ─── Email confirmation client ──────────────────────────────────────────────
 export async function sendConfirmationEmail(data: ReservationData) {
   const exc       = excursions.find(e => e.slug === data.excursionSlug || e.title === data.excursionTitle);

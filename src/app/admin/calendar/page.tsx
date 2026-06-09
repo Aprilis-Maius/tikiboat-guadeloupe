@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Lock, Users, Settings2, X, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Users, Settings2, X, Phone, CheckCircle2 } from "lucide-react";
 
 interface Availability {
   id: string; date: string; excursionId: string;
@@ -31,6 +31,7 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [editingDay, setEditingDay] = useState<{ date: string; maxSpots: number; bookedSpots: number; isBlocked: boolean; blockReason: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   useEffect(() => { if (status === "unauthenticated") router.push("/admin/login"); }, [status, router]);
 
@@ -77,6 +78,17 @@ export default function CalendarPage() {
     setEditingDay(null);
   };
 
+  const confirmReservation = async (id: string) => {
+    setConfirming(id);
+    await fetch("/api/admin/reservations", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: "confirmed", action: "confirm" }),
+    });
+    await fetchData();
+    setConfirming(null);
+  };
+
   const firstDay = new Date(year, mon, 1).getDay();
   const offset = firstDay === 0 ? 6 : firstDay - 1;
   const daysInMonth = new Date(year, mon + 1, 0).getDate();
@@ -107,6 +119,7 @@ export default function CalendarPage() {
             { color: "bg-emerald-500/20 border-emerald-500/30", label: "Disponible" },
             { color: "bg-amber-400/20 border-amber-400/30", label: "Partiel" },
             { color: "bg-red-400/20 border-red-400/30", label: "Complet / Bloqué" },
+            { color: "bg-orange-300/20 border-orange-300/30", label: "En attente" },
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded border ${color}`} />
@@ -292,29 +305,39 @@ export default function CalendarPage() {
                         const remaining = r.totalPrice - r.depositAmount;
 
                         return (
-                          <div key={r.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                          <div key={r.id} className={`border rounded-xl overflow-hidden ${r.status === "pending" ? "border-orange-300" : "border-slate-200"}`}>
                             {/* Nom + excursion */}
-                            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                            <div className={`px-4 py-3 border-b ${r.status === "pending" ? "bg-orange-50 border-orange-200" : "bg-slate-50 border-slate-200"}`}>
                               <div className="flex items-start justify-between gap-2">
                                 <div>
                                   <p className="font-bold text-slate-800 text-sm">{r.customerName}</p>
                                   <p className="text-slate-400 text-xs mt-0.5">{r.excursionTitle}</p>
                                 </div>
-                                <span className="shrink-0 text-xs font-bold text-tiki-lagon bg-tiki-lagon/10 px-2 py-0.5 rounded-full">
-                                  {pax} pers.
-                                </span>
+                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                  <span className="text-xs font-bold text-tiki-lagon bg-tiki-lagon/10 px-2 py-0.5 rounded-full">
+                                    {pax} pers.
+                                  </span>
+                                  {r.status === "pending" && (
+                                    <span className="text-[10px] font-bold text-orange-600 bg-orange-100 border border-orange-300 px-1.5 py-0.5 rounded-full">
+                                      ⏳ En attente
+                                    </span>
+                                  )}
+                                  {r.status === "confirmed" && (
+                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                                      ✓ Confirmée
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             {/* Détails */}
                             <div className="px-4 py-3 space-y-2">
-                              {/* Passagers */}
                               <div className="flex items-center justify-between">
                                 <span className="text-slate-400 text-xs">Passagers</span>
                                 <span className="text-slate-700 text-xs font-medium">{paxDetail}</span>
                               </div>
 
-                              {/* Téléphone */}
                               {r.customerPhone && (
                                 <div className="flex items-center justify-between">
                                   <span className="text-slate-400 text-xs">Téléphone</span>
@@ -326,7 +349,6 @@ export default function CalendarPage() {
                                 </div>
                               )}
 
-                              {/* Montant */}
                               <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-1">
                                 <span className="text-slate-400 text-xs">Montant</span>
                                 <div className="text-right">
@@ -344,6 +366,18 @@ export default function CalendarPage() {
                                   )}
                                 </div>
                               </div>
+
+                              {/* Bouton confirmer si en attente */}
+                              {r.status === "pending" && (
+                                <button
+                                  onClick={() => confirmReservation(r.id)}
+                                  disabled={confirming === r.id}
+                                  className="w-full mt-1 flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition-colors"
+                                >
+                                  <CheckCircle2 size={13} />
+                                  {confirming === r.id ? "Confirmation…" : "Confirmer la réservation"}
+                                </button>
+                              )}
                             </div>
                           </div>
                         );

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-import { sendConfirmationEmail, sendAdminNotification } from "@/lib/email";
+import { sendPendingEmail, sendAdminPendingNotification } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         totalPrice:      parseFloat(meta.totalPrice),
         depositAmount:   parseFloat(meta.depositAmount),
         paymentType:     meta.paymentType,
-        status:          "confirmed",
+        status:          "pending",
         isPaid:          true,
         customerName:    meta.customerName,
         customerEmail:   session.customer_email ?? "",
@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
       notes:          meta.notes || undefined,
     };
     await Promise.allSettled([
-      sendConfirmationEmail(emailData),
-      sendAdminNotification(emailData),
+      sendPendingEmail(emailData),
+      sendAdminPendingNotification(emailData),
     ]);
 
     // Met à jour les places prises dans Availability

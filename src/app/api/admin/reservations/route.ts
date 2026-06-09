@@ -101,6 +101,26 @@ export async function PATCH(req: NextRequest) {
     data,
   });
 
+  // Quand l'admin confirme manuellement → envoie l'email de confirmation au client
+  if (fields.action === "confirm" && updated.customerEmail) {
+    const emailData = {
+      customerName:   updated.customerName,
+      customerEmail:  updated.customerEmail,
+      customerPhone:  updated.customerPhone,
+      excursionTitle: updated.excursionTitle,
+      excursionSlug:  updated.excursionId,
+      date:           updated.date,
+      adults:         updated.adults,
+      children:       updated.children,
+      infants:        updated.infants,
+      totalPrice:     updated.totalPrice,
+      depositAmount:  updated.depositAmount,
+      paymentType:    updated.paymentType,
+      notes:          updated.notes ?? undefined,
+    };
+    Promise.allSettled([sendConfirmationEmail(emailData)]).catch(() => {});
+  }
+
   return NextResponse.json(updated);
 }
 
