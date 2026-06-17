@@ -530,7 +530,7 @@ export default function ReservationsPage() {
                                 ? <span className="text-xs text-emerald-600 font-semibold w-16 text-right">Soldé</span>
                                 : r.paymentType === "deposit"
                                 ? <span className="text-xs text-amber-500 font-semibold w-16 text-right">Acompte</span>
-                                : <span className="text-xs text-slate-400 font-semibold w-16 text-right">À régler</span>}
+                                : <span className="text-xs text-red-500 font-semibold w-16 text-right">À régler</span>}
                               <span className="text-slate-800 font-bold text-sm tabular-nums w-16 text-right">{r.totalPrice} €</span>
                             </div>
                           </button>
