@@ -481,9 +481,7 @@ export default function ReservationsPage() {
                                 ? <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 size={11} /> Soldé</span>
                                 : r.paymentType === "deposit"
                                   ? <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> Acompte</span>
-                                  : r.paymentType === "none"
-                                    ? <span className="text-xs text-slate-400 font-medium flex items-center gap-1"><Clock size={11} /> Non payé</span>
-                                    : <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> À régler</span>}
+                                  : <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> À régler</span>}
                               <span className="text-tiki-lagon font-bold text-sm">{r.totalPrice} €</span>
                             </div>
                           </button>
