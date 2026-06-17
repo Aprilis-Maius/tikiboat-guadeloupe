@@ -74,6 +74,18 @@ export async function POST(req: NextRequest) {
     ]).catch(() => {});
   }
 
+  // Privatisation → bloquer le jour pour toutes les excursions
+  if (body.blocksDay) {
+    const excursions = await prisma.excursion.findMany({ select: { slug: true } });
+    await Promise.all(excursions.map(e =>
+      prisma.availability.upsert({
+        where: { date_excursionId: { date: body.date, excursionId: e.slug } },
+        update: { isBlocked: true, blockReason: "Privatisation", bookedSpots: 12 },
+        create: { date: body.date, excursionId: e.slug, maxSpots: 12, bookedSpots: 12, isBlocked: true, blockReason: "Privatisation" },
+      })
+    ));
+  }
+
   return NextResponse.json(reservation);
 }
 

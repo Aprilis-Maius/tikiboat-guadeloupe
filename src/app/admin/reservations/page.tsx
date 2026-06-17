@@ -21,6 +21,7 @@ const emptyCreate = () => ({
   customerName: "", customerEmail: "", customerPhone: "",
   paymentType: "full" as "full" | "deposit",
   isPaid: true, status: "confirmed", notes: "",
+  customPrice: 0,
 });
 
 const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
@@ -59,9 +60,12 @@ export default function ReservationsPage() {
   };
 
   const selectedExc = excursions.find(e => e.slug === createForm.excursionSlug);
-  const calcTotal = () => selectedExc
-    ? createForm.adults * selectedExc.priceAdult + createForm.children * selectedExc.priceChild
-    : 0;
+  const isPrivatisation = !!selectedExc?.pricePrivate;
+  const calcTotal = () => isPrivatisation
+    ? createForm.customPrice
+    : selectedExc
+      ? createForm.adults * selectedExc.priceAdult + createForm.children * selectedExc.priceChild
+      : 0;
 
   const MAX_PASSENGERS = 12;
 
@@ -87,10 +91,11 @@ export default function ReservationsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...createForm,
-        excursionId:    selectedExc?.id ?? "",
+        excursionId:    selectedExc?.slug ?? "",
         excursionTitle: selectedExc?.title ?? "",
         totalPrice:     total,
         depositAmount:  Math.round(total * 0.3 * 100) / 100,
+        blocksDay:      isPrivatisation,
       }),
     });
     await fetchReservations();
@@ -250,7 +255,7 @@ export default function ReservationsPage() {
               <select value={createForm.excursionSlug}
                 onChange={e => setCreateForm(p => ({ ...p, excursionSlug: e.target.value }))}
                 className={inputCls}>
-                {excursions.filter(e => !e.pricePrivate).map(e => (
+                {excursions.map(e => (
                   <option key={e.slug} value={e.slug}>{e.title}</option>
                 ))}
               </select>
@@ -299,8 +304,14 @@ export default function ReservationsPage() {
               </select>
             </div>
             <div>
-              <label className={labelCls}>Total estimé</label>
-              <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-tiki-lagon font-bold text-sm">{calcTotal()} €</div>
+              <label className={labelCls}>{isPrivatisation ? "Prix privatisation (€) *" : "Total estimé"}</label>
+              {isPrivatisation ? (
+                <input type="number" min={0} value={createForm.customPrice}
+                  onChange={e => setCreateForm(p => ({ ...p, customPrice: +e.target.value }))}
+                  className={inputCls} placeholder="ex: 800" />
+              ) : (
+                <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-tiki-lagon font-bold text-sm">{calcTotal()} €</div>
+              )}
             </div>
             <div className="flex items-center gap-3 pt-5">
               <input type="checkbox" id="isPaid" checked={createForm.isPaid}
@@ -314,7 +325,15 @@ export default function ReservationsPage() {
                 onChange={e => setCreateForm(p => ({ ...p, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
             </div>
-            {capacityCheck && (
+            {isPrivatisation && (
+              <div className="md:col-span-2 lg:col-span-3">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-tiki-lagon/10 border border-tiki-lagon/20 text-tiki-lagon text-sm">
+                  <span>🚢</span>
+                  <span><strong>Privatisation</strong> — le jour sera marqué complet sur le calendrier.</span>
+                </div>
+              </div>
+            )}
+            {!isPrivatisation && capacityCheck && (
               <div className="md:col-span-2 lg:col-span-3">
                 {capacityCheck.conflictExc && (
                   <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm mb-2">
@@ -341,7 +360,7 @@ export default function ReservationsPage() {
               className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
               Annuler
             </button>
-            <button onClick={submitCreate} disabled={creating || !createForm.customerName || !createForm.date || !createForm.customerEmail || !!capacityCheck?.wouldExceed || !!capacityCheck?.conflictExc}
+            <button onClick={submitCreate} disabled={creating || !createForm.customerName || !createForm.date || !createForm.customerEmail || (isPrivatisation && !createForm.customPrice) || (!isPrivatisation && (!!capacityCheck?.wouldExceed || !!capacityCheck?.conflictExc))}
               className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
               <Save size={15} /> {creating ? "Enregistrement..." : "Créer la réservation"}
             </button>
