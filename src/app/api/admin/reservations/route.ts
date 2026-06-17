@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendConfirmationEmail, sendAdminNotification } from "@/lib/email";
+import { excursions as staticExcursions } from "@/data/excursions";
 import { revalidateTag } from "next/cache";
 
 const invalidateDashboard = () => revalidateTag("admin-dashboard", {});
@@ -96,14 +97,18 @@ export async function POST(req: NextRequest) {
     ]).catch(() => {});
   }
 
-  // Privatisation → bloquer le jour pour toutes les excursions
+  // Privatisation → bloquer le jour pour toutes les excursions (statiques + DB)
   if (body.blocksDay) {
-    const excursions = await prisma.excursion.findMany({ select: { slug: true } });
-    await Promise.all(excursions.map(e =>
+    const dbExcursions = await prisma.excursion.findMany({ select: { slug: true } });
+    const allSlugs = Array.from(new Set([
+      ...staticExcursions.map(e => e.slug),
+      ...dbExcursions.map(e => e.slug),
+    ]));
+    await Promise.all(allSlugs.map(slug =>
       prisma.availability.upsert({
-        where: { date_excursionId: { date: body.date, excursionId: e.slug } },
+        where: { date_excursionId: { date: body.date, excursionId: slug } },
         update: { isBlocked: true, blockReason: "Privatisation", bookedSpots: 12 },
-        create: { date: body.date, excursionId: e.slug, maxSpots: 12, bookedSpots: 12, isBlocked: true, blockReason: "Privatisation" },
+        create: { date: body.date, excursionId: slug, maxSpots: 12, bookedSpots: 12, isBlocked: true, blockReason: "Privatisation" },
       })
     ));
   }
