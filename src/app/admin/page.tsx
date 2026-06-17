@@ -167,14 +167,16 @@ export default async function AdminDashboard() {
                         <div className="text-tiki-lagon font-bold">
                           {r.totalPrice.toLocaleString("fr-FR")} €
                         </div>
-                        {r.paymentType === "deposit" && !r.isPaid ? (
+                        {r.isPaid ? (
+                          <div className="text-emerald-600 text-xs mt-0.5">Soldé ✓</div>
+                        ) : r.paymentType === "deposit" ? (
                           <div className="text-amber-600 text-xs mt-0.5">
                             Acompte {r.depositAmount.toLocaleString("fr-FR")} € — reste{" "}
                             <span className="font-bold">{(r.totalPrice - r.depositAmount).toLocaleString("fr-FR")} €</span>
                           </div>
-                        ) : r.isPaid ? (
-                          <div className="text-emerald-600 text-xs mt-0.5">Soldé ✓</div>
-                        ) : null}
+                        ) : (
+                          <div className="text-red-500 text-xs mt-0.5 font-medium">Non soldé</div>
+                        )}
                       </td>
                       <td className="px-6 py-3.5">
                         <span className={`flex items-center gap-1.5 text-xs font-medium ${s.cls}`}>
