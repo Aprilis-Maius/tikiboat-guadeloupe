@@ -30,14 +30,17 @@ export default function AdminSidebar() {
   return (
     <>
       {/* ── MOBILE : top bar ─────────────────────────────── */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shadow-sm">
-        <Image src="/logo.png" alt="Tiki Boat" width={120} height={40} className="h-8 w-auto object-contain" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-white border-b border-slate-200 flex items-center px-4 shadow-sm">
         <button
           onClick={() => setOpen(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shrink-0"
         >
           <Menu size={20} />
         </button>
+        <div className="flex-1 flex justify-center">
+          <Image src="/logo.png" alt="Tiki Boat" width={120} height={40} className="h-8 w-auto object-contain" />
+        </div>
+        <div className="w-9 shrink-0" />
       </div>
 
       {/* ── MOBILE : overlay menu ────────────────────────── */}
