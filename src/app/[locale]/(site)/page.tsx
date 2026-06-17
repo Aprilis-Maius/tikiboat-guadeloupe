@@ -143,7 +143,8 @@ export default async function HomePage() {
               <div key={exc.id} className="relative bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-tiki-gold/30 hover:shadow-xl hover:shadow-black/30 transition-all duration-300 hover:-translate-y-1 group flex flex-col">
                 <Link href={`/excursions/${exc.slug}`} className="absolute inset-0 z-0" aria-label={exc.title} />
                 <div className="relative h-52 overflow-hidden">
-                  <SiteImage src={exc.images[0]} alt={exc.title} label={exc.title} fill
+                  <SiteImage src={exc.images[0]} alt={exc.title} fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   {exc.popular && (
