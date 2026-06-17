@@ -54,7 +54,7 @@ export const getExcursions = unstable_cache(
     return staticExcursions;
   },
   ["excursions-list"],
-  { revalidate: 300 }
+  { revalidate: 300, tags: ["excursions"] }
 );
 
 export const getExcursionBySlug = unstable_cache(
@@ -66,5 +66,5 @@ export const getExcursionBySlug = unstable_cache(
     return staticExcursions.find(e => e.slug === slug);
   },
   ["excursion-by-slug"],
-  { revalidate: 300 }
+  { revalidate: 300, tags: ["excursions"] }
 );
