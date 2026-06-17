@@ -348,12 +348,12 @@ export default function ReservationsPage() {
               <select value={createForm.paymentType}
                 onChange={e => {
                   const val = e.target.value as "full" | "deposit" | "none";
-                  setCreateForm(p => ({ ...p, paymentType: val, isPaid: val !== "none" && p.isPaid }));
+                  setCreateForm(p => ({ ...p, paymentType: val, isPaid: val === "full" }));
                 }}
                 className={inputCls}>
-                <option value="none">Aucun paiement</option>
-                <option value="full">Paiement total</option>
-                <option value="deposit">Acompte 30%</option>
+                <option value="none">Aucun paiement encaissé</option>
+                <option value="deposit">Acompte 30% reçu</option>
+                <option value="full">Tout réglé</option>
               </select>
             </div>
             <div>
@@ -366,14 +366,6 @@ export default function ReservationsPage() {
                 <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-tiki-lagon font-bold text-sm">{calcTotal()} €</div>
               )}
             </div>
-            {createForm.paymentType !== "none" && (
-              <div className="flex items-center gap-3 pt-5">
-                <input type="checkbox" id="isPaid" checked={createForm.isPaid}
-                  onChange={e => setCreateForm(p => ({ ...p, isPaid: e.target.checked }))}
-                  className="w-4 h-4 accent-tiki-lagon" />
-                <label htmlFor="isPaid" className="text-slate-600 text-sm cursor-pointer">Déjà encaissé</label>
-              </div>
-            )}
             <div className="md:col-span-2 lg:col-span-3">
               <label className={labelCls}>Notes internes</label>
               <textarea rows={2} value={createForm.notes} placeholder="Remarques, demandes spécifiques..."
