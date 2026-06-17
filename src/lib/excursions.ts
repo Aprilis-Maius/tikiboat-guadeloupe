@@ -18,6 +18,7 @@ const parse = (json: string): string[] => {
 };
 
 export function dbToExcursion(e: DbExcursion): Excursion {
+  const s = staticExcursions.find(x => x.slug === e.slug);
   return {
     id:             e.id,
     slug:           e.slug,
@@ -39,6 +40,13 @@ export function dbToExcursion(e: DbExcursion): Excursion {
     youtubeId:      e.youtubeId ?? undefined,
     badge:          e.badge ?? undefined,
     popular:        e.popular,
+    subtitleEn:     s?.subtitleEn,
+    descriptionEn:  s?.descriptionEn,
+    durationEn:     s?.durationEn,
+    highlightsEn:   s?.highlightsEn,
+    includedEn:     s?.includedEn,
+    notIncludedEn:  s?.notIncludedEn,
+    badgeEn:        s?.badgeEn,
   };
 }
 
