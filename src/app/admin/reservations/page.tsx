@@ -82,11 +82,11 @@ export default function ReservationsPage() {
 
     // Privatisation sélectionnée → bloquer si d'autres réservations existent ce jour
     if (isPrivatisation) {
-      const nonPrivatisation = dateResas.filter(r => !privatisationSlugs.has(r.excursionId));
+      // Bloquer si n'importe quelle réservation existe ce jour (y compris une autre privatisation)
       return {
         bookedSpots: 0, remaining: MAX_PASSENGERS, wouldExceed: false, newSpots: 0,
         conflictExc: null,
-        privatisationConflict: nonPrivatisation.length > 0 ? nonPrivatisation.map(r => r.customerName).join(", ") : null,
+        privatisationConflict: dateResas.length > 0 ? dateResas.map(r => r.customerName).join(", ") : null,
         hasPrivatisationBooked: false,
       };
     }
