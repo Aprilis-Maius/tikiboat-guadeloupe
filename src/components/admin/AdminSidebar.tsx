@@ -30,58 +30,55 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-14 lg:w-56 shrink-0 flex flex-col bg-white border-r border-slate-200 h-screen transition-all">
+    <aside className="w-56 shrink-0 flex flex-col bg-white border-r border-slate-200 h-screen">
       {/* Logo */}
-      <div className="px-2 lg:px-5 pt-5 pb-4 lg:pt-6 lg:pb-5 border-b border-slate-100 flex items-center justify-center lg:block">
+      <div className="px-5 pt-6 pb-5 border-b border-slate-100">
         <Image
           src="/logo.png" alt="Tiki Boat"
           width={150} height={50}
-          className="h-8 lg:h-12 w-auto object-contain"
+          className="h-12 w-auto object-contain"
         />
-        <p className="hidden lg:block text-slate-400 text-[10px] font-semibold tracking-[0.15em] uppercase mt-2">
+        <p className="text-slate-400 text-[10px] font-semibold tracking-[0.15em] uppercase mt-2">
           Administration
         </p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-1.5 lg:px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
           return (
             <Link
               key={href}
               href={href}
-              title={label}
-              className={`flex items-center justify-center lg:justify-start gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 active
                   ? "bg-tiki-lagon/10 text-tiki-lagon"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               }`}
             >
-              <Icon size={18} className={`shrink-0 ${active ? "text-tiki-lagon" : "text-slate-400"}`} />
-              <span className="hidden lg:block">{label}</span>
+              <Icon size={16} className={active ? "text-tiki-lagon" : "text-slate-400"} />
+              {label}
             </Link>
           );
         })}
       </nav>
 
       {/* Bas de sidebar */}
-      <div className="px-1.5 lg:px-3 pb-4 pt-3 border-t border-slate-100 space-y-0.5">
+      <div className="px-3 pb-4 pt-3 border-t border-slate-100 space-y-0.5">
         <a
           href="/" target="_blank" rel="noopener noreferrer"
-          title="Voir le site"
-          className="flex items-center justify-center lg:justify-start gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-all"
         >
-          <ExternalLink size={16} className="shrink-0" />
-          <span className="hidden lg:block">Voir le site</span>
+          <ExternalLink size={14} />
+          Voir le site
         </a>
         <button
           onClick={() => signOut({ callbackUrl: "/admin/login" })}
-          title="Déconnexion"
-          className="w-full flex items-center justify-center lg:justify-start gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all"
         >
-          <LogOut size={16} className="shrink-0" />
-          <span className="hidden lg:block">Déconnexion</span>
+          <LogOut size={14} />
+          Déconnexion
         </button>
       </div>
     </aside>
