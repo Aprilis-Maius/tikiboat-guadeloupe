@@ -31,8 +31,7 @@ export default async function HomePage() {
         <SiteImage
           src="/photos/grandculdesacmarin-excursion.png"
           alt="Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe"
-          label="Photo principale du hero"
-          fill className="object-cover object-center" priority
+          fill className="object-cover object-center" priority sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />

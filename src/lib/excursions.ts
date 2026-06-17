@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { excursions as staticExcursions } from "@/data/excursions";
 import type { Excursion } from "@/types";
@@ -41,25 +42,29 @@ export function dbToExcursion(e: DbExcursion): Excursion {
   };
 }
 
-export async function getExcursions(): Promise<Excursion[]> {
-  try {
-    const rows = await prisma.excursion.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-    });
-    if (rows.length > 0) return rows.map(dbToExcursion);
-  } catch {
-    // DB not seeded yet — fall back to static data
-  }
-  return staticExcursions;
-}
+export const getExcursions = unstable_cache(
+  async (): Promise<Excursion[]> => {
+    try {
+      const rows = await prisma.excursion.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" },
+      });
+      if (rows.length > 0) return rows.map(dbToExcursion);
+    } catch {}
+    return staticExcursions;
+  },
+  ["excursions-list"],
+  { revalidate: 300 }
+);
 
-export async function getExcursionBySlug(slug: string): Promise<Excursion | undefined> {
-  try {
-    const row = await prisma.excursion.findUnique({ where: { slug } });
-    if (row) return dbToExcursion(row);
-  } catch {
-    // fall back
-  }
-  return staticExcursions.find(e => e.slug === slug);
-}
+export const getExcursionBySlug = unstable_cache(
+  async (slug: string): Promise<Excursion | undefined> => {
+    try {
+      const row = await prisma.excursion.findUnique({ where: { slug } });
+      if (row) return dbToExcursion(row);
+    } catch {}
+    return staticExcursions.find(e => e.slug === slug);
+  },
+  ["excursion-by-slug"],
+  { revalidate: 300 }
+);
