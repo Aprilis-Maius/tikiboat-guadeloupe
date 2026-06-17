@@ -125,13 +125,13 @@ export default function BookingCalendar({ excursionSlug, value, onChange, onSpot
                 "relative mx-auto w-9 h-9 rounded-full flex flex-col items-center justify-center text-sm font-medium transition-all",
                 selected
                   ? "bg-tiki-gold text-tiki-ocean font-black"
-                  : full
-                  ? "bg-red-900/40 text-red-400/60 cursor-not-allowed"
                   : past
                   ? "text-slate-200 cursor-not-allowed"
+                  : full
+                  ? "bg-red-900/40 text-red-400/60 cursor-not-allowed"
                   : "text-slate-700 hover:bg-tiki-gold/10 hover:text-tiki-gold cursor-pointer",
               ].join(" ")}
-              title={full ? "Complet" : undefined}
+              title={full && !past ? "Complet" : undefined}
             >
               {d}
               {full && !past && (
