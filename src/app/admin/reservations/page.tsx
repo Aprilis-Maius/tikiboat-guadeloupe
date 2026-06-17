@@ -86,7 +86,7 @@ export default function ReservationsPage() {
       return {
         bookedSpots: 0, remaining: MAX_PASSENGERS, wouldExceed: false, newSpots: 0,
         conflictExc: null,
-        privatisationConflict: dateResas.length > 0 ? dateResas.map(r => r.customerName).join(", ") : null,
+        privatisationConflict: dateResas.length > 0 ? `${dateResas.length} réservation${dateResas.length > 1 ? "s" : ""}` : null,
         hasPrivatisationBooked: false,
       };
     }
@@ -372,7 +372,7 @@ export default function ReservationsPage() {
                 {isPrivatisation && capacityCheck.privatisationConflict && (
                   <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
                     <span>🚫</span>
-                    <span><strong>Impossible :</strong> des réservations existent déjà ce jour ({capacityCheck.privatisationConflict}). Annulez-les d&apos;abord ou choisissez une autre date.</span>
+                    <span><strong>Impossible :</strong> {capacityCheck.privatisationConflict} déjà prévue{Number(capacityCheck.privatisationConflict?.split(" ")[0]) > 1 ? "s" : ""} ce jour. Choisissez une autre date.</span>
                   </div>
                 )}
                 {/* Excursion normale : conflit privatisation */}
