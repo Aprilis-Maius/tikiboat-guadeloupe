@@ -36,7 +36,7 @@ export default async function AdminDashboard() {
         prisma.reservation.count({ where: { status: "pending" } }),
       ]),
     ["admin-dashboard"],
-    { revalidate: 45 }
+    { revalidate: 30, tags: ["admin-dashboard"] }
   );
 
   const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);

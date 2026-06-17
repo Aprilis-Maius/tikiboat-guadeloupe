@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendConfirmationEmail, sendAdminNotification } from "@/lib/email";
+import { revalidateTag } from "next/cache";
+
+const invalidateDashboard = () => revalidateTag("admin-dashboard", {});
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -86,6 +89,7 @@ export async function POST(req: NextRequest) {
     ));
   }
 
+  invalidateDashboard();
   return NextResponse.json(reservation);
 }
 
@@ -133,6 +137,7 @@ export async function PATCH(req: NextRequest) {
     Promise.allSettled([sendConfirmationEmail(emailData)]).catch(() => {});
   }
 
+  invalidateDashboard();
   return NextResponse.json(updated);
 }
 
@@ -141,5 +146,6 @@ export async function DELETE(req: NextRequest) {
 
   const { id } = await req.json();
   await prisma.reservation.delete({ where: { id } });
+  invalidateDashboard();
   return NextResponse.json({ ok: true });
 }

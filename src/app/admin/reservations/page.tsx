@@ -19,7 +19,7 @@ const emptyCreate = () => ({
   date: new Date().toISOString().split("T")[0],
   adults: 2, children: 0, infants: 0,
   customerName: "", customerEmail: "", customerPhone: "",
-  paymentType: "full" as "full" | "deposit",
+  paymentType: "none" as "full" | "deposit" | "none",
   isPaid: true, status: "confirmed", notes: "",
   customPrice: 0,
 });
@@ -297,8 +297,12 @@ export default function ReservationsPage() {
             <div>
               <label className={labelCls}>Paiement</label>
               <select value={createForm.paymentType}
-                onChange={e => setCreateForm(p => ({ ...p, paymentType: e.target.value as "full" | "deposit" }))}
+                onChange={e => {
+                  const val = e.target.value as "full" | "deposit" | "none";
+                  setCreateForm(p => ({ ...p, paymentType: val, isPaid: val !== "none" && p.isPaid }));
+                }}
                 className={inputCls}>
+                <option value="none">Aucun paiement</option>
                 <option value="full">Paiement total</option>
                 <option value="deposit">Acompte 30%</option>
               </select>
