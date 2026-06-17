@@ -52,10 +52,10 @@ export default async function ExcursionDetailPage({ params }: Props) {
   return (
     <>
       {/* Hero */}
-      <section className="relative pt-20">
+      <section className="relative">
         <div className="relative h-[60vh] min-h-[400px]">
           <SiteImage src={excursion.images[0]} alt={excursion.title}
-            fill className="object-cover" priority sizes="100vw" />
+            fill className="object-cover object-top" priority sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 pb-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
