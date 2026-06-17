@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { sendPendingEmail, sendAdminPendingNotification } from "@/lib/email";
+import { revalidateTag } from "next/cache";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -83,5 +84,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  revalidateTag("admin-dashboard", {});
   return NextResponse.json({ received: true });
 }
