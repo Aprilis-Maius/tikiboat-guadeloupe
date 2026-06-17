@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
   };
 
   return (
-    <div className="p-7 lg:p-9 max-w-6xl">
+    <div className="p-4 lg:p-9 max-w-6xl">
       {/* En-tête */}
       <div className="mb-8">
         <h1 className="text-slate-800 font-bold text-2xl tracking-tight">Dashboard</h1>
@@ -83,16 +83,17 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>
-              <Icon size={20} className={color} />
+          <div key={label} className="bg-white border border-slate-200 rounded-2xl p-4 lg:p-6 shadow-sm">
+            <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl ${bg} flex items-center justify-center mb-3 lg:mb-4`}>
+              <Icon size={16} className={`lg:hidden ${color}`} />
+              <Icon size={20} className={`hidden lg:block ${color}`} />
             </div>
-            <div className={`font-bold text-3xl ${color} tabular-nums leading-none mb-1`}>
+            <div className={`font-bold text-2xl lg:text-3xl ${color} tabular-nums leading-none mb-1`}>
               {value}
             </div>
-            <div className="text-slate-400 text-xs font-medium">{label}</div>
+            <div className="text-slate-400 text-[11px] lg:text-xs font-medium leading-tight">{label}</div>
           </div>
         ))}
       </div>
