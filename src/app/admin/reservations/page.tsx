@@ -200,15 +200,15 @@ export default function ReservationsPage() {
     setSaving(false);
   };
 
-  const markPaid = async (id: string, isPaid: boolean) => {
+  const markPayment = async (id: string, paymentType: string, isPaid: boolean) => {
     setSaving(true);
     await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, isPaid }),
+      body: JSON.stringify({ id, paymentType, isPaid }),
     });
     await fetchReservations();
-    if (selected?.id === id) setSelected(prev => prev ? { ...prev, isPaid } : null);
+    if (selected?.id === id) setSelected(prev => prev ? { ...prev, paymentType, isPaid } : null);
     setSaving(false);
   };
 
@@ -686,11 +686,30 @@ export default function ReservationsPage() {
                         </button>
                       ))}
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button disabled={saving} onClick={() => markPaid(selected.id, !selected.isPaid)}
-                        className="py-2.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40">
-                        {selected.isPaid ? "Non soldé" : "Marquer soldé"}
-                      </button>
+                    {/* Statut paiement */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {[
+                        { label: "Aucun paiement", type: "none",    paid: false },
+                        { label: "Acompte reçu",   type: "deposit", paid: false },
+                        { label: "Soldé total",     type: "full",    paid: true  },
+                      ].map(({ label, type, paid }) => {
+                        const active = selected.paymentType === type && selected.isPaid === paid;
+                        return (
+                          <button key={type} disabled={saving || active}
+                            onClick={() => markPayment(selected.id, type, paid)}
+                            className={`py-2.5 rounded-xl text-xs font-medium border transition-colors disabled:cursor-default ${
+                              active
+                                ? type === "full"    ? "bg-emerald-50 border-emerald-300 text-emerald-700 font-bold"
+                                : type === "deposit" ? "bg-amber-50 border-amber-300 text-amber-700 font-bold"
+                                :                     "bg-slate-100 border-slate-300 text-slate-600 font-bold"
+                                : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                            }`}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
                       <button onClick={openEdit}
                         className="py-2.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors">
                         <Pencil size={12} /> Modifier
