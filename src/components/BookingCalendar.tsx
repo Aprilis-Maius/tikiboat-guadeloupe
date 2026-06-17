@@ -12,6 +12,7 @@ interface Props {
   excursionSlug: string;
   value: string;       // YYYY-MM-DD
   onChange: (date: string) => void;
+  onSpotsChange?: (spotsLeft: number | null) => void;
 }
 
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -20,7 +21,7 @@ function toYMD(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-export default function BookingCalendar({ excursionSlug, value, onChange }: Props) {
+export default function BookingCalendar({ excursionSlug, value, onChange, onSpotsChange }: Props) {
   const today = new Date();
   const [year,  setYear]  = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -119,7 +120,7 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
               key={i}
               type="button"
               disabled={disabled}
-              onClick={() => onChange(ymd)}
+              onClick={() => { onChange(ymd); onSpotsChange?.(dates[ymd]?.spotsLeft ?? null); }}
               className={[
                 "relative mx-auto w-9 h-9 rounded-full flex flex-col items-center justify-center text-sm font-medium transition-all",
                 selected

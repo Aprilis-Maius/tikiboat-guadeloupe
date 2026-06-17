@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getExcursionBySlug } from "@/lib/excursions";
+import { prisma } from "@/lib/prisma";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -28,6 +29,28 @@ export async function POST(req: NextRequest) {
 
     const excursion = await getExcursionBySlug(excursionSlug);
     if (!excursion) return NextResponse.json({ error: "Excursion not found" }, { status: 404 });
+
+    // Vérification capacité côté serveur (filet de sécurité)
+    const avail = await prisma.availability.findUnique({
+      where: { date_excursionId: { date, excursionId: excursionSlug } },
+    });
+    if (avail?.isBlocked) {
+      return NextResponse.json({ error: "Ce jour n'est plus disponible (privatisé ou complet)." }, { status: 409 });
+    }
+    const existingResas = await prisma.reservation.findMany({
+      where: { date, excursionId: excursionSlug, status: { not: "cancelled" } },
+      select: { adults: true, children: true },
+    });
+    const bookedCount = existingResas.reduce((s, r) => s + r.adults + r.children, 0);
+    const maxSpots    = avail?.maxSpots ?? excursion.maxPassengers ?? 12;
+    const remaining   = maxSpots - bookedCount;
+    const requested   = Number(adults) + Number(children);
+    if (requested > remaining) {
+      return NextResponse.json({
+        error: `Plus assez de places. Il reste ${remaining} place${remaining !== 1 ? "s" : ""} ce jour.`,
+        spotsLeft: remaining,
+      }, { status: 409 });
+    }
 
     const isDeposit = paymentType === "deposit";
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

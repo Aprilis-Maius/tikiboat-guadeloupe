@@ -29,6 +29,8 @@ function BookingFormInner() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [spotsLeft, setSpotsLeft] = useState<number | null>(null);
   const [data, setData] = useState<BookingData>({
     excursionSlug: searchParams.get("excursion") || "",
     date: "",
@@ -64,12 +66,20 @@ function BookingFormInner() {
   const handleSubmit = async () => {
     if (!excursion) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, totalPrice: total, depositAmount: deposit, amountToPay }),
       });
+      if (res.status === 409) {
+        const json = await res.json();
+        setError(json.error ?? "Plus de places disponibles pour cette date.");
+        if (json.spotsLeft !== undefined) setSpotsLeft(json.spotsLeft);
+        setLoading(false);
+        return;
+      }
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch {
@@ -164,7 +174,20 @@ function BookingFormInner() {
               <BookingCalendar
                 excursionSlug={data.excursionSlug}
                 value={data.date}
-                onChange={(date) => setData({ ...data, date })}
+                onChange={(date) => { setData({ ...data, date }); setError(null); }}
+                onSpotsChange={(spots) => {
+                  setSpotsLeft(spots);
+                  // Ajuste les passagers si ils dépassent le nouveau max
+                  if (spots !== null) {
+                    setData(d => {
+                      const tot = d.adults + d.children + d.infants;
+                      if (tot <= spots) return d;
+                      const newAdults = Math.max(1, Math.min(d.adults, spots));
+                      const rem = spots - newAdults;
+                      return { ...d, adults: newAdults, children: Math.min(d.children, rem), infants: Math.min(d.infants, Math.max(0, rem - Math.min(d.children, rem))) };
+                    });
+                  }
+                }}
               />
               {data.date && (
                 <p className="text-slate-500 text-xs mt-2">
@@ -181,20 +204,23 @@ function BookingFormInner() {
                 Nombre de passagers
               </label>
               {(() => {
-                const total = data.adults + data.children + data.infants;
-                const remaining = excursion.maxPassengers - total;
+                const selected = data.adults + data.children + data.infants;
+                // Priorité aux places réelles du jour, sinon capacité max du bateau
+                const maxAvail = spotsLeft !== null ? Math.min(excursion.maxPassengers, spotsLeft) : excursion.maxPassengers;
+                const remaining = maxAvail - selected;
+                const canAdd = (d: BookingData) => d.adults + d.children + d.infants < maxAvail;
                 const counters = [
                   { label: "Adultes",  sub: "13 ans et +",    count: data.adults,   min: 1, free: false,
                     onDec: () => setData((d) => ({ ...d, adults:   Math.max(1, d.adults - 1) })),
-                    onInc: () => setData((d) => ({ ...d, adults:   d.adults + d.children + d.infants < excursion.maxPassengers ? d.adults + 1 : d.adults })),
+                    onInc: () => setData((d) => canAdd(d) ? { ...d, adults:   d.adults + 1 } : d),
                     price: formatPrice(excursion.priceAdult) },
                   { label: "Enfants",  sub: "3–12 ans",        count: data.children, min: 0, free: false,
                     onDec: () => setData((d) => ({ ...d, children: Math.max(0, d.children - 1) })),
-                    onInc: () => setData((d) => ({ ...d, children: d.adults + d.children + d.infants < excursion.maxPassengers ? d.children + 1 : d.children })),
+                    onInc: () => setData((d) => canAdd(d) ? { ...d, children: d.children + 1 } : d),
                     price: formatPrice(excursion.priceChild) },
                   { label: "Bébés",    sub: "Moins de 3 ans",  count: data.infants,  min: 0, free: true,
                     onDec: () => setData((d) => ({ ...d, infants:  Math.max(0, d.infants - 1) })),
-                    onInc: () => setData((d) => ({ ...d, infants:  d.adults + d.children + d.infants < excursion.maxPassengers ? d.infants + 1 : d.infants })),
+                    onInc: () => setData((d) => canAdd(d) ? { ...d, infants:  d.infants + 1 } : d),
                     price: "Gratuit" },
                 ];
                 return (
@@ -223,10 +249,9 @@ function BookingFormInner() {
                     </div>
                     <p className="text-slate-400 text-xs mt-2 flex items-center gap-1.5">
                       <Info size={11} className="shrink-0" />
-                      {total} / {excursion.maxPassengers} passagers
-                      {remaining === 0
-                        ? " — complet"
-                        : ` — ${remaining} place${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}`}
+                      {spotsLeft !== null
+                        ? `${excursion.maxPassengers - spotsLeft} / ${excursion.maxPassengers} passagers déjà — ${remaining} place${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`
+                        : `${selected} passager${selected !== 1 ? "s" : ""} sélectionné${selected !== 1 ? "s" : ""}`}
                     </p>
                   </>
                 );
@@ -359,6 +384,14 @@ function BookingFormInner() {
             <CheckCircle2 size={14} className="text-tiki-gold" />
             Confirmation immédiate par email
           </div>
+        </div>
+      )}
+
+      {/* Erreur capacité */}
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+          <Info size={14} className="shrink-0" />
+          {error}
         </div>
       )}
 
