@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         // Layout plein écran avec sidebar — aucun élément du site public
         <div className="flex h-screen bg-slate-50 overflow-hidden">
           <AdminSidebar />
-          <div className="flex-1 flex flex-col min-w-0 overflow-auto">
+          <div className="flex-1 flex flex-col min-w-0 overflow-auto pt-14 lg:pt-0">
             {children}
           </div>
         </div>
