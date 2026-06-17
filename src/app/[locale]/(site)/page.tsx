@@ -216,7 +216,7 @@ export default async function HomePage() {
               </ul>
             </div>
             <div className="relative h-80 lg:h-[420px] rounded-2xl overflow-hidden border border-slate-200 bg-sky-50">
-              <SiteImage src="/photos/bateau.jpg" alt="Le Tiki Boat" label="Photo du Tiki Boat"
+              <SiteImage src="/photos/bateau.png" alt="Le Tiki Boat"
                 fill className="object-contain" />
             </div>
           </div>
