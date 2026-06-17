@@ -57,17 +57,13 @@ export default function BookingCalendar({ excursionSlug, value, onChange }: Prop
   // Complète pour avoir des lignes entières
   while (cells.length % 7 !== 0) cells.push(null);
 
-  // Bloque uniquement le jour même — demain et après sont réservables
-  const minBookableDate = () => {
-    const nowGP = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Guadeloupe" }));
-    const min   = new Date(nowGP.getFullYear(), nowGP.getMonth(), nowGP.getDate());
-    min.setDate(min.getDate() + 1);
-    return min;
-  };
-
+  // Bloque aujourd'hui et le passé — demain est le minimum réservable
+  // Utilise l'heure locale du navigateur (pas Guadeloupe) pour que "aujourd'hui"
+  // soit toujours le bon jour depuis la perspective du client
   const isPast = (d: number) => {
-    const date = new Date(year, month, d);
-    return date < minBookableDate();
+    const local = new Date();
+    const tomorrow = new Date(local.getFullYear(), local.getMonth(), local.getDate() + 1);
+    return new Date(year, month, d) < tomorrow;
   };
 
   const isFull = (d: number) => {
