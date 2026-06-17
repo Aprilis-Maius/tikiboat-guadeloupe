@@ -156,6 +156,14 @@ export async function PATCH(req: NextRequest) {
     Promise.allSettled([sendConfirmationEmail(emailData)]).catch(() => {});
   }
 
+  // Si une privatisation est annulée, débloquer le jour
+  if (fields.status === "cancelled" && updated.excursionId === "privatisation") {
+    await prisma.availability.updateMany({
+      where: { date: updated.date, blockReason: "Privatisation" },
+      data: { isBlocked: false, bookedSpots: 0, blockReason: null },
+    });
+  }
+
   invalidateDashboard();
   return NextResponse.json(updated);
 }
@@ -164,7 +172,18 @@ export async function DELETE(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await req.json();
+  const reservation = await prisma.reservation.findUnique({ where: { id }, select: { excursionId: true, date: true } });
+
   await prisma.reservation.delete({ where: { id } });
+
+  // Si c'était une privatisation, débloquer le jour dans Availability
+  if (reservation?.excursionId === "privatisation") {
+    await prisma.availability.updateMany({
+      where: { date: reservation.date, blockReason: "Privatisation" },
+      data: { isBlocked: false, bookedSpots: 0, blockReason: null },
+    });
+  }
+
   invalidateDashboard();
   return NextResponse.json({ ok: true });
 }
