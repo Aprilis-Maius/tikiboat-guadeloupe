@@ -18,7 +18,7 @@ const getDashboardData = unstable_cache(
     Promise.all([
       prisma.reservation.findMany({
         where: { date: { gte: firstKey }, status: { not: "cancelled" } },
-        select: { totalPrice: true, adults: true, children: true },
+        select: { totalPrice: true, adults: true, children: true, isPaid: true, paymentType: true },
       }),
       prisma.reservation.findMany({
         where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
@@ -42,23 +42,34 @@ export default async function AdminDashboard() {
 
   const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);
 
-  const monthRevenue = (monthResa as { totalPrice: number }[]).reduce((s, r) => s + r.totalPrice, 0);
-  const monthPax     = (monthResa as { adults: number; children: number }[]).reduce((s, r) => s + r.adults + r.children, 0);
+  type MonthResa = { totalPrice: number; adults: number; children: number; isPaid: boolean; paymentType: string };
+  const resas = monthResa as MonthResa[];
+
+  const caSolde     = resas.reduce((s, r) => r.isPaid ? s + r.totalPrice : s, 0);
+  const caNonSolde  = resas.reduce((s, r) => !r.isPaid ? s + r.totalPrice : s, 0);
+  const monthPax    = resas.reduce((s, r) => s + r.adults + r.children, 0);
 
   const stats = [
     {
       label: "Réservations ce mois",
-      value: monthResa.length,
+      value: resas.length,
       icon: CalendarCheck,
       color: "text-tiki-lagon",
       bg: "bg-tiki-lagon/10",
     },
     {
-      label: "CA ce mois",
-      value: `${monthRevenue.toLocaleString("fr-FR")} €`,
+      label: "CA soldé",
+      value: `${caSolde.toLocaleString("fr-FR")} €`,
       icon: Euro,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
+    },
+    {
+      label: "CA non soldé",
+      value: `${caNonSolde.toLocaleString("fr-FR")} €`,
+      icon: Euro,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
     },
     {
       label: "Passagers ce mois",
@@ -71,8 +82,8 @@ export default async function AdminDashboard() {
       label: "En attente",
       value: pendingCount,
       icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
+      color: "text-orange-500",
+      bg: "bg-orange-50",
     },
   ];
 
@@ -93,7 +104,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-4`}>

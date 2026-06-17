@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, MessageCircle, Copy, Check } from "lucide-react";
+import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, MessageCircle, Copy, Check, Euro } from "lucide-react";
 import { excursions } from "@/data/excursions";
 
 interface Reservation {
@@ -41,6 +41,7 @@ export default function ReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
   const [selected, setSelected] = useState<Reservation | null>(null);
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -251,6 +252,15 @@ export default function ReservationsPage() {
 
   const today = new Date(new Date().toDateString());
 
+  const applyPaymentFilter = (r: Reservation) => {
+    if (paymentFilter === "paid")    return r.isPaid && r.paymentType === "full";
+    if (paymentFilter === "deposit") return r.paymentType === "deposit";
+    if (paymentFilter === "unpaid")  return !r.isPaid && r.paymentType === "none";
+    return true;
+  };
+
+  const filteredReservations = reservations.filter(applyPaymentFilter);
+
   const groupByDate = (resas: Reservation[]) => {
     const sorted = [...resas].sort((a, b) => a.date.localeCompare(b.date));
     const map = new Map<string, Reservation[]>();
@@ -258,8 +268,8 @@ export default function ReservationsPage() {
     return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
   };
 
-  const upcoming = groupByDate(reservations.filter(r => new Date(r.date) >= today));
-  const past     = groupByDate(reservations.filter(r => new Date(r.date) <  today));
+  const upcoming = groupByDate(filteredReservations.filter(r => new Date(r.date) >= today));
+  const past     = groupByDate(filteredReservations.filter(r => new Date(r.date) <  today));
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl">
@@ -267,7 +277,7 @@ export default function ReservationsPage() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
           <h1 className="font-bold text-slate-800 text-2xl">Réservations</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{reservations.length} résultat{reservations.length !== 1 ? "s" : ""}</p>
+          <p className="text-slate-400 text-sm mt-0.5">{filteredReservations.length} résultat{filteredReservations.length !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button onClick={() => { setShowCreate(v => !v); setCreateForm(emptyCreate()); }}
@@ -278,10 +288,20 @@ export default function ReservationsPage() {
             <Filter size={14} className="text-slate-400" />
             <select value={filter} onChange={e => setFilter(e.target.value)}
               className="bg-transparent text-slate-700 text-sm outline-none cursor-pointer">
-              <option value="all">Tous</option>
+              <option value="all">Tous statuts</option>
               <option value="pending">En attente</option>
               <option value="confirmed">Confirmés</option>
               <option value="cancelled">Annulés</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
+            <Euro size={14} className="text-slate-400" />
+            <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}
+              className="bg-transparent text-slate-700 text-sm outline-none cursor-pointer">
+              <option value="all">Tous paiements</option>
+              <option value="paid">Soldés</option>
+              <option value="deposit">Acompte reçu</option>
+              <option value="unpaid">Non payés</option>
             </select>
           </div>
           <button onClick={exportCSV}
