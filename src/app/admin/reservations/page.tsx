@@ -22,7 +22,7 @@ const emptyCreate = () => ({
   adults: 2, children: 0, infants: 0,
   customerName: "", customerEmail: "", customerPhone: "",
   paymentType: "none" as "full" | "deposit" | "none",
-  isPaid: false, status: "confirmed", notes: "",
+  isPaid: false, status: "pending", notes: "",
   customPrice: 0,
 });
 
@@ -374,6 +374,15 @@ export default function ReservationsPage() {
                 <option value="none">Aucun paiement encaissé</option>
                 <option value="deposit">Acompte 30% reçu</option>
                 <option value="full">Tout réglé</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Statut</label>
+              <select value={createForm.status}
+                onChange={e => setCreateForm(p => ({ ...p, status: e.target.value }))}
+                className={inputCls}>
+                <option value="pending">En attente</option>
+                <option value="confirmed">Confirmé</option>
               </select>
             </div>
             <div>
