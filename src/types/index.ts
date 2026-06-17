@@ -27,6 +27,7 @@ export interface Excursion {
   images: string[];
   youtubeId?: string;
   badge?: string;
+  badgeEn?: string;
   popular?: boolean;
 }
 

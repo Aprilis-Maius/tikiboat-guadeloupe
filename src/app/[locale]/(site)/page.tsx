@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import { Star, ChevronRight, Anchor, Fish, Utensils, Users, Shield, CheckCircle2, Waves } from "lucide-react";
@@ -9,7 +9,9 @@ import { formatPrice } from "@/lib/utils";
 
 export default async function HomePage() {
   const t = await getTranslations("home");
+  const locale = await getLocale();
   const excursions = await getExcursions();
+  const locStr = (fr: string, en?: string) => locale === "en" && en ? en : fr;
   const topReviews = reviews.slice(0, 3);
 
   const FEATURES = [
@@ -63,7 +65,7 @@ export default async function HomePage() {
                   className="flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/10 hover:bg-white/18 backdrop-blur-md border border-slate-200 hover:border-tiki-gold/50 transition-all group">
                   <div>
                     <div className="text-white font-bold text-sm group-hover:text-tiki-gold transition-colors">{exc.title}</div>
-                    <div className="text-slate-400 text-xs mt-0.5">{exc.duration}</div>
+                    <div className="text-slate-400 text-xs mt-0.5">{locStr(exc.duration, exc.durationEn)}</div>
                   </div>
                   <div className="text-right shrink-0 ml-4">
                     <div className="text-tiki-gold font-black text-base">
@@ -154,14 +156,14 @@ export default async function HomePage() {
                   )}
                   {exc.badge && !exc.popular && (
                     <div className="absolute top-3 left-3 bg-tiki-gold/90 text-tiki-ocean text-xs font-bold px-3 py-1 rounded-full">
-                      {exc.badge}
+                      {locStr(exc.badge, exc.badgeEn)}
                     </div>
                   )}
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-display font-black text-slate-800 text-lg leading-tight mb-1">{exc.title}</h3>
-                  <p className="text-slate-500 text-xs mb-2">{exc.duration}</p>
-                  <p className="text-slate-500 text-sm leading-relaxed mb-5 flex-1 line-clamp-2">{exc.description}</p>
+                  <p className="text-slate-500 text-xs mb-2">{locStr(exc.duration, exc.durationEn)}</p>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-5 flex-1 line-clamp-2">{locStr(exc.description, exc.descriptionEn)}</p>
                   <div className="relative z-10 flex items-center justify-between pt-4 border-t border-slate-200">
                     <div>
                       {exc.pricePrivate ? (

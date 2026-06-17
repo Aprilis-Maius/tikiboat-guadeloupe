@@ -68,6 +68,7 @@ export const excursions: Excursion[] = [
     ],
     youtubeId: "gNaCNE7808o",
     badge: "Coup de cœur",
+    badgeEn: "Best seller",
     popular: true,
   },
   {
@@ -112,6 +113,7 @@ export const excursions: Excursion[] = [
       "/photos/bateau.png",
     ],
     badge: "Sur mesure",
+    badgeEn: "Tailor-made",
   },
 ];
 
