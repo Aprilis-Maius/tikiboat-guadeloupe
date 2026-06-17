@@ -478,58 +478,60 @@ export default function ReservationsPage() {
                   const pending = items.filter(r => r.status === "pending");
                   const total = active.reduce((s, r) => s + r.adults + r.children, 0);
                   const fillRate = total / MAX_PASSENGERS;
-                  const fillColor = fillRate >= 1 ? "bg-red-500" : fillRate >= 0.7 ? "bg-amber-500" : "bg-emerald-500";
+                  const fillColor = fillRate >= 1 ? "bg-red-400" : fillRate >= 0.7 ? "bg-amber-400" : "bg-emerald-400";
+                  const countColor = fillRate >= 1 ? "text-red-500" : fillRate >= 0.7 ? "text-amber-500" : "text-slate-500";
                   const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
                   const isConfirming = dayConfirming === date;
                   return (
                     <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
                       {/* Ligne date */}
-                      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50 border-b border-slate-100 gap-3 flex-wrap">
-                        <span className="font-semibold text-slate-700 text-sm capitalize">{dateLabel}</span>
-                        <div className="flex items-center gap-3 flex-wrap">
-                          {pending.length > 0 && (
+                      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50/80 border-b border-slate-100 gap-3">
+                        <span className="font-bold text-slate-700 text-sm capitalize">{dateLabel}</span>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {pending.length > 0 ? (
                             <button
                               onClick={() => confirmDay(pending)}
                               disabled={isConfirming}
-                              className="flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-3 py-1.5 rounded-lg transition-colors">
-                              <CheckCircle2 size={12} />
-                              {isConfirming ? "Envoi emails..." : `Valider la journée (${pending.length} en attente)`}
+                              className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-60">
+                              <CheckCircle2 size={11} />
+                              {isConfirming ? "Envoi..." : `${pending.length} en attente — Confirmer`}
                             </button>
-                          )}
-                          {pending.length === 0 && active.length > 0 && (
+                          ) : active.length > 0 && (
                             <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                              <CheckCircle2 size={12} /> Journée confirmée
+                              <CheckCircle2 size={11} /> Confirmée
                             </span>
                           )}
                           <div className="flex items-center gap-2">
-                            <div className="w-16 bg-slate-200 rounded-full h-1.5">
-                              <div className={`h-1.5 rounded-full ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
+                            <div className="w-14 h-1 bg-slate-200 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />
                             </div>
-                            <span className={`text-xs font-bold ${fillRate >= 1 ? "text-red-500" : fillRate >= 0.7 ? "text-amber-500" : "text-emerald-600"}`}>
-                              {total}/{MAX_PASSENGERS}
-                            </span>
+                            <span className={`text-xs font-semibold tabular-nums ${countColor}`}>{total}/{MAX_PASSENGERS}</span>
                           </div>
                         </div>
                       </div>
                       {/* Réservations du jour */}
                       {items.map(r => {
                         const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+                        const pax = r.adults + r.children + (r.infants ?? 0);
                         return (
                           <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); setConfirmDelete(false); }}
-                            className="w-full text-left flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
-                            <div className={`w-2 h-2 rounded-full shrink-0 ${s.dot}`} />
+                            className="w-full text-left flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 border-b border-slate-100 last:border-0 transition-colors group">
+                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />
                             <div className="flex-1 min-w-0">
-                              <span className="font-semibold text-slate-800 text-sm">{r.customerName}</span>
-                              <span className="text-slate-400 text-xs ml-2">{r.excursionTitle} · {r.adults + r.children} pers.</span>
+                              <div className="flex items-baseline gap-2">
+                                <span className="font-semibold text-slate-800 text-sm">{r.customerName}</span>
+                                <span className="text-slate-400 text-xs">{pax} pers.</span>
+                              </div>
+                              <div className="text-slate-400 text-xs mt-0.5 truncate">{r.excursionTitle}</div>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${s.cls}`}>{s.label}</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={`text-xs px-2 py-0.5 rounded-md border font-medium ${s.cls}`}>{s.label}</span>
                               {r.isPaid
-                                ? <span className="text-xs text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 size={11} /> Soldé</span>
+                                ? <span className="text-xs text-emerald-600 font-semibold w-16 text-right">Soldé</span>
                                 : r.paymentType === "deposit"
-                                  ? <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> Acompte</span>
-                                  : <span className="text-xs text-amber-600 font-medium flex items-center gap-1"><Clock size={11} /> À régler</span>}
-                              <span className="text-tiki-lagon font-bold text-sm">{r.totalPrice} €</span>
+                                ? <span className="text-xs text-amber-500 font-semibold w-16 text-right">Acompte</span>
+                                : <span className="text-xs text-slate-400 font-semibold w-16 text-right">À régler</span>}
+                              <span className="text-slate-800 font-bold text-sm tabular-nums w-16 text-right">{r.totalPrice} €</span>
                             </div>
                           </button>
                         );
@@ -549,27 +551,31 @@ export default function ReservationsPage() {
                   {reservations.filter(r => new Date(r.date) < today).length}
                 </span>
               </div>
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-75">
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-60">
                 {past.map(({ date, items }, gi) => {
                   const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
                   return (
                     <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
-                      <div className="flex items-center px-5 py-2 bg-slate-50 border-b border-slate-100">
-                        <span className="font-medium text-slate-500 text-sm capitalize">{dateLabel}</span>
+                      <div className="flex items-center px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
+                        <span className="font-bold text-slate-500 text-xs uppercase tracking-wide capitalize">{dateLabel}</span>
                       </div>
                       {items.map(r => {
                         const s = STATUS_MAP[r.status] ?? STATUS_MAP.pending;
+                        const pax = r.adults + r.children + (r.infants ?? 0);
                         return (
                           <button key={r.id} onClick={() => { setSelected(r); setEditMode(false); setConfirmDelete(false); }}
-                            className="w-full text-left flex items-center gap-4 px-5 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
-                            <div className={`w-2 h-2 rounded-full shrink-0 ${s.dot}`} />
+                            className="w-full text-left flex items-center gap-3 px-5 py-3 hover:bg-slate-50/80 border-b border-slate-100 last:border-0 transition-colors">
+                            <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}`} />
                             <div className="flex-1 min-w-0">
-                              <span className="font-medium text-slate-600 text-sm">{r.customerName}</span>
-                              <span className="text-slate-400 text-xs ml-2">{r.excursionTitle} · {r.adults + r.children} pers.</span>
+                              <div className="flex items-baseline gap-2">
+                                <span className="font-medium text-slate-600 text-sm">{r.customerName}</span>
+                                <span className="text-slate-400 text-xs">{pax} pers.</span>
+                              </div>
+                              <div className="text-slate-400 text-xs mt-0.5 truncate">{r.excursionTitle}</div>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${s.cls}`}>{s.label}</span>
-                              <span className="text-slate-500 font-semibold text-sm">{r.totalPrice} €</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={`text-xs px-2 py-0.5 rounded-md border font-medium ${s.cls}`}>{s.label}</span>
+                              <span className="text-slate-500 font-semibold text-sm tabular-nums w-16 text-right">{r.totalPrice} €</span>
                             </div>
                           </button>
                         );
