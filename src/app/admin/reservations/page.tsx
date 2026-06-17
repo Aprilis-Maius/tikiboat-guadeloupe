@@ -7,12 +7,14 @@ import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Penc
 import { excursions } from "@/data/excursions";
 
 interface Reservation {
-  id: string; excursionTitle: string; date: string;
+  id: string; excursionId: string; excursionTitle: string; date: string;
   adults: number; children: number; infants: number;
   totalPrice: number; depositAmount: number; paymentType: string; status: string;
   isPaid: boolean; customerName: string; customerEmail: string;
   customerPhone: string; notes?: string; createdAt: string; source?: string;
 }
+
+const toDay = (d: string) => d.split("T")[0];
 
 const emptyCreate = () => ({
   excursionSlug: excursions[0]?.slug ?? "",
@@ -69,19 +71,48 @@ export default function ReservationsPage() {
 
   const MAX_PASSENGERS = 12;
 
+  const privatisationSlugs = useMemo(() => new Set(excursions.filter(e => e.pricePrivate).map(e => e.slug)), []);
+
   const capacityCheck = useMemo(() => {
     if (!createForm.date || !createForm.excursionSlug) return null;
-    const dateResas = reservations.filter(r => r.date === createForm.date && r.status !== "cancelled");
+    // Normalise dates : DB renvoie "2026-06-17T00:00:00.000Z", le form envoie "2026-06-17"
+    const dateResas = reservations.filter(r => toDay(r.date) === toDay(createForm.date) && r.status !== "cancelled");
+
+    const hasPrivatisationBooked = dateResas.some(r => privatisationSlugs.has(r.excursionId));
+
+    // Privatisation sélectionnée → bloquer si d'autres réservations existent ce jour
+    if (isPrivatisation) {
+      const nonPrivatisation = dateResas.filter(r => !privatisationSlugs.has(r.excursionId));
+      return {
+        bookedSpots: 0, remaining: MAX_PASSENGERS, wouldExceed: false, newSpots: 0,
+        conflictExc: null,
+        privatisationConflict: nonPrivatisation.length > 0 ? nonPrivatisation.map(r => r.customerName).join(", ") : null,
+        hasPrivatisationBooked: false,
+      };
+    }
+
+    // Excursion normale → bloquer si privatisation déjà réservée ce jour
+    if (hasPrivatisationBooked) {
+      return {
+        bookedSpots: MAX_PASSENGERS, remaining: 0, wouldExceed: true, newSpots: 0,
+        conflictExc: "Privatisation du Bateau",
+        privatisationConflict: null, hasPrivatisationBooked: true,
+      };
+    }
+
     const sameTitle = selectedExc?.title ?? "";
     const sameExcResas = dateResas.filter(r => r.excursionTitle === sameTitle);
     const bookedSpots = sameExcResas.reduce((s, r) => s + r.adults + r.children, 0);
     const newSpots = createForm.adults + createForm.children;
     const remaining = MAX_PASSENGERS - bookedSpots;
     const wouldExceed = bookedSpots + newSpots > MAX_PASSENGERS;
-    const otherResa = dateResas.find(r => r.excursionTitle !== sameTitle && r.excursionTitle !== "");
-    const conflictExc = otherResa?.excursionTitle ?? null;
-    return { bookedSpots, remaining, wouldExceed, conflictExc, newSpots };
-  }, [createForm.date, createForm.excursionSlug, createForm.adults, createForm.children, reservations, selectedExc]);
+    const otherResa = dateResas.find(r => r.excursionTitle !== sameTitle);
+    return {
+      bookedSpots, remaining, wouldExceed, newSpots,
+      conflictExc: otherResa?.excursionTitle ?? null,
+      privatisationConflict: null, hasPrivatisationBooked: false,
+    };
+  }, [createForm.date, createForm.excursionSlug, createForm.adults, createForm.children, reservations, selectedExc, isPrivatisation, privatisationSlugs]);
 
   const submitCreate = async () => {
     setCreating(true);
@@ -329,33 +360,49 @@ export default function ReservationsPage() {
                 onChange={e => setCreateForm(p => ({ ...p, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
             </div>
-            {isPrivatisation && (
-              <div className="md:col-span-2 lg:col-span-3">
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-tiki-lagon/10 border border-tiki-lagon/20 text-tiki-lagon text-sm">
-                  <span>🚢</span>
-                  <span><strong>Privatisation</strong> — le jour sera marqué complet sur le calendrier.</span>
-                </div>
-              </div>
-            )}
-            {!isPrivatisation && capacityCheck && (
-              <div className="md:col-span-2 lg:col-span-3">
-                {capacityCheck.conflictExc && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm mb-2">
-                    <span>⚠️</span>
-                    <span><strong>Conflit :</strong> réservation <strong>{capacityCheck.conflictExc}</strong> déjà ce jour.</span>
+            {capacityCheck && (
+              <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                {/* Privatisation : info ou conflit */}
+                {isPrivatisation && !capacityCheck.privatisationConflict && (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-tiki-lagon/10 border border-tiki-lagon/20 text-tiki-lagon text-sm">
+                    <span>🚢</span>
+                    <span><strong>Privatisation</strong> — le jour sera marqué complet sur le calendrier.</span>
                   </div>
                 )}
-                {capacityCheck.wouldExceed ? (
+                {isPrivatisation && capacityCheck.privatisationConflict && (
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+                    <span>🚫</span>
+                    <span><strong>Impossible :</strong> des réservations existent déjà ce jour ({capacityCheck.privatisationConflict}). Annulez-les d&apos;abord ou choisissez une autre date.</span>
+                  </div>
+                )}
+                {/* Excursion normale : conflit privatisation */}
+                {!isPrivatisation && capacityCheck.hasPrivatisationBooked && (
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+                    <span>🚫</span>
+                    <span><strong>Jour privatisé :</strong> le bateau est réservé en exclusivité ce jour-là.</span>
+                  </div>
+                )}
+                {/* Conflit autre excursion */}
+                {!isPrivatisation && capacityCheck.conflictExc && !capacityCheck.hasPrivatisationBooked && (
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+                    <span>⚠️</span>
+                    <span><strong>Attention :</strong> une réservation <strong>{capacityCheck.conflictExc}</strong> est déjà prévue ce jour.</span>
+                  </div>
+                )}
+                {/* Capacité dépassée */}
+                {!isPrivatisation && capacityCheck.wouldExceed && (
                   <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
                     <span>🚫</span>
                     <span><strong>Capacité dépassée :</strong> {capacityCheck.bookedSpots} + {capacityCheck.newSpots} = {capacityCheck.bookedSpots + capacityCheck.newSpots} / {MAX_PASSENGERS} max.</span>
                   </div>
-                ) : capacityCheck.bookedSpots > 0 ? (
+                )}
+                {/* Places restantes */}
+                {!isPrivatisation && !capacityCheck.wouldExceed && !capacityCheck.hasPrivatisationBooked && capacityCheck.bookedSpots > 0 && (
                   <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
                     <span>📊</span>
                     <span>{capacityCheck.bookedSpots} place{capacityCheck.bookedSpots > 1 ? "s" : ""} prises — <strong>{capacityCheck.remaining}</strong> restante{capacityCheck.remaining > 1 ? "s" : ""}</span>
                   </div>
-                ) : null}
+                )}
               </div>
             )}
           </div>
@@ -364,7 +411,13 @@ export default function ReservationsPage() {
               className="px-5 py-2.5 border border-slate-200 text-slate-500 hover:text-slate-800 rounded-xl text-sm transition-colors">
               Annuler
             </button>
-            <button onClick={submitCreate} disabled={creating || !createForm.customerName || !createForm.date || !createForm.customerEmail || (isPrivatisation && !createForm.customPrice) || (!isPrivatisation && (!!capacityCheck?.wouldExceed || !!capacityCheck?.conflictExc))}
+            <button onClick={submitCreate} disabled={
+              creating ||
+              !createForm.customerName || !createForm.date || !createForm.customerEmail ||
+              (isPrivatisation && !createForm.customPrice) ||
+              (isPrivatisation && !!capacityCheck?.privatisationConflict) ||
+              (!isPrivatisation && (!!capacityCheck?.wouldExceed || !!capacityCheck?.hasPrivatisationBooked))
+            }
               className="flex items-center gap-2 bg-tiki-lagon hover:bg-tiki-lagon-light text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50">
               <Save size={15} /> {creating ? "Enregistrement..." : "Créer la réservation"}
             </button>

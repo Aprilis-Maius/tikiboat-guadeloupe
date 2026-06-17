@@ -12,6 +12,25 @@ import {
 
 export const metadata: Metadata = { title: "Dashboard" };
 
+// Doit être au niveau MODULE pour que unstable_cache et revalidateTag("admin-dashboard") fonctionnent
+const getDashboardData = unstable_cache(
+  async (todayKey: string, thirtyKey: string, firstKey: string) =>
+    Promise.all([
+      prisma.reservation.findMany({
+        where: { date: { gte: firstKey }, status: { not: "cancelled" } },
+        select: { totalPrice: true, adults: true, children: true },
+      }),
+      prisma.reservation.findMany({
+        where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
+        orderBy: { date: "asc" },
+        take: 50,
+      }),
+      prisma.reservation.count({ where: { status: "pending" } }),
+    ]),
+  ["admin-dashboard"],
+  { revalidate: 30, tags: ["admin-dashboard"] }
+);
+
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/admin/login");
@@ -20,24 +39,6 @@ export default async function AdminDashboard() {
   const thirtyDaysLater = new Date(Date.now() + 30 * 86_400_000).toISOString().split("T")[0];
   const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     .toISOString().split("T")[0];
-
-  const getDashboardData = unstable_cache(
-    async (todayKey: string, thirtyKey: string, firstKey: string) =>
-      Promise.all([
-        prisma.reservation.findMany({
-          where: { date: { gte: firstKey }, status: { not: "cancelled" } },
-          select: { totalPrice: true, adults: true, children: true },
-        }),
-        prisma.reservation.findMany({
-          where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
-          orderBy: { date: "asc" },
-          take: 50,
-        }),
-        prisma.reservation.count({ where: { status: "pending" } }),
-      ]),
-    ["admin-dashboard"],
-    { revalidate: 30, tags: ["admin-dashboard"] }
-  );
 
   const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);
 

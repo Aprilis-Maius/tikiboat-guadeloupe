@@ -34,6 +34,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json();
+
+  // Vérification conflits privatisation côté serveur
+  const existingOnDay = await prisma.reservation.findMany({
+    where: { date: body.date, status: { not: "cancelled" } },
+    select: { excursionId: true, customerName: true },
+  });
+  const hasPrivatisation = existingOnDay.some(r => r.excursionId === "privatisation");
+
+  if (body.blocksDay && existingOnDay.length > 0) {
+    return NextResponse.json({
+      error: `Impossible : des réservations existent déjà le ${body.date}. Annulez-les d'abord.`,
+    }, { status: 409 });
+  }
+  if (!body.blocksDay && hasPrivatisation) {
+    return NextResponse.json({
+      error: "Ce jour est privatisé. Impossible d'ajouter une réservation.",
+    }, { status: 409 });
+  }
+
   const reservation = await prisma.reservation.create({
     data: {
       excursionId:    body.excursionId    ?? "",
