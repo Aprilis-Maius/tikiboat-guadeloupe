@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import SiteImage from "@/components/SiteImage";
 import { Play } from "lucide-react";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://tikiboat.fr/galerie" },
@@ -25,9 +25,13 @@ const photos = [
   { src: "/photos/galerie-12.jpg", alt: "Mangrove et rivière salée", category: "Mangrove" },
 ];
 
-export default async function GaleriePage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function GaleriePage({ params }: Props) {
+  const { locale } = await params;
   const t = await getTranslations("galerie");
-  const locale = await getLocale();
 
   const videos = [
     {

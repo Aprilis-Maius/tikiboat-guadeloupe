@@ -5,7 +5,7 @@ import WaveDivider from "@/components/WaveDivider";
 import { ChevronRight, Clock, Users, MapPin } from "lucide-react";
 import { getExcursions } from "@/lib/excursions";
 import { formatPrice } from "@/lib/utils";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 const BASE = "https://tikiboat.fr";
 
@@ -22,9 +22,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ExcursionsPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function ExcursionsPage({ params }: Props) {
+  const { locale } = await params;
   const t = await getTranslations("excursionsPage");
-  const locale = await getLocale();
   const excursions = await getExcursions();
 
   const locStr = (fr: string, en?: string) => locale === "en" && en ? en : fr;

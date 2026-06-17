@@ -1,4 +1,4 @@
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import { Star, ChevronRight, Anchor, Fish, Utensils, Users, Shield, CheckCircle2, Waves } from "lucide-react";
@@ -7,9 +7,13 @@ import { getExcursions } from "@/lib/excursions";
 import { reviews } from "@/data/reviews";
 import { formatPrice } from "@/lib/utils";
 
-export default async function HomePage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params;
   const t = await getTranslations("home");
-  const locale = await getLocale();
   const excursions = await getExcursions();
   const locStr = (fr: string, en?: string) => locale === "en" && en ? en : fr;
   const topReviews = reviews.slice(0, 3);

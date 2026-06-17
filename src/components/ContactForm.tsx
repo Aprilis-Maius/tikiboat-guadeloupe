@@ -3,19 +3,13 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Send, CheckCircle2, ChevronDown } from "lucide-react";
-
-const SUBJECTS = [
-  { value: "info",          label: "Demande d'informations" },
-  { value: "reservation",   label: "Aide à la réservation" },
-  { value: "privatisation", label: "Privatisation du bateau" },
-  { value: "groupe",        label: "Réservation de groupe" },
-  { value: "autre",         label: "Autre" },
-];
+import { useTranslations } from "next-intl";
 
 const inputCls =
   "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
 
 function ContactFormInner() {
+  const t = useTranslations("contact");
   const searchParams = useSearchParams();
   const [sent, setSent]       = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,6 +20,14 @@ function ContactFormInner() {
     subject: searchParams.get("type") || "info",
     message: "",
   });
+
+  const SUBJECTS = [
+    { value: "info",          label: t("subjects.info") },
+    { value: "reservation",   label: t("subjects.reservation") },
+    { value: "privatisation", label: t("subjects.privatisation") },
+    { value: "groupe",        label: t("subjects.groupe") },
+    { value: "autre",         label: t("subjects.autre") },
+  ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,8 +52,8 @@ function ContactFormInner() {
         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/30">
           <CheckCircle2 className="text-green-400" size={32} />
         </div>
-        <h3 className="font-display text-xl font-bold text-tiki-gold mb-2">Message envoyé !</h3>
-        <p className="text-slate-500 text-sm">Nous vous répondrons sous 24h.</p>
+        <h3 className="font-display text-xl font-bold text-tiki-gold mb-2">{t("success")}</h3>
+        <p className="text-slate-500 text-sm">{t("successSub")}</p>
       </div>
     );
   }
@@ -60,18 +62,18 @@ function ContactFormInner() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-slate-700 text-sm font-medium mb-1.5">Nom *</label>
+          <label className="block text-slate-700 text-sm font-medium mb-1.5">{t("nom")}</label>
           <input
-            type="text" required placeholder="Jean Dupont"
+            type="text" required placeholder={t("nomPh")}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className={inputCls}
           />
         </div>
         <div>
-          <label className="block text-slate-700 text-sm font-medium mb-1.5">Email *</label>
+          <label className="block text-slate-700 text-sm font-medium mb-1.5">{t("emailLabel")}</label>
           <input
-            type="email" required placeholder="jean@email.com"
+            type="email" required placeholder={t("emailPh")}
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             className={inputCls}
@@ -80,9 +82,9 @@ function ContactFormInner() {
       </div>
 
       <div>
-        <label className="block text-slate-700 text-sm font-medium mb-1.5">Téléphone</label>
+        <label className="block text-slate-700 text-sm font-medium mb-1.5">{t("telephone")}</label>
         <input
-          type="tel" placeholder="+590 690 00 00 00"
+          type="tel" placeholder={t("telPh")}
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
           className={inputCls}
@@ -90,7 +92,7 @@ function ContactFormInner() {
       </div>
 
       <div>
-        <label className="block text-slate-700 text-sm font-medium mb-1.5">Sujet *</label>
+        <label className="block text-slate-700 text-sm font-medium mb-1.5">{t("sujet")}</label>
         <div className="relative">
           <select
             value={form.subject}
@@ -116,9 +118,9 @@ function ContactFormInner() {
       </div>
 
       <div>
-        <label className="block text-slate-700 text-sm font-medium mb-1.5">Message *</label>
+        <label className="block text-slate-700 text-sm font-medium mb-1.5">{t("message")}</label>
         <textarea
-          required placeholder="Votre message..."
+          required placeholder={t("notesPh")}
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
           rows={5}
@@ -137,11 +139,11 @@ function ContactFormInner() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            Envoi en cours...
+            {t("envoi")}
           </>
         ) : (
           <>
-            Envoyer le message
+            {t("envoyer")}
             <Send size={16} />
           </>
         )}

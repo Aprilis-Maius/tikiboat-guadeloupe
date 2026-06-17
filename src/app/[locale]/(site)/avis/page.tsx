@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { Star, Shield, ExternalLink, ChevronRight } from "lucide-react";
 import { reviews } from "@/data/reviews";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://tikiboat.fr/avis" },
@@ -11,9 +11,13 @@ export const metadata: Metadata = {
   description: "Découvrez les avis de nos clients sur Tiki Boat. Plus de 100 avis vérifiés Google et Tripadvisor.",
 };
 
-export default async function AvisPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function AvisPage({ params }: Props) {
+  const { locale } = await params;
   const t = await getTranslations("avis");
-  const locale = await getLocale();
 
   const stats = locale === "en"
     ? [
