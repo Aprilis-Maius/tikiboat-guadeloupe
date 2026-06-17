@@ -54,6 +54,7 @@ export default function ReservationsPage() {
   } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [dayConfirming, setDayConfirming] = useState<string | null>(null);
 
   const copyEmail = (email: string) => {
     navigator.clipboard.writeText(email);
@@ -223,6 +224,23 @@ export default function ReservationsPage() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "reservations.csv"; a.click();
+  };
+
+  const confirmDay = async (pendingItems: Reservation[]) => {
+    if (pendingItems.length === 0) return;
+    const date = pendingItems[0].date;
+    const names = pendingItems.map(r => r.customerName).join(", ");
+    if (!window.confirm(`Confirmer ${pendingItems.length} réservation${pendingItems.length > 1 ? "s" : ""} du ${new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} ?\n\n${names}\n\nUn email de confirmation sera envoyé à chaque client.`)) return;
+    setDayConfirming(date);
+    await Promise.all(pendingItems.map(r =>
+      fetch("/api/admin/reservations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: r.id, status: "confirmed", action: "confirm" }),
+      })
+    ));
+    await fetchReservations();
+    setDayConfirming(null);
   };
 
   const closeModal = () => { setSelected(null); setEditMode(false); setEditForm(null); setConfirmDelete(false); };
@@ -444,16 +462,33 @@ export default function ReservationsPage() {
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                 {upcoming.map(({ date, items }, gi) => {
-                  const total = items.filter(r => r.status !== "cancelled").reduce((s, r) => s + r.adults + r.children, 0);
+                  const active = items.filter(r => r.status !== "cancelled");
+                  const pending = items.filter(r => r.status === "pending");
+                  const total = active.reduce((s, r) => s + r.adults + r.children, 0);
                   const fillRate = total / MAX_PASSENGERS;
                   const fillColor = fillRate >= 1 ? "bg-red-500" : fillRate >= 0.7 ? "bg-amber-500" : "bg-emerald-500";
                   const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  const isConfirming = dayConfirming === date;
                   return (
                     <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
                       {/* Ligne date */}
-                      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50 border-b border-slate-100">
+                      <div className="flex items-center justify-between px-5 py-2.5 bg-slate-50 border-b border-slate-100 gap-3 flex-wrap">
                         <span className="font-semibold text-slate-700 text-sm capitalize">{dateLabel}</span>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {pending.length > 0 && (
+                            <button
+                              onClick={() => confirmDay(pending)}
+                              disabled={isConfirming}
+                              className="flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-3 py-1.5 rounded-lg transition-colors">
+                              <CheckCircle2 size={12} />
+                              {isConfirming ? "Envoi emails..." : `Valider la journée (${pending.length} en attente)`}
+                            </button>
+                          )}
+                          {pending.length === 0 && active.length > 0 && (
+                            <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                              <CheckCircle2 size={12} /> Journée confirmée
+                            </span>
+                          )}
                           <div className="flex items-center gap-2">
                             <div className="w-16 bg-slate-200 rounded-full h-1.5">
                               <div className={`h-1.5 rounded-full ${fillColor}`} style={{ width: `${Math.min(100, fillRate * 100)}%` }} />

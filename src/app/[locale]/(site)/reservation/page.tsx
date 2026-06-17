@@ -23,7 +23,7 @@ export default function ReservationPage() {
           <div className="mt-5 inline-flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left max-w-xl mx-auto">
             <span className="text-lg leading-none mt-0.5">⏳</span>
             <p className="text-amber-800 text-sm leading-relaxed">
-              <strong>Confirmation sous 24-48h.</strong> Votre réservation est en attente de validation selon le remplissage du bateau. Votre acompte n&apos;est débité qu&apos;à la confirmation.
+              <strong>Confirmation sous 24-48h.</strong> Votre réservation est en attente de validation selon le remplissage du bateau.
             </p>
           </div>
         </div>
