@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -16,24 +17,32 @@ export default async function AdminDashboard() {
   if (!session) redirect("/admin/login");
 
   const today = new Date().toISOString().split("T")[0];
-  const sevenDaysLater = new Date(Date.now() + 30 * 86_400_000).toISOString().split("T")[0];
+  const thirtyDaysLater = new Date(Date.now() + 30 * 86_400_000).toISOString().split("T")[0];
   const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     .toISOString().split("T")[0];
 
-  const [monthResa, upcoming, pendingCount] = await Promise.all([
-    prisma.reservation.findMany({
-      where: { date: { gte: firstOfMonth }, status: { not: "cancelled" } },
-    }),
-    prisma.reservation.findMany({
-      where: { date: { gte: today, lte: sevenDaysLater }, status: { not: "cancelled" } },
-      orderBy: { date: "asc" },
-      take: 50,
-    }),
-    prisma.reservation.count({ where: { status: "pending" } }),
-  ]);
+  const getDashboardData = unstable_cache(
+    async (todayKey: string, thirtyKey: string, firstKey: string) =>
+      Promise.all([
+        prisma.reservation.findMany({
+          where: { date: { gte: firstKey }, status: { not: "cancelled" } },
+          select: { totalPrice: true, adults: true, children: true },
+        }),
+        prisma.reservation.findMany({
+          where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
+          orderBy: { date: "asc" },
+          take: 50,
+        }),
+        prisma.reservation.count({ where: { status: "pending" } }),
+      ]),
+    ["admin-dashboard"],
+    { revalidate: 45 }
+  );
 
-  const monthRevenue = monthResa.reduce((s, r) => s + r.totalPrice, 0);
-  const monthPax     = monthResa.reduce((s, r) => s + r.adults + r.children, 0);
+  const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);
+
+  const monthRevenue = (monthResa as { totalPrice: number }[]).reduce((s, r) => s + r.totalPrice, 0);
+  const monthPax     = (monthResa as { adults: number; children: number }[]).reduce((s, r) => s + r.adults + r.children, 0);
 
   const stats = [
     {
