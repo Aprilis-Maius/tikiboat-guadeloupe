@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest) {
   if (data.sortOrder     !== undefined) data.sortOrder     = Number(data.sortOrder);
 
   const excursion = await prisma.excursion.update({ where: { id }, data });
-  revalidateTag("excursions");
+  revalidateTag("excursions", {}); revalidatePath("/", "layout");
   return NextResponse.json(excursion);
 }
 
@@ -84,6 +84,6 @@ export async function DELETE(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
   await prisma.excursion.delete({ where: { id } });
-  revalidateTag("excursions");
+  revalidateTag("excursions", {}); revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }
