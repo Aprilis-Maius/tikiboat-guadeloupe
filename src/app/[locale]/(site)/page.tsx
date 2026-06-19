@@ -204,28 +204,20 @@ export default async function HomePage({ params }: Props) {
 
       {/* INCLUS */}
       <section className="bg-white py-16">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("inclus.badge")}</p>
-              <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-6 leading-tight">
-                {t("inclus.title")}
-              </h2>
-              <p className="text-slate-500 text-base leading-relaxed mb-8">{t("inclus.subtitle")}</p>
-              <ul className="space-y-4">
-                {INCLUS_ITEMS.map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-slate-700 text-sm">
-                    <CheckCircle2 size={16} className="text-tiki-gold shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="relative h-80 lg:h-[420px] rounded-2xl overflow-hidden border border-slate-200 bg-sky-50">
-              <SiteImage src="/photos/bateau.png" alt="Le Tiki Boat"
-                fill className="object-cover object-top" />
-            </div>
-          </div>
+        <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
+          <p className="text-tiki-lagon text-xs font-bold tracking-[0.2em] uppercase mb-3">{t("inclus.badge")}</p>
+          <h2 className="font-display font-black text-slate-800 text-3xl sm:text-4xl mb-6 leading-tight">
+            {t("inclus.title")}
+          </h2>
+          <p className="text-slate-500 text-base leading-relaxed mb-10">{t("inclus.subtitle")}</p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+            {INCLUS_ITEMS.map((item) => (
+              <li key={item} className="flex items-center gap-3 text-slate-700 text-sm">
+                <CheckCircle2 size={16} className="text-tiki-gold shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

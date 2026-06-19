@@ -3,13 +3,12 @@
     "excursions": "Excursions",
     "galerie": "Gallery",
     "avis": "Reviews",
-    "blog": "Blog",
     "contact": "Contact",
     "reserver": "Book now"
   },
   "footer": {
     "tagline": "Boat excursions in Guadeloupe",
-    "description": "Experience an unforgettable day in the Grand Cul de Sac Marin — Guadeloupe's largest lagoon. Snorkeling, wild islets, and a Creole meal with your feet in the water... A day like nowhere else.",
+    "description": "Experience an unforgettable day in the Grand Cul de Sac Marin, Guadeloupe's largest lagoon. Snorkeling, wild islets, and a Creole meal with your feet in the water... A day like nowhere else.",
     "excursions": "Excursions",
     "links": {
       "croisiere": "Full-day cruise",
@@ -20,7 +19,6 @@
     "infoLinks": {
       "galerie": "Gallery",
       "avis": "Reviews",
-      "blog": "Blog",
       "contact": "Contact"
     },
     "contact": "Contact",
@@ -45,7 +43,7 @@
     "features": {
       "badge": "Why Tiki Boat",
       "title": "An experience crafted down to the last detail",
-      "subtitle": "On board the Tiki Boat, everything is taken care of so you can fully enjoy your day — from boarding to return.",
+      "subtitle": "On board the Tiki Boat, everything is taken care of so you can fully enjoy your day, from boarding to return.",
       "items": {
         "securite": {
           "label": "Certified safety",
@@ -61,7 +59,7 @@
         },
         "adapte": {
           "label": "Suitable for all",
-          "desc": "Babies, children, seniors — everyone"
+          "desc": "Babies, children, seniors: everyone"
         },
         "repas": {
           "label": "Creole meal included",
@@ -86,7 +84,7 @@
     "inclus": {
       "badge": "All inclusive",
       "title": "Zero hidden fees.",
-      "subtitle": "The displayed price is the real price. Meals, drinks, snorkeling, guide — everything is included.",
+      "subtitle": "The displayed price is the real price. Meals, drinks, snorkeling, guide: everything is included.",
       "items": [
         "Round-trip boat transfer",
         "Glass-bottom boat (coral viewing)",
@@ -94,14 +92,13 @@
         "Welcome Creole aperitif",
         "Full Creole meal (Chef on board, 100% fresh)",
         "Unlimited drinks",
-        "Naturalist guide",
-        "Unique floating bar in Guadeloupe"
+        "Guide"
       ]
     },
     "lagon": {
       "badge": "Our playground",
       "title": "The largest lagoon in the Lesser Antilles",
-      "subtitle": "The Grand Cul de Sac Marin is a natural paradise listed as a National Park. Crystal-clear waters, exceptional biodiversity, wild islets — our exclusive playground.",
+      "subtitle": "The Grand Cul de Sac Marin is a natural paradise listed as a National Park. Crystal-clear waters, exceptional biodiversity, wild islets: our exclusive playground.",
       "items": [
         "Islets Caret, Fajou, la Biche, bird islet",
         "Preserved coral reef",
@@ -120,10 +117,10 @@
     "tarifs": {
       "badge": "Pricing",
       "title": "Transparent. All inclusive.",
-      "subtitle": "30% deposit at booking — balance due on the day.",
+      "subtitle": "30% deposit at booking, balance due on the day.",
       "meilleureVente": "Best seller",
       "croisiereTitle": "Full-day cruise",
-      "croisiereHoraires": "Grand Cul de Sac Marin — 09:00→16:00",
+      "croisiereHoraires": "Grand Cul de Sac Marin · 09:00→16:00",
       "adulte": "Adult",
       "enfant": "Child 3–12 yrs",
       "gratuit": "Free",
@@ -143,7 +140,7 @@
   },
   "excursionsPage": {
     "title": "Our excursions",
-    "subtitle": "Cruises, snorkeling, private charters — choose the adventure that suits you.",
+    "subtitle": "Cruises, snorkeling, private charters: choose the adventure that suits you.",
     "basseSaison": "Low season",
     "enfant": "Child",
     "details": "Details",
@@ -291,7 +288,7 @@
     "zoneValue": "Guadeloupe",
     "zoneDepart": "Departure: Marina de Pointe-à-Pitre / Le Gosier",
     "dispo": "Availability",
-    "dispoValue": "7 days/7 — Reply within 24h",
+    "dispoValue": "7 days/7, reply within 24h",
     "whatsapp": "Write on WhatsApp",
     "formTitle": "Send a message",
     "nom": "Name *",
@@ -317,7 +314,7 @@
   },
   "galerie": {
     "title": "Our gallery",
-    "subtitle": "The most beautiful images from our excursions — islets, snorkeling, Creole meals, sunsets.",
+    "subtitle": "The most beautiful images from our excursions: islets, snorkeling, Creole meals, sunsets.",
     "videos": "Videos",
     "photos": "Photos",
     "social": "Follow our adventures",

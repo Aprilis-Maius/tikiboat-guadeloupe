@@ -3,13 +3,12 @@
     "excursions": "Excursions",
     "galerie": "Galerie",
     "avis": "Avis",
-    "blog": "Blog",
     "contact": "Contact",
     "reserver": "Réserver"
   },
   "footer": {
     "tagline": "Excursions en Guadeloupe",
-    "description": "Vivez une expérience inoubliable dans le Grand Cul de Sac Marin — le plus grand lagon de Guadeloupe. Snorkeling, îlets, repas créole les pieds dans l'eau... Une journée comme nulle part ailleurs.",
+    "description": "Vivez une expérience inoubliable dans le Grand Cul de Sac Marin, le plus grand lagon de Guadeloupe. Snorkeling, îlets, repas créole les pieds dans l'eau... Une journée comme nulle part ailleurs.",
     "excursions": "Excursions",
     "links": {
       "croisiere": "Croisière journée",
@@ -20,7 +19,6 @@
     "infoLinks": {
       "galerie": "Galerie",
       "avis": "Avis clients",
-      "blog": "Blog",
       "contact": "Contact"
     },
     "contact": "Contact",
@@ -45,7 +43,7 @@
     "features": {
       "badge": "Pourquoi Tiki Boat",
       "title": "Une expérience pensée dans les moindres détails",
-      "subtitle": "À bord du Tiki Boat, tout est prévu pour que vous profitiez pleinement de votre journée — de l'embarquement au retour.",
+      "subtitle": "À bord du Tiki Boat, tout est prévu pour que vous profitiez pleinement de votre journée, de l'embarquement au retour.",
       "items": {
         "securite": {
           "label": "Sécurité certifiée",
@@ -61,7 +59,7 @@
         },
         "adapte": {
           "label": "Adapté à tous",
-          "desc": "Bébés, enfants, seniors — tout le monde"
+          "desc": "Bébés, enfants, seniors : tout le monde"
         },
         "repas": {
           "label": "Repas créole inclus",
@@ -86,7 +84,7 @@
     "inclus": {
       "badge": "Tout compris",
       "title": "Zéro mauvaise surprise.",
-      "subtitle": "Le prix affiché est le prix réel. Repas, boissons, snorkeling, guide — tout est inclus dans le tarif.",
+      "subtitle": "Le prix affiché est le prix réel. Repas, boissons, snorkeling, guide : tout est inclus dans le tarif.",
       "items": [
         "Transport bateau aller-retour",
         "Fond de verre (visite des coraux)",
@@ -94,14 +92,13 @@
         "Apéritif créole de bienvenue",
         "Repas créole complet (Chef à bord, 100% frais)",
         "Boissons à volonté",
-        "Guide naturaliste",
-        "Bar flottant unique en Guadeloupe"
+        "Guide"
       ]
     },
     "lagon": {
       "badge": "Notre terrain de jeu",
       "title": "Le plus grand lagon des Petites Antilles",
-      "subtitle": "Le Grand Cul de Sac Marin est un paradis naturel classé Parc National. Eaux cristallines, biodiversité exceptionnelle, îlets sauvages — notre terrain de jeu exclusif.",
+      "subtitle": "Le Grand Cul de Sac Marin est un paradis naturel classé Parc National. Eaux cristallines, biodiversité exceptionnelle, îlets sauvages : notre terrain de jeu exclusif.",
       "items": [
         "Îlets Caret, Fajou, la Biche, îlet aux oiseaux",
         "Barrière de corail préservée",
@@ -120,10 +117,10 @@
     "tarifs": {
       "badge": "Tarifs",
       "title": "Transparent. Tout compris.",
-      "subtitle": "Acompte de 30% à la réservation — solde le jour J.",
+      "subtitle": "Acompte de 30% à la réservation, solde le jour J.",
       "meilleureVente": "Meilleure vente",
       "croisiereTitle": "Croisière journée",
-      "croisiereHoraires": "Grand Cul de Sac Marin — 09h00→16h00",
+      "croisiereHoraires": "Grand Cul de Sac Marin · 09h00→16h00",
       "adulte": "Adulte",
       "enfant": "Enfant 3–12 ans",
       "gratuit": "Gratuit",
@@ -143,7 +140,7 @@
   },
   "excursionsPage": {
     "title": "Nos excursions",
-    "subtitle": "Croisières, snorkeling, privatisation — choisissez l'aventure qui vous correspond.",
+    "subtitle": "Croisières, snorkeling, privatisation : choisissez l'aventure qui vous correspond.",
     "basseSaison": "Basse saison",
     "enfant": "Enfant",
     "details": "Détails",
@@ -291,7 +288,7 @@
     "zoneValue": "Guadeloupe",
     "zoneDepart": "Départ : Marina de Pointe-à-Pitre / Le Gosier",
     "dispo": "Disponibilité",
-    "dispoValue": "7j/7 — Réponse sous 24h",
+    "dispoValue": "7j/7, réponse sous 24h",
     "whatsapp": "Écrire sur WhatsApp",
     "formTitle": "Envoyez un message",
     "nom": "Nom *",
@@ -317,7 +314,7 @@
   },
   "galerie": {
     "title": "Notre galerie",
-    "subtitle": "Les plus belles images de nos excursions — îlets, snorkeling, repas créole, coucher de soleil.",
+    "subtitle": "Les plus belles images de nos excursions : îlets, snorkeling, repas créole, coucher de soleil.",
     "videos": "Vidéos",
     "photos": "Photos",
     "social": "Suivez nos aventures",

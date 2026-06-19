@@ -192,7 +192,7 @@ function BookingFormInner() {
               {data.date && (
                 <p className="text-slate-500 text-xs mt-2">
                   {new Date(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                  {" · "}Départ {excursion.departureTime} — Retour {excursion.returnTime}
+                  {" · "}Départ {excursion.departureTime} · Retour {excursion.returnTime}
                 </p>
               )}
             </div>
@@ -378,7 +378,7 @@ function BookingFormInner() {
 
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CreditCard size={14} className="text-tiki-gold" />
-            Paiement sécurisé — CB, Apple Pay, Google Pay
+            Paiement sécurisé · CB, Apple Pay, Google Pay
           </div>
           <div className="flex items-center gap-2 text-slate-400 text-xs">
             <CheckCircle2 size={14} className="text-tiki-gold" />

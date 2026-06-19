@@ -17,7 +17,6 @@ export default function Footer() {
   const infoLinks = [
     { href: "/galerie",  label: t("infoLinks.galerie") },
     { href: "/avis",     label: t("infoLinks.avis") },
-    { href: "/blog",     label: t("infoLinks.blog") },
     { href: "/contact",  label: t("infoLinks.contact") },
   ];
 
@@ -46,6 +45,10 @@ export default function Footer() {
               <a href="https://www.youtube.com/@TikiBoatGuadeloupe" target="_blank" rel="noopener noreferrer"
                 className="w-11 h-11 bg-tiki-ocean border border-white/15 rounded-full flex items-center justify-center text-white/60 hover:text-tiki-gold hover:border-tiki-gold transition-all">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+              </a>
+              <a href="https://www.tripadvisor.fr/Attraction_Review-g147374-d25868775-Reviews-Tiki_Boat_Guadeloupe-Guadeloupe.html" target="_blank" rel="noopener noreferrer"
+                className="w-11 h-11 bg-tiki-ocean border border-white/15 rounded-full flex items-center justify-center text-white/60 hover:text-tiki-gold hover:border-tiki-gold transition-all">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 0a12 12 0 100 24A12 12 0 0012 0zm0 2.182a9.818 9.818 0 110 19.636A9.818 9.818 0 0112 2.182zm-5.018 5.454a3.273 3.273 0 100 6.546 3.273 3.273 0 000-6.546zm10.036 0a3.273 3.273 0 100 6.546 3.273 3.273 0 000-6.546zM6.982 9a1.636 1.636 0 110 3.273A1.636 1.636 0 016.982 9zm10.036 0a1.636 1.636 0 110 3.273 1.636 1.636 0 010-3.273zM12 14.727c-1.527 0-2.945.48-4.1 1.295a6.545 6.545 0 008.2 0A6.872 6.872 0 0012 14.727z"/></svg>
               </a>
             </div>
           </div>

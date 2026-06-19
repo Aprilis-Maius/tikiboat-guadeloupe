@@ -16,7 +16,7 @@ export default function ConfidentialitePage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">1. Responsable du traitement</h2>
             <p>
-              <strong className="text-slate-500">Tiki Boat</strong> — tikiboatguadeloupe@gmail.com — est responsable du traitement de vos données personnelles collectées via ce site.
+              <strong className="text-slate-500">Tiki Boat</strong> (tikiboatguadeloupe@gmail.com) est responsable du traitement de vos données personnelles collectées via ce site.
             </p>
           </div>
 

@@ -22,8 +22,11 @@ export default function CGVPage() {
 
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">2. Réservation et acompte</h2>
-            <p>
+            <p className="mb-3">
               La réservation est confirmée après versement d&apos;un acompte de <strong className="text-slate-500">30 %</strong> du montant total. Le solde est réglé le jour de l&apos;excursion, avant l&apos;embarquement.
+            </p>
+            <p className="font-semibold text-slate-700 border-l-4 border-tiki-gold pl-4 py-1">
+              Si l&apos;acompte est versé et que le solde n&apos;est pas réglé le jour J, le départ sur le bateau ne sera pas possible et l&apos;acompte sera perdu.
             </p>
           </div>
 

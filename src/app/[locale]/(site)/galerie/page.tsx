@@ -38,8 +38,8 @@ export default async function GaleriePage({ params }: Props) {
       youtubeId: "gNaCNE7808o",
       title: locale === "en" ? "A day aboard the Tiki Boat" : "Une journée à bord du Tiki Boat",
       description: locale === "en"
-        ? "Discover a full day in the Grand Cul de Sac Marin — 5 minutes to see it all!"
-        : "Découvrez une journée complète dans le Grand Cul de Sac Marin — 5 minutes pour tout voir !",
+        ? "Discover a full day in the Grand Cul de Sac Marin. 5 minutes to see it all!"
+        : "Découvrez une journée complète dans le Grand Cul de Sac Marin. 5 minutes pour tout voir !",
     },
   ];
 
