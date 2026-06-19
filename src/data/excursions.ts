@@ -8,9 +8,9 @@ export const excursions: Excursion[] = [
     subtitle: "Journée complète inoubliable",
     subtitleEn: "An unforgettable full day at sea",
     description:
-      "Embarquez pour une journée extraordinaire et unique en Guadeloupe dans le Grand Cul de Sac Marin, le plus grand lagon des Petites Antilles. Fonds marins au fond de verre, snorkeling en cœur de Parc National, épave, mangrove, rivière salée — et repas créole 100% frais servi les pieds dans l'eau autour de notre bar flottant, original et unique en Guadeloupe.",
+      "Embarquez pour une journée extraordinaire et unique en Guadeloupe dans le Grand Cul de Sac Marin, le plus grand lagon des Petites Antilles. Fonds marins au fond de verre, snorkeling en cœur de Parc National, épave, mangrove, rivière salée. Repas créole 100% frais servi les pieds dans l'eau, original et unique en Guadeloupe.",
     descriptionEn:
-      "Embark on an extraordinary and unique day in Guadeloupe's Grand Cul de Sac Marin, the largest lagoon in the Lesser Antilles. Glass-bottom boat to explore the coral reefs, snorkeling in the heart of the National Park, a sunken wreck, mangrove, salt river — and a 100% fresh Creole meal served with your feet in the water around our floating bar, original and unique in Guadeloupe.",
+      "Embark on an extraordinary and unique day in Guadeloupe's Grand Cul de Sac Marin, the largest lagoon in the Lesser Antilles. Glass-bottom boat to explore the coral reefs, snorkeling in the heart of the National Park, a sunken wreck, mangrove, salt river. A 100% fresh Creole meal served with your feet in the water, original and unique in Guadeloupe.",
     duration: "Journée complète",
     durationEn: "Full day",
     departureTime: "09h00",
@@ -48,7 +48,7 @@ export const excursions: Excursion[] = [
       "Îlets Caret, Fajou, la Biche, îlet aux oiseaux",
       "Barrière de corail & épave",
       "Mangrove & rivière salée",
-      "Repas créole 100% frais — Chef à bord",
+      "Repas créole 100% frais, Chef à bord",
       "Adapté bébés & séniors",
     ],
     highlightsEn: [
@@ -58,7 +58,7 @@ export const excursions: Excursion[] = [
       "Islets Caret, Fajou, la Biche, bird islet",
       "Coral reef & sunken wreck",
       "Mangrove & salt river",
-      "100% fresh Creole meal — Chef on board",
+      "100% fresh Creole meal, Chef on board",
       "Suitable for babies & seniors",
     ],
     images: [
