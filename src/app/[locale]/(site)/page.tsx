@@ -220,12 +220,12 @@ export default async function HomePage({ params }: Props) {
           </ul>
           <div className="flex items-center justify-center gap-4">
             <a href="https://www.instagram.com/tikiboatguadeloupe/" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-tiki-gold text-tiki-gold hover:bg-tiki-gold hover:text-tiki-ocean transition-all text-sm font-semibold">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-tiki-gold text-slate-700 hover:bg-tiki-gold hover:text-tiki-ocean transition-all text-sm font-semibold">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
               Instagram
             </a>
             <a href="https://www.tripadvisor.fr/Attraction_Review-g147374-d25868775-Reviews-Tiki_Boat_Guadeloupe-Guadeloupe.html" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-tiki-gold text-tiki-gold hover:bg-tiki-gold hover:text-tiki-ocean transition-all text-sm font-semibold">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-tiki-gold text-slate-700 hover:bg-tiki-gold hover:text-tiki-ocean transition-all text-sm font-semibold">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 0a12 12 0 100 24A12 12 0 0012 0zm0 2.182a9.818 9.818 0 110 19.636A9.818 9.818 0 0112 2.182zm-5.018 5.454a3.273 3.273 0 100 6.546 3.273 3.273 0 000-6.546zm10.036 0a3.273 3.273 0 100 6.546 3.273 3.273 0 000-6.546zM6.982 9a1.636 1.636 0 110 3.273A1.636 1.636 0 016.982 9zm10.036 0a1.636 1.636 0 110 3.273 1.636 1.636 0 010-3.273zM12 14.727c-1.527 0-2.945.48-4.1 1.295a6.545 6.545 0 008.2 0A6.872 6.872 0 0012 14.727z"/></svg>
               Tripadvisor
             </a>
