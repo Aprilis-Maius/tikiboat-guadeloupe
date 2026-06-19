@@ -77,19 +77,24 @@ export async function PATCH(req: NextRequest) {
 
   const excursion = await prisma.excursion.update({ where: { id }, data });
   revalidateTag("excursions", {});
-  revalidatePath("/[locale]/excursions/[slug]", "page");
-  revalidatePath("/[locale]/excursions", "page");
-  revalidatePath("/[locale]", "page");
+  for (const locale of ["fr", "en"]) {
+    revalidatePath(`/${locale}/excursions/${excursion.slug}`, "page");
+    revalidatePath(`/${locale}/excursions`, "page");
+    revalidatePath(`/${locale}`, "page");
+  }
   return NextResponse.json(excursion);
 }
 
 export async function DELETE(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
+  const deleted = await prisma.excursion.findUnique({ where: { id }, select: { slug: true } });
   await prisma.excursion.delete({ where: { id } });
   revalidateTag("excursions", {});
-  revalidatePath("/[locale]/excursions/[slug]", "page");
-  revalidatePath("/[locale]/excursions", "page");
-  revalidatePath("/[locale]", "page");
+  for (const locale of ["fr", "en"]) {
+    if (deleted) revalidatePath(`/${locale}/excursions/${deleted.slug}`, "page");
+    revalidatePath(`/${locale}/excursions`, "page");
+    revalidatePath(`/${locale}`, "page");
+  }
   return NextResponse.json({ ok: true });
 }
