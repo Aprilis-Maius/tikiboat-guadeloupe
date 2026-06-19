@@ -76,7 +76,10 @@ export async function PATCH(req: NextRequest) {
   if (data.sortOrder     !== undefined) data.sortOrder     = Number(data.sortOrder);
 
   const excursion = await prisma.excursion.update({ where: { id }, data });
-  revalidateTag("excursions", {}); revalidatePath("/", "layout");
+  revalidateTag("excursions");
+  revalidatePath("/[locale]/excursions/[slug]", "page");
+  revalidatePath("/[locale]/excursions", "page");
+  revalidatePath("/[locale]", "page");
   return NextResponse.json(excursion);
 }
 
@@ -84,6 +87,9 @@ export async function DELETE(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
   await prisma.excursion.delete({ where: { id } });
-  revalidateTag("excursions", {}); revalidatePath("/", "layout");
+  revalidateTag("excursions");
+  revalidatePath("/[locale]/excursions/[slug]", "page");
+  revalidatePath("/[locale]/excursions", "page");
+  revalidatePath("/[locale]", "page");
   return NextResponse.json({ ok: true });
 }
