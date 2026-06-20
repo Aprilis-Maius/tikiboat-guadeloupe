@@ -109,8 +109,8 @@ export const excursions: Excursion[] = [
     highlights: ["Anniversaire", "EVJF / EVG", "Mariage", "Team building", "Sur mesure"],
     highlightsEn: ["Birthday", "Hen / Stag party", "Wedding", "Team building", "Tailor-made"],
     images: [
-      "/photos/bateau.png",
-      "/photos/bateau.png",
+      "/photos/hero.jpg",
+      "/photos/hero.jpg",
     ],
     badge: "Sur mesure",
     badgeEn: "Tailor-made",
