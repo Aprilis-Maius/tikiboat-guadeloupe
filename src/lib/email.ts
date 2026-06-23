@@ -52,7 +52,7 @@ function generateICS(data: ReservationData, exc: typeof excursions[0] | undefine
     `DTSTART:${y}${pad(m)}${pad(d)}T${pad(dep.h)}${pad(dep.min)}00`,
     `DTEND:${y}${pad(m)}${pad(d)}T${pad(ret.h)}${pad(ret.min)}00`,
     `SUMMARY:Tiki Boat — ${data.excursionTitle}`,
-    `DESCRIPTION:${data.excursionTitle}\\nPassagers : ${data.adults + (data.children ?? 0)} pers.\\nContact : +590 690 49 58 48`,
+    `DESCRIPTION:${data.excursionTitle}\\nPassagers : ${data.adults + (data.children ?? 0) + (data.infants ?? 0)} pers.\\nContact : +590 690 49 58 48`,
     `LOCATION:${exc?.departurePoint ?? "Marina de Pointe-à-Pitre"}, Guadeloupe`,
     `URL:https://tikiboat.fr`,
     "STATUS:CONFIRMED",
@@ -153,7 +153,7 @@ export async function sendPendingEmail(data: ReservationData) {
 
 // ─── Notification admin (réservation en attente) ────────────────────────────
 export async function sendAdminPendingNotification(data: ReservationData) {
-  const pax = data.adults + (data.children ?? 0);
+  const pax = data.adults + (data.children ?? 0) + (data.infants ?? 0);
 
   const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"></head>
@@ -181,7 +181,7 @@ export async function sendAdminPendingNotification(data: ReservationData) {
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;margin-bottom:24px;">
       ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
       ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
-      ${row("Passagers", `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""} <strong>(${pax} pers.)</strong>`)}
+      ${row("Passagers", `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""} <strong>(${pax} pers.)</strong>`)}
       ${row("Total", `<strong style="color:#d97706;font-size:17px;">${data.totalPrice.toFixed(2)} €</strong>`)}
       ${data.notes ? row("Notes", `<em style="color:#64748b;">${data.notes}</em>`) : ""}
     </table>
@@ -325,7 +325,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
 // ─── Notification admin ─────────────────────────────────────────────────────
 export async function sendAdminNotification(data: ReservationData) {
   const exc       = excursions.find(e => e.slug === data.excursionSlug || e.title === data.excursionTitle);
-  const pax       = data.adults + (data.children ?? 0);
+  const pax       = data.adults + (data.children ?? 0) + (data.infants ?? 0);
   const isDeposit = data.paymentType === "deposit";
   const remaining = data.totalPrice - data.depositAmount;
 

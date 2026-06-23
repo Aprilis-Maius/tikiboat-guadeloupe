@@ -102,8 +102,7 @@ export default function ReservationsPage() {
       };
     }
 
-    const sameTitle = selectedExc?.title ?? "";
-    const sameExcResas = dateResas.filter(r => r.excursionTitle === sameTitle);
+    const sameExcResas = dateResas.filter(r => r.excursionId === createForm.excursionSlug);
     const bookedSpots = sameExcResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
     const newSpots = createForm.adults + createForm.children + (createForm.infants ?? 0);
     const remaining = MAX_PASSENGERS - bookedSpots;
@@ -127,7 +126,7 @@ export default function ReservationsPage() {
         excursionId:    selectedExc?.slug ?? "",
         excursionTitle: selectedExc?.title ?? "",
         totalPrice:     total,
-        depositAmount:  Math.round(total * 0.3 * 100) / 100,
+        depositAmount:  createForm.paymentType === "deposit" ? Math.round(total * 0.3 * 100) / 100 : 0,
         blocksDay:      isPrivatisation,
       }),
     });
@@ -721,7 +720,7 @@ export default function ReservationsPage() {
                         <span className="text-slate-800 font-medium text-sm text-right">{String(v)}</span>
                       </div>
                     ))}
-                    {selected.paymentType === "deposit" && !selected.isPaid && (
+                    {selected.paymentType === "deposit" && (
                       <div className="flex justify-between items-center px-4 py-2.5 bg-amber-50">
                         <span className="text-amber-700 font-medium text-sm">Solde à encaisser</span>
                         <span className="text-amber-700 font-black text-sm">{(selected.totalPrice - selected.depositAmount).toFixed(2)} €</span>

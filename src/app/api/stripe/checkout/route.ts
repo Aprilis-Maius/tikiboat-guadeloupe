@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         customerName,
         customerPhone,
         totalPrice:    String(totalPrice),
-        depositAmount: String(depositAmount),
+        depositAmount: String(paymentType === "full" ? 0 : depositAmount),
         paymentType,
         notes:         notes || "",
       },

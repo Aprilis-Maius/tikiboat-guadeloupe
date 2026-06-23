@@ -41,7 +41,8 @@ export default async function ConfirmationPage({
   const depositAmount = parseFloat(meta?.depositAmount ?? "0");
   const isDeposit    = meta?.paymentType === "deposit";
   const remaining    = totalPrice - depositAmount;
-  const paxLabel     = `${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""}`;
+  const infants      = parseInt(meta?.infants ?? "0");
+  const paxLabel     = `${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""}${infants > 0 ? ` + ${infants} bébé${infants > 1 ? "s" : ""}` : ""}`;
 
   return (
     <section className="min-h-screen pt-32 pb-16 bg-white flex items-center">
@@ -52,10 +53,10 @@ export default async function ConfirmationPage({
         </div>
 
         <h1 className="font-display text-4xl md:text-5xl font-bold text-tiki-gold mb-4">
-          Réservation confirmée !
+          Demande reçue !
         </h1>
         <p className="text-slate-800 text-xl mb-8">
-          Merci pour votre réservation. Vous allez recevoir un email de confirmation dans quelques minutes.
+          Merci pour votre paiement. Votre réservation sera confirmée sous 24 à 48h par notre équipe.
         </p>
 
         {/* Récapitulatif réservation */}
@@ -67,8 +68,8 @@ export default async function ConfirmationPage({
                 <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-0.5">Votre réservation</p>
                 <p className="text-white font-bold text-lg leading-tight">{meta.excursionTitle}</p>
               </div>
-              <div className="bg-tiki-gold/20 border border-tiki-gold/40 rounded-full px-3 py-1">
-                <span className="text-tiki-gold text-xs font-bold uppercase tracking-wide">Confirmée</span>
+              <div className="bg-amber-400/20 border border-amber-400/40 rounded-full px-3 py-1">
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-wide">En attente</span>
               </div>
             </div>
 
