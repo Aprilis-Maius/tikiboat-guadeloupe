@@ -18,7 +18,7 @@ const getDashboardData = unstable_cache(
     Promise.all([
       prisma.reservation.findMany({
         where: { date: { gte: firstKey }, status: { not: "cancelled" } },
-        select: { totalPrice: true, adults: true, children: true, isPaid: true, paymentType: true },
+        select: { totalPrice: true, depositAmount: true, adults: true, children: true, isPaid: true, paymentType: true },
       }),
       prisma.reservation.findMany({
         where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
@@ -42,11 +42,17 @@ export default async function AdminDashboard() {
 
   const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);
 
-  type MonthResa = { totalPrice: number; adults: number; children: number; isPaid: boolean; paymentType: string };
+  type MonthResa = { totalPrice: number; depositAmount: number; adults: number; children: number; isPaid: boolean; paymentType: string };
   const resas = monthResa as MonthResa[];
 
-  const caSolde     = resas.reduce((s, r) => r.isPaid ? s + r.totalPrice : s, 0);
-  const caNonSolde  = resas.reduce((s, r) => !r.isPaid ? s + r.totalPrice : s, 0);
+  const caSolde = resas.reduce((s, r) => {
+    if (r.paymentType === "deposit") return s + r.depositAmount;
+    return r.isPaid ? s + r.totalPrice : s;
+  }, 0);
+  const caNonSolde = resas.reduce((s, r) => {
+    if (r.paymentType === "deposit") return s + (r.totalPrice - r.depositAmount);
+    return !r.isPaid ? s + r.totalPrice : s;
+  }, 0);
   const monthPax    = resas.reduce((s, r) => s + r.adults + r.children, 0);
 
   const stats = [
