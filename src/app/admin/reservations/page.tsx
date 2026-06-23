@@ -107,7 +107,7 @@ export default function ReservationsPage() {
     const newSpots = createForm.adults + createForm.children + (createForm.infants ?? 0);
     const remaining = MAX_PASSENGERS - bookedSpots;
     const wouldExceed = bookedSpots + newSpots > MAX_PASSENGERS;
-    const otherResa = dateResas.find(r => r.excursionTitle !== sameTitle);
+    const otherResa = dateResas.find(r => r.excursionId !== createForm.excursionSlug);
     return {
       bookedSpots, remaining, wouldExceed, newSpots,
       conflictExc: otherResa?.excursionTitle ?? null,
