@@ -55,7 +55,8 @@ export default function CalendarPage() {
   const getDayData = (dateStr: string) => {
     const avail = availabilities.find(a => a.date === dateStr);
     const dayResas = reservations.filter(r => r.date === dateStr && r.status !== "cancelled");
-    const booked = avail ? avail.bookedSpots : dayResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
+    const bookedFromResas = dayResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
+    const booked = avail ? Math.max(avail.bookedSpots, bookedFromResas) : bookedFromResas;
     const max = avail?.maxSpots ?? 12;
     return { avail, dayResas, booked, max, isBlocked: avail?.isBlocked ?? false };
   };
