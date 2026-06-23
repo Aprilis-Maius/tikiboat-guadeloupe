@@ -710,6 +710,7 @@ export default function ReservationsPage() {
                       ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
                       ["Adultes", selected.adults],
                       ["Enfants", selected.children],
+                      ...(selected.infants > 0 ? [["Bébés", selected.infants] as [string, number]] : []),
                       ["Total", `${selected.totalPrice} €`],
                       ["Acompte versé", `${selected.depositAmount} €`],
                       ["Paiement", selected.paymentType === "deposit" ? "Acompte 30%" : "Total réglé"],
