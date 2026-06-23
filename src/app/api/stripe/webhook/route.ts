@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Met à jour les places prises dans Availability
-    const totalPassengers = adults + children;
+    const totalPassengers = adults + children + infants;
     await prisma.availability.upsert({
       where: { date_excursionId: { date: meta.date, excursionId: meta.excursionSlug } },
       update: { bookedSpots: { increment: totalPassengers } },

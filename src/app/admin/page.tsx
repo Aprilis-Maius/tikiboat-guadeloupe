@@ -18,7 +18,7 @@ const getDashboardData = unstable_cache(
     Promise.all([
       prisma.reservation.findMany({
         where: { date: { gte: firstKey }, status: { not: "cancelled" } },
-        select: { totalPrice: true, depositAmount: true, adults: true, children: true, isPaid: true, paymentType: true },
+        select: { totalPrice: true, depositAmount: true, adults: true, children: true, infants: true, isPaid: true, paymentType: true },
       }),
       prisma.reservation.findMany({
         where: { date: { gte: todayKey, lte: thirtyKey }, status: { not: "cancelled" } },
@@ -42,7 +42,7 @@ export default async function AdminDashboard() {
 
   const [monthResa, upcoming, pendingCount] = await getDashboardData(today, thirtyDaysLater, firstOfMonth);
 
-  type MonthResa = { totalPrice: number; depositAmount: number; adults: number; children: number; isPaid: boolean; paymentType: string };
+  type MonthResa = { totalPrice: number; depositAmount: number; adults: number; children: number; infants: number; isPaid: boolean; paymentType: string };
   const resas = monthResa as MonthResa[];
 
   const caSolde = resas.reduce((s, r) => {
@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
     if (r.paymentType === "deposit") return s + (r.totalPrice - r.depositAmount);
     return !r.isPaid ? s + r.totalPrice : s;
   }, 0);
-  const monthPax    = resas.reduce((s, r) => s + r.adults + r.children, 0);
+  const monthPax    = resas.reduce((s, r) => s + r.adults + r.children + r.infants, 0);
 
   const stats = [
     {
@@ -167,7 +167,7 @@ export default async function AdminDashboard() {
                       </td>
                       <td className="px-6 py-3.5 text-slate-500 text-sm whitespace-nowrap">{r.excursionTitle}</td>
                       <td className="px-6 py-3.5 text-slate-500 text-sm">
-                        {r.adults + r.children} pers.
+                        {r.adults + r.children + r.infants} pers.
                       </td>
                       <td className="px-6 py-3.5 text-sm">
                         <div className="text-tiki-lagon font-bold">

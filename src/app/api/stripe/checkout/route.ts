@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
     }
     const existingResas = await prisma.reservation.findMany({
       where: { date, excursionId: excursionSlug, status: { not: "cancelled" } },
-      select: { adults: true, children: true },
+      select: { adults: true, children: true, infants: true },
     });
-    const bookedCount = existingResas.reduce((s, r) => s + r.adults + r.children, 0);
+    const bookedCount = existingResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
     const maxSpots    = avail?.maxSpots ?? excursion.maxPassengers ?? 12;
     const remaining   = maxSpots - bookedCount;
-    const requested   = Number(adults) + Number(children);
+    const requested   = Number(adults) + Number(children) + Number(body.infants ?? 0);
     if (requested > remaining) {
       return NextResponse.json({
         error: `Plus assez de places. Il reste ${remaining} place${remaining !== 1 ? "s" : ""} ce jour.`,

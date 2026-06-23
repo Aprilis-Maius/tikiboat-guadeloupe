@@ -104,8 +104,8 @@ export default function ReservationsPage() {
 
     const sameTitle = selectedExc?.title ?? "";
     const sameExcResas = dateResas.filter(r => r.excursionTitle === sameTitle);
-    const bookedSpots = sameExcResas.reduce((s, r) => s + r.adults + r.children, 0);
-    const newSpots = createForm.adults + createForm.children;
+    const bookedSpots = sameExcResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
+    const newSpots = createForm.adults + createForm.children + (createForm.infants ?? 0);
     const remaining = MAX_PASSENGERS - bookedSpots;
     const wouldExceed = bookedSpots + newSpots > MAX_PASSENGERS;
     const otherResa = dateResas.find(r => r.excursionTitle !== sameTitle);
@@ -485,7 +485,7 @@ export default function ReservationsPage() {
                 {upcoming.map(({ date, items }, gi) => {
                   const active = items.filter(r => r.status !== "cancelled");
                   const pending = items.filter(r => r.status === "pending");
-                  const total = active.reduce((s, r) => s + r.adults + r.children, 0);
+                  const total = active.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
                   const fillRate = total / MAX_PASSENGERS;
                   const fillColor = fillRate >= 1 ? "bg-red-400" : fillRate >= 0.7 ? "bg-amber-400" : "bg-emerald-400";
                   const countColor = fillRate >= 1 ? "text-red-500" : fillRate >= 0.7 ? "text-amber-500" : "text-slate-500";

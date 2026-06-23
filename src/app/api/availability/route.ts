@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   // Compte les places prises par date
   const bookedByDate: Record<string, number> = {};
   for (const r of reservations) {
-    bookedByDate[r.date] = (bookedByDate[r.date] || 0) + r.adults + r.children;
+    bookedByDate[r.date] = (bookedByDate[r.date] || 0) + r.adults + r.children + (r.infants ?? 0);
   }
 
   // Construit la map date → état

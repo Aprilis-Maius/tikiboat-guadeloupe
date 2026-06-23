@@ -295,10 +295,11 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-2.5">
                       {dayResas.map((r) => {
-                        const pax = r.adults + r.children;
+                        const pax = r.adults + r.children + (r.infants ?? 0);
                         const paxDetail = [
                           r.adults > 0 ? `${r.adults} adulte${r.adults > 1 ? "s" : ""}` : null,
                           r.children > 0 ? `${r.children} enfant${r.children > 1 ? "s" : ""}` : null,
+                          r.infants > 0 ? `${r.infants} bébé${r.infants > 1 ? "s" : ""}` : null,
                         ].filter(Boolean).join(" + ");
                         const isPaid = r.isPaid;
                         const isDeposit = r.paymentType === "deposit" && !isPaid;
