@@ -6,8 +6,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
-  LayoutDashboard, CalendarDays, ListOrdered, Images,
-  FileText, Anchor, BookOpen, LogOut, ExternalLink, Menu, X,
+  LayoutDashboard, CalendarDays, ListOrdered,
+  FileText, Anchor, LogOut, ExternalLink, Menu, X,
 } from "lucide-react";
 
 const navItems = [
@@ -15,9 +15,7 @@ const navItems = [
   { href: "/admin/reservations", icon: ListOrdered,     label: "Réservations" },
   { href: "/admin/calendar",     icon: CalendarDays,    label: "Calendrier"   },
   { href: "/admin/excursions",   icon: Anchor,          label: "Excursions"   },
-  { href: "/admin/blog",         icon: BookOpen,        label: "Blog"         },
   { href: "/admin/contenu",      icon: FileText,        label: "Contenu"      },
-  { href: "/admin/galerie",      icon: Images,          label: "Galerie"      },
 ];
 
 export default function AdminSidebar() {
