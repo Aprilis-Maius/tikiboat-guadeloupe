@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   LayoutDashboard, CalendarDays, ListOrdered, Images,
   FileText, Anchor, BookOpen, LogOut, ExternalLink, Menu, X,
@@ -22,7 +22,15 @@ const navItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { status } = useSession();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/admin/login");
+  }, [status, router]);
+
+  if (status === "loading" || status === "unauthenticated") return null;
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/admin" && pathname.startsWith(href));
