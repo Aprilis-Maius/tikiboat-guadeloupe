@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       date: { startsWith: month },
       status: { not: "cancelled" },
     },
-    select: { date: true, adults: true, children: true },
+    select: { date: true, adults: true, children: true, infants: true },
   });
 
   // Compte les places prises par date
