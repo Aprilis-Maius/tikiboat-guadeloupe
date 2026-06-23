@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
               name: isDeposit
                 ? `Acompte — ${excursion.title}`
                 : excursion.title,
-              description: `${date} · ${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""} · ${excursion.departureTime}`,
+              description: `${date} · ${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
               images: excursion.images[0] ? [`${baseUrl}${excursion.images[0]}`] : [],
             },
             unit_amount: Math.round(amountToPay * 100),
