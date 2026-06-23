@@ -4,11 +4,26 @@ import { Star, Shield, ExternalLink, ChevronRight } from "lucide-react";
 import { reviews } from "@/data/reviews";
 import { getTranslations } from "next-intl/server";
 
+const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+
 export const metadata: Metadata = {
+  title: "Avis clients — Tiki Boat Guadeloupe",
+  description: "Plus de 600 avis vérifiés 5 étoiles sur Tiki Boat. Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
   alternates: { canonical: "https://tikiboat.fr/avis" },
-  openGraph: { url: "https://tikiboat.fr/avis", type: "website" },
-  title: "Avis clients",
-  description: "Découvrez les avis de nos clients sur Tiki Boat. Plus de 100 avis vérifiés Google et Tripadvisor.",
+  openGraph: {
+    title: "Avis clients Tiki Boat — 600+ avis 5 étoiles",
+    description: "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
+    url: "https://tikiboat.fr/avis",
+    type: "website",
+    locale: "fr_FR",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Guadeloupe" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Avis clients Tiki Boat — 600+ avis 5 étoiles",
+    description: "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
+    images: [OG_IMAGE],
+  },
 };
 
 interface Props {

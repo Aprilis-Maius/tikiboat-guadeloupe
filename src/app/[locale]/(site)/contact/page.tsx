@@ -3,11 +3,26 @@ import ContactForm from "@/components/ContactForm";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+
 export const metadata: Metadata = {
+  title: "Contact — Tiki Boat Guadeloupe",
+  description: "Contactez Tiki Boat par téléphone, WhatsApp ou email pour réserver votre excursion en bateau en Guadeloupe. Réponse rapide garantie.",
   alternates: { canonical: "https://tikiboat.fr/contact" },
-  openGraph: { url: "https://tikiboat.fr/contact", type: "website" },
-  title: "Contact",
-  description: "Contactez Tiki Boat pour réserver votre excursion en Guadeloupe ou obtenir des informations.",
+  openGraph: {
+    title: "Contactez Tiki Boat — Excursions en Guadeloupe",
+    description: "Téléphone, WhatsApp, email. Réponse rapide pour toute question sur vos excursions.",
+    url: "https://tikiboat.fr/contact",
+    type: "website",
+    locale: "fr_FR",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Tiki Boat Guadeloupe" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contactez Tiki Boat — Excursions en Guadeloupe",
+    description: "Téléphone, WhatsApp, email. Réponse rapide.",
+    images: [OG_IMAGE],
+  },
 };
 
 export default async function ContactPage() {

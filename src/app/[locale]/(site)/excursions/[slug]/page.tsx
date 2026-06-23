@@ -14,15 +14,31 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const exc = getExcursionBySlug(slug);
   if (!exc) return {};
-  const url = `${BASE}/excursions/${slug}`;
+  const isEn = locale === "en";
+  const url = `${BASE}${isEn ? "/en" : ""}/excursions/${slug}`;
+  const description = isEn ? (exc.descriptionEn ?? exc.description) : exc.description;
+  const imageUrl = exc.images[0]?.startsWith("http") ? exc.images[0] : `${BASE}${exc.images[0]}`;
   return {
-    title: `${exc.title} — Guadeloupe`,
-    description: exc.description,
-    alternates: { canonical: url },
-    openGraph: { title: exc.title, description: exc.description, url, type: "website", images: [{ url: exc.images[0], width: 1200, height: 630 }] },
+    title: isEn ? `${exc.title} — Guadeloupe Boat Trip` : `${exc.title} — Excursion bateau Guadeloupe`,
+    description,
+    alternates: { canonical: url, languages: { fr: `${BASE}/excursions/${slug}`, en: `${BASE}/en/excursions/${slug}` } },
+    openGraph: {
+      title: exc.title,
+      description,
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: exc.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: exc.title,
+      description,
+      images: [imageUrl],
+    },
   };
 }
 
@@ -49,8 +65,51 @@ export default async function ExcursionDetailPage({ params }: Props) {
     { icon: MapPin,      label: t("pointRdv"),    value: excursion.departurePoint.split("/")[0].trim() },
   ];
 
+  const touristTripJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: excursion.title,
+    description: isEn ? (excursion.descriptionEn ?? excursion.description) : excursion.description,
+    image: excursion.images.map(img => img.startsWith("http") ? img : `${BASE}${img}`),
+    url: `${BASE}${isEn ? "/en" : ""}/excursions/${slug}`,
+    provider: {
+      "@type": "LocalBusiness",
+      "@id": `${BASE}/#business`,
+      name: "Tiki Boat",
+      telephone: "+590690495848",
+      url: BASE,
+    },
+    ...(excursion.priceAdult > 0 ? {
+      offers: {
+        "@type": "Offer",
+        price: excursion.priceAdult,
+        priceCurrency: "EUR",
+        availability: "https://schema.org/InStock",
+        url: `${BASE}/reservation?excursion=${slug}`,
+      },
+    } : {}),
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      reviewCount: "600",
+      bestRating: "5",
+    },
+    itinerary: {
+      "@type": "ItemList",
+      itemListElement: excursion.highlights.map((h, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: h,
+      })),
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripJsonLd) }}
+      />
       {/* Hero */}
       <section className="relative">
         <div className="relative h-[60vh] min-h-[400px]">

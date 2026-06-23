@@ -2,11 +2,26 @@ import type { Metadata } from "next";
 import { Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+
 export const metadata: Metadata = {
+  title: "Galerie photos & vidéos — Tiki Boat Guadeloupe",
+  description: "Découvrez en vidéo les excursions Tiki Boat en Guadeloupe : Grand Cul de Sac Marin, îlets, snorkeling, repas créole les pieds dans l'eau.",
   alternates: { canonical: "https://tikiboat.fr/galerie" },
-  openGraph: { url: "https://tikiboat.fr/galerie", type: "website" },
-  title: "Galerie photos & vidéos",
-  description: "Découvrez en images les excursions Tiki Boat en Guadeloupe. Photos et vidéos des îlets, du snorkeling, et du repas créole.",
+  openGraph: {
+    title: "Galerie Tiki Boat — Excursions en Guadeloupe en vidéo",
+    description: "Vivez l'expérience Tiki Boat avant de monter à bord. Vidéos et photos des îlets et du lagon.",
+    url: "https://tikiboat.fr/galerie",
+    type: "website",
+    locale: "fr_FR",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Grand Cul de Sac Marin" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Galerie Tiki Boat — Guadeloupe en vidéo",
+    description: "Vidéos et photos des excursions en bateau en Guadeloupe.",
+    images: [OG_IMAGE],
+  },
 };
 
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
@@ -7,8 +8,48 @@ import { getExcursions } from "@/lib/excursions";
 import { reviews } from "@/data/reviews";
 import { formatPrice } from "@/lib/utils";
 
+const BASE = "https://tikiboat.fr";
+const OG_IMAGE = `${BASE}/photos/grandculdesacmarin-excursion.png`;
+
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en` : BASE;
+  return {
+    title: isEn
+      ? "Boat Trips Guadeloupe — Cruise & Snorkeling | Tiki Boat"
+      : "Excursions en bateau Guadeloupe — Croisière & Snorkeling | Tiki Boat",
+    description: isEn
+      ? "Discover the Grand Cul de Sac Marin by boat. Snorkeling, Creole meal, tropical islands. Full day from €95. Book online."
+      : "Découvrez le Grand Cul de Sac Marin en bateau. Snorkeling, repas créole, îlets tropicaux. Journée complète à partir de 95€. Réservez en ligne.",
+    keywords: isEn
+      ? ["boat trips Guadeloupe", "snorkeling Guadeloupe", "cruise Caribbean", "Grand Cul de Sac Marin", "Tiki Boat"]
+      : ["excursions bateau Guadeloupe", "snorkeling Guadeloupe", "croisière Caraïbes", "Grand Cul de Sac Marin", "Tiki Boat"],
+    alternates: {
+      canonical: url,
+      languages: { fr: BASE, en: `${BASE}/en` },
+    },
+    openGraph: {
+      title: isEn ? "Tiki Boat — Boat Trips in Guadeloupe" : "Tiki Boat — Excursions en bateau en Guadeloupe",
+      description: isEn
+        ? "Cruise, snorkeling, Creole meal. From €95 / adult. Book now!"
+        : "Croisière, snorkeling, repas créole. À partir de 95€ / adulte. Réservez maintenant !",
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: isEn ? "Tiki Boat cruise in Guadeloupe" : "Croisière Tiki Boat en Guadeloupe" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isEn ? "Boat Trips Guadeloupe | Tiki Boat" : "Excursions bateau Guadeloupe | Tiki Boat",
+      description: isEn ? "Cruise, snorkeling, Creole meal from €95" : "Croisière, snorkeling, repas créole à partir de 95€",
+      images: [OG_IMAGE],
+    },
+  };
 }
 
 export default async function HomePage({ params }: Props) {

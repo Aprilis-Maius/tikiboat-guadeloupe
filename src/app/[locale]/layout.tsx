@@ -22,21 +22,54 @@ export const metadata: Metadata = {
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": ["LocalBusiness", "TouristInformationCenter"],
   "@id": `${BASE}/#business`,
   name: "Tiki Boat",
   url: BASE,
   telephone: "+590690495848",
   email: "tikiboatguadeloupe@gmail.com",
-  image: `${BASE}/logo.png`,
+  image: [`${BASE}/logo.png`, `${BASE}/photos/grandculdesacmarin-excursion.png`],
+  logo: `${BASE}/logo.png`,
   priceRange: "€€",
+  currenciesAccepted: "EUR",
+  paymentAccepted: "Cash, Credit Card",
+  description: "Excursions en bateau en Guadeloupe dans le Grand Cul de Sac Marin. Snorkeling, repas créole, îlets. Privatisation sur mesure.",
   address: {
     "@type": "PostalAddress",
+    streetAddress: "Marina de Pointe-à-Pitre",
     addressLocality: "Pointe-à-Pitre",
     addressRegion: "Guadeloupe",
+    postalCode: "97110",
     addressCountry: "GP",
   },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: "16.2352",
+    longitude: "-61.5332",
+  },
+  sameAs: [
+    "https://www.instagram.com/tikiboatguadeloupe/",
+    "https://www.facebook.com/tikiboatguadeloupe/",
+    "https://www.youtube.com/@TikiBoatGuadeloupe",
+    "https://www.tripadvisor.fr/Attraction_Review-g147374-d25868775-Reviews-Tiki_Boat_Guadeloupe-Guadeloupe.html",
+  ],
   aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "600", bestRating: "5" },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Excursions en mer Guadeloupe",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "TouristTrip",
+          name: "Croisière Grand Cul de Sac Marin",
+          description: "Journée complète dans le plus grand lagon des Petites Antilles. Snorkeling, repas créole, îlets.",
+        },
+        price: "95",
+        priceCurrency: "EUR",
+      },
+    ],
+  },
 };
 
 export default async function LocaleLayout({

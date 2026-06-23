@@ -8,17 +8,26 @@ import { formatPrice } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
 const BASE = "https://tikiboat.fr";
+const OG_IMAGE = `${BASE}/photos/grandculdesacmarin-excursion.png`;
 
 export const metadata: Metadata = {
-  title: "Excursions en bateau en Guadeloupe — Croisières & Sorties mer",
+  title: "Excursions en bateau en Guadeloupe — Croisières & Sorties mer | Tiki Boat",
   description:
     "Toutes nos excursions en bateau en Guadeloupe : croisière journée Grand Cul de Sac Marin (95 €), privatisation sur mesure. Snorkeling, repas créole, îlets. Réservez en ligne.",
-  alternates: { canonical: `${BASE}/excursions` },
+  alternates: { canonical: `${BASE}/excursions`, languages: { fr: `${BASE}/excursions`, en: `${BASE}/en/excursions` } },
   openGraph: {
     title: "Excursions en bateau en Guadeloupe | Tiki Boat",
     description: "Croisière journée, privatisation. Snorkeling, îlets, repas créole. À partir de 95 €.",
     url: `${BASE}/excursions`,
     type: "website",
+    locale: "fr_FR",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Excursions en bateau Guadeloupe | Tiki Boat",
+    description: "Croisière journée, snorkeling, repas créole. À partir de 95€.",
+    images: [OG_IMAGE],
   },
 };
 
@@ -34,8 +43,23 @@ export default async function ExcursionsPage({ params }: Props) {
   const locStr = (fr: string, en?: string) => locale === "en" && en ? en : fr;
   const locArr = (fr: string[], en?: string[]) => locale === "en" && en ? en : fr;
 
+  const faqItems = t.raw("faq.items") as { q: string; a: string }[];
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(item => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* Header */}
       <section className="pt-32 pb-16 bg-sky-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-tiki-red/10 to-transparent" />
