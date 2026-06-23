@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import SiteImage from "@/components/SiteImage";
 import { Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -10,20 +9,6 @@ export const metadata: Metadata = {
   description: "Découvrez en images les excursions Tiki Boat en Guadeloupe. Photos et vidéos des îlets, du snorkeling, et du repas créole.",
 };
 
-const photos = [
-  { src: "/photos/galerie-01.jpg", alt: "Le Tiki Boat en mer", category: "Bateau" },
-  { src: "/photos/galerie-02.jpg", alt: "Eaux turquoise du lagon", category: "Mer & Lagon" },
-  { src: "/photos/galerie-03.jpg", alt: "Snorkeling sur le récif corallien", category: "Snorkeling" },
-  { src: "/photos/galerie-04.jpg", alt: "Vue sur la mer des Caraïbes", category: "Mer & Lagon" },
-  { src: "/photos/galerie-05.jpg", alt: "Coucher de soleil en mer", category: "Coucher de soleil" },
-  { src: "/photos/galerie-06.jpg", alt: "Îlet du Grand Cul de Sac Marin", category: "Îlets" },
-  { src: "/photos/galerie-07.jpg", alt: "Plage et mer turquoise", category: "Îlets" },
-  { src: "/photos/galerie-08.jpg", alt: "Poissons tropicaux en snorkeling", category: "Snorkeling" },
-  { src: "/photos/galerie-09.jpg", alt: "Repas créole les pieds dans l'eau", category: "Repas" },
-  { src: "/photos/galerie-10.jpg", alt: "Vue aérienne du lagon", category: "Mer & Lagon" },
-  { src: "/photos/galerie-11.jpg", alt: "Bateau Tiki Boat au mouillage", category: "Bateau" },
-  { src: "/photos/galerie-12.jpg", alt: "Mangrove et rivière salée", category: "Mangrove" },
-];
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -76,32 +61,6 @@ export default async function GaleriePage({ params }: Props) {
                     <h3 className="font-bold text-slate-800">{v.title}</h3>
                   </div>
                   <p className="text-slate-500 text-sm">{v.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Photo grid */}
-      <section className="py-16 bg-tiki-dark-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="section-title mb-8">{t("photos")}</h2>
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {photos.map((photo, i) => (
-              <div key={i} className="relative overflow-hidden rounded-xl border border-tiki-gold/10 hover:border-tiki-gold/40 transition-all duration-300 group break-inside-avoid">
-                <div className="relative aspect-[3/2]">
-                  <SiteImage
-                    src={photo.src}
-                    alt={photo.alt}
-                    label={`${photo.category} — ${photo.alt}`}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-tiki-dark/80 to-transparent p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="badge text-xs">{photo.category}</span>
-                  <p className="text-slate-800 text-sm mt-1">{photo.alt}</p>
                 </div>
               </div>
             ))}
