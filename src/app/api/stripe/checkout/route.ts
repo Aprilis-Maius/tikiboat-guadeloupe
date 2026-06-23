@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
                 ? `Acompte — ${excursion.title}`
                 : excursion.title,
               description: `${date} · ${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""} · ${excursion.departureTime}`,
-              images: [excursion.images[0]],
+              images: excursion.images[0] ? [`${baseUrl}${excursion.images[0]}`] : [],
             },
             unit_amount: Math.round(amountToPay * 100),
           },
