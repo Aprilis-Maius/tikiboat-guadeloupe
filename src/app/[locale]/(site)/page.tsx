@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = isEn ? `${BASE}/en` : BASE;
   return {
     title: isEn
-      ? "Boat Trips Guadeloupe — Cruise & Snorkeling | Tiki Boat"
-      : "Excursions en bateau Guadeloupe — Croisière & Snorkeling | Tiki Boat",
+      ? "Boat Trips Guadeloupe — Cruise & Snorkeling"
+      : "Excursions en bateau Guadeloupe — Croisière & Snorkeling",
     description: isEn
       ? "Discover the Grand Cul de Sac Marin by boat. Snorkeling, Creole meal, tropical islands. Full day from €95. Book online."
       : "Découvrez le Grand Cul de Sac Marin en bateau. Snorkeling, repas créole, îlets tropicaux. Journée complète à partir de 95€. Réservez en ligne.",
