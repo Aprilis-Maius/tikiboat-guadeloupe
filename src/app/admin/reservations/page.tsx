@@ -154,7 +154,7 @@ export default function ReservationsPage() {
     await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: newStatus }),
+      body: JSON.stringify({ id, status: newStatus, ...(newStatus === "confirmed" ? { action: "confirm" } : {}) }),
     });
     await fetchReservations();
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, status: newStatus } : null);
