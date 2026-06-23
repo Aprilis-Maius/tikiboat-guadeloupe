@@ -60,44 +60,59 @@ export default async function ConfirmationPage({
 
         {/* Récapitulatif réservation */}
         {meta && (
-          <div className="bg-tiki-ocean/5 border border-tiki-ocean/20 rounded-2xl p-6 text-left mb-8">
-            <h2 className="font-bold text-tiki-ocean text-lg mb-4 text-center">
-              📋 Récapitulatif de votre réservation
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 text-sm">Excursion</span>
-                <span className="font-semibold text-slate-800 text-sm text-right max-w-[60%]">{meta.excursionTitle}</span>
+          <div className="rounded-2xl overflow-hidden shadow-lg mb-8 text-left">
+            {/* Header */}
+            <div className="bg-tiki-ocean px-6 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-0.5">Votre réservation</p>
+                <p className="text-white font-bold text-lg leading-tight">{meta.excursionTitle}</p>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 text-sm">Date</span>
-                <span className="font-semibold text-slate-800 text-sm capitalize">{formatDate(meta.date)}</span>
+              <div className="bg-tiki-gold/20 border border-tiki-gold/40 rounded-full px-3 py-1">
+                <span className="text-tiki-gold text-xs font-bold uppercase tracking-wide">Confirmée</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 text-sm flex items-center gap-1.5"><Users size={14} /> Passagers</span>
-                <span className="font-semibold text-slate-800 text-sm">{paxLabel}</span>
+            </div>
+
+            {/* Body */}
+            <div className="bg-white px-6 py-5 space-y-0">
+              <div className="flex items-center gap-3 py-3 border-b border-slate-100">
+                <CalendarDays size={16} className="text-tiki-gold shrink-0" />
+                <span className="text-slate-500 text-sm w-28 shrink-0">Date</span>
+                <span className="font-semibold text-slate-800 text-sm capitalize ml-auto">{formatDate(meta.date)}</span>
+              </div>
+              <div className="flex items-center gap-3 py-3 border-b border-slate-100">
+                <Users size={16} className="text-tiki-gold shrink-0" />
+                <span className="text-slate-500 text-sm w-28 shrink-0">Passagers</span>
+                <span className="font-semibold text-slate-800 text-sm ml-auto">{paxLabel}</span>
               </div>
               {customerEmail && (
-                <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                  <span className="text-slate-500 text-sm">Email</span>
-                  <span className="font-semibold text-slate-800 text-sm">{customerEmail}</span>
+                <div className="flex items-center gap-3 py-3 border-b border-slate-100">
+                  <Mail size={16} className="text-tiki-gold shrink-0" />
+                  <span className="text-slate-500 text-sm w-28 shrink-0">Email</span>
+                  <span className="font-semibold text-slate-800 text-sm ml-auto">{customerEmail}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 text-sm">Total</span>
-                <span className="font-bold text-tiki-gold text-lg">{totalPrice.toFixed(2)} €</span>
+              <div className="flex items-center gap-3 py-3 border-b border-slate-100">
+                <CreditCard size={16} className="text-tiki-gold shrink-0" />
+                <span className="text-slate-500 text-sm w-28 shrink-0">Total excursion</span>
+                <span className="font-bold text-slate-800 text-sm ml-auto">{totalPrice.toFixed(2)} €</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-slate-500 text-sm flex items-center gap-1.5"><CreditCard size={14} /> {isDeposit ? "Acompte payé (30%)" : "Payé"}</span>
-                <span className="font-semibold text-green-600 text-sm">✓ {isDeposit ? depositAmount.toFixed(2) : totalPrice.toFixed(2)} €</span>
+              <div className="flex items-center gap-3 py-3">
+                <CheckCircle2 size={16} className="text-green-500 shrink-0" />
+                <span className="text-slate-500 text-sm w-28 shrink-0">{isDeposit ? "Acompte payé" : "Payé"}</span>
+                <span className="font-bold text-green-600 ml-auto">{isDeposit ? depositAmount.toFixed(2) : totalPrice.toFixed(2)} €</span>
               </div>
-              {isDeposit && (
-                <div className="flex items-center justify-between py-1.5 bg-amber-50 rounded-lg px-3 -mx-1">
-                  <span className="text-amber-700 text-sm font-medium">Solde à régler le jour J</span>
-                  <span className="font-bold text-amber-700 text-sm">{remaining.toFixed(2)} €</span>
-                </div>
-              )}
             </div>
+
+            {/* Footer solde */}
+            {isDeposit && (
+              <div className="bg-amber-50 border-t border-amber-200 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <p className="text-amber-800 font-semibold text-sm">Solde à régler le jour J</p>
+                  <p className="text-amber-600 text-xs mt-0.5">Avant l&apos;embarquement · CB ou espèces</p>
+                </div>
+                <span className="text-amber-800 font-bold text-xl">{remaining.toFixed(2)} €</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -129,15 +144,6 @@ export default async function ConfirmationPage({
           </ul>
         </div>
 
-        {/* Info acompte */}
-        {isDeposit && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-tiki-gold/10 border border-tiki-gold/30 text-left mb-8">
-            <CheckCircle2 className="text-tiki-gold shrink-0 mt-0.5" size={18} />
-            <p className="text-slate-500 text-sm">
-              Vous avez payé un acompte de <strong className="text-slate-800">{depositAmount.toFixed(2)} €</strong>. Le <strong className="text-slate-800">solde de {remaining.toFixed(2)} € sera à régler le jour de l&apos;excursion</strong>, avant l&apos;embarquement (CB ou espèces).
-            </p>
-          </div>
-        )}
 
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
