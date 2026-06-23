@@ -535,10 +535,10 @@ export default function ReservationsPage() {
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <span className={`text-xs px-2 py-0.5 rounded-md border font-medium ${s.cls}`}>{s.label}</span>
-                              {r.isPaid
-                                ? <span className="text-xs text-emerald-600 font-semibold w-16 text-right">Soldé</span>
-                                : r.paymentType === "deposit"
+                              {r.paymentType === "deposit"
                                 ? <span className="text-xs text-amber-500 font-semibold w-16 text-right">Acompte</span>
+                                : r.isPaid
+                                ? <span className="text-xs text-emerald-600 font-semibold w-16 text-right">Soldé</span>
                                 : <span className="text-xs text-red-500 font-semibold w-16 text-right">À régler</span>}
                               <span className="text-slate-800 font-bold text-sm tabular-nums w-16 text-right">{r.totalPrice} €</span>
                             </div>
