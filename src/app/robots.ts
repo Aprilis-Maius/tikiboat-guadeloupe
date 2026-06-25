@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/", "/reservation/confirmation", "/blog"],
+        disallow: ["/admin/", "/api/", "/reservation/confirmation"],
       },
     ],
     sitemap: "https://tikiboat.fr/sitemap.xml",
