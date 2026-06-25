@@ -30,6 +30,15 @@ export async function POST(req: NextRequest) {
     const excursion = await getExcursionBySlug(excursionSlug);
     if (!excursion) return NextResponse.json({ error: "Excursion not found" }, { status: 404 });
 
+    // Prix recalculés côté serveur — ne jamais faire confiance au client
+    const numAdults   = Math.max(0, parseInt(String(adults))   || 0);
+    const numChildren = Math.max(0, parseInt(String(children)) || 0);
+    const numInfants  = Math.max(0, parseInt(String(body.infants ?? 0)) || 0);
+    const serverTotal   = numAdults * excursion.priceAdult + numChildren * excursion.priceChild;
+    const serverDeposit = paymentType === "deposit" ? Math.round(serverTotal * 0.3 * 100) / 100 : 0;
+    const serverAmountToPay = paymentType === "deposit" ? serverDeposit : serverTotal;
+    if (serverTotal <= 0) return NextResponse.json({ error: "Prix invalide" }, { status: 400 });
+
     // Vérification capacité côté serveur (filet de sécurité)
     const avail = await prisma.availability.findUnique({
       where: { date_excursionId: { date, excursionId: excursionSlug } },
@@ -44,7 +53,7 @@ export async function POST(req: NextRequest) {
     const bookedCount = existingResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
     const maxSpots    = avail?.maxSpots ?? excursion.maxPassengers ?? 12;
     const remaining   = maxSpots - bookedCount;
-    const requested   = Number(adults) + Number(children) + Number(body.infants ?? 0);
+    const requested   = numAdults + numChildren + numInfants;
     if (requested > remaining) {
       return NextResponse.json({
         error: `Plus assez de places. Il reste ${remaining} place${remaining !== 1 ? "s" : ""} ce jour.`,
@@ -67,10 +76,10 @@ export async function POST(req: NextRequest) {
               name: isDeposit
                 ? `Acompte — ${excursion.title}`
                 : excursion.title,
-              description: `${date} · ${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? ` + ${children} enfant${children > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
+              description: `${date} · ${numAdults} adulte${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} enfant${numChildren > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
               images: excursion.images[0] ? [`${baseUrl}${excursion.images[0]}`] : [],
             },
-            unit_amount: Math.round(amountToPay * 100),
+            unit_amount: Math.round(serverAmountToPay * 100),
           },
           quantity: 1,
         },
@@ -79,13 +88,13 @@ export async function POST(req: NextRequest) {
         excursionSlug,
         excursionTitle: excursion.title,
         date,
-        adults:        String(adults),
-        children:      String(children),
-        infants:       String(body.infants ?? 0),
+        adults:        String(numAdults),
+        children:      String(numChildren),
+        infants:       String(numInfants),
         customerName,
         customerPhone,
-        totalPrice:    String(totalPrice),
-        depositAmount: String(paymentType === "full" ? 0 : depositAmount),
+        totalPrice:    String(serverTotal),
+        depositAmount: String(serverDeposit),
         paymentType,
         notes:         notes || "",
       },

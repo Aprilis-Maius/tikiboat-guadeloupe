@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getServerSession } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -35,3 +36,9 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as { role?: string }).role !== "admin") return null;
+  return session;
+}

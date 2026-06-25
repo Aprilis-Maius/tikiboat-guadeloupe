@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const toSlug = (title: string) =>
   title.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-async function requireAdmin() {
-  return (await getServerSession(authOptions)) ?? null;
-}
 
 export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

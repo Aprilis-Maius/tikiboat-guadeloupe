@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  return session ?? null;
-}
 
 /* Helpers */
 const toSlug = (title: string) =>
