@@ -24,6 +24,12 @@ export interface ReservationData {
   notes?:         string;
 }
 
+function esc(s: string | undefined | null): string {
+  if (!s) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
+}
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
@@ -79,6 +85,9 @@ function logoHeader(subtitle: string, badgeBg = "#16a34a", badgeText = "✅ Rés
 
 // ─── Email demande reçue (en attente de validation) ────────────────────────
 export async function sendPendingEmail(data: ReservationData) {
+  const safeName  = esc(data.customerName);
+  const safeTitle = esc(data.excursionTitle);
+  const safeNotes = esc(data.notes);
   const pax = `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""}`;
 
   const html = `<!DOCTYPE html>
@@ -91,9 +100,9 @@ export async function sendPendingEmail(data: ReservationData) {
   <tr><td>${logoHeader("Excursions en mer · Guadeloupe", "#d97706", "⏳ Demande reçue")}</td></tr>
 
   <tr><td style="background:#ffffff;padding:32px;">
-    <p style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 6px;">Bonjour ${data.customerName},</p>
+    <p style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 6px;">Bonjour ${safeName},</p>
     <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0 0 20px;">
-      Nous avons bien reçu votre demande de réservation pour <strong style="color:#0f172a;">${data.excursionTitle}</strong>.<br/>
+      Nous avons bien reçu votre demande de réservation pour <strong style="color:#0f172a;">${safeTitle}</strong>.<br/>
       <strong style="color:#d97706;">Votre réservation sera confirmée sous 24 à 48h</strong>, selon le remplissage du bateau ce jour-là.
     </p>
 
@@ -101,7 +110,7 @@ export async function sendPendingEmail(data: ReservationData) {
       <tr><td style="padding:16px 20px 10px;">
         <p style="font-size:10px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 14px;">📋 Récapitulatif</p>
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+          ${row("Excursion", `<strong>${safeTitle}</strong>`)}
           ${divider()}
           ${row("Date souhaitée", `<strong>${formatDate(data.date)}</strong>`)}
           ${divider()}
@@ -153,7 +162,12 @@ export async function sendPendingEmail(data: ReservationData) {
 
 // ─── Notification admin (réservation en attente) ────────────────────────────
 export async function sendAdminPendingNotification(data: ReservationData) {
-  const pax = data.adults + (data.children ?? 0) + (data.infants ?? 0);
+  const pax       = data.adults + (data.children ?? 0) + (data.infants ?? 0);
+  const safeName  = esc(data.customerName);
+  const safePhone = esc(data.customerPhone);
+  const safeEmail = esc(data.customerEmail);
+  const safeTitle = esc(data.excursionTitle);
+  const safeNotes = esc(data.notes);
 
   const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"></head>
@@ -162,7 +176,7 @@ export async function sendAdminPendingNotification(data: ReservationData) {
 <tr><td align="center">
 <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
 
-  <tr><td>${logoHeader(`${data.excursionTitle} · ${formatDate(data.date)}`, "#d97706", "⏳ En attente de validation")}</td></tr>
+  <tr><td>${logoHeader(`${safeTitle} · ${formatDate(data.date)}`, "#d97706", "⏳ En attente de validation")}</td></tr>
   <tr><td style="background:#d97706;padding:10px 24px;">
     <p style="color:#fff;font-size:13px;font-weight:700;margin:0;">
       ${pax} passager${pax > 1 ? "s" : ""} · ${data.paymentType === "deposit" ? `Acompte de ${data.depositAmount.toFixed(2)} € encaissé` : `Paiement intégral ${data.totalPrice.toFixed(2)} €`}
@@ -171,19 +185,19 @@ export async function sendAdminPendingNotification(data: ReservationData) {
 
   <tr><td style="background:#ffffff;padding:24px;">
     <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">👤 Client</p>
-    <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${data.customerName}</p>
-    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${data.customerPhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${data.customerPhone}</a></p>
-    <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${data.customerEmail}" style="color:#2563eb;text-decoration:none;">${data.customerEmail}</a></p>
+    <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${safeName}</p>
+    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${safePhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${safePhone}</a></p>
+    <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${safeEmail}" style="color:#2563eb;text-decoration:none;">${safeEmail}</a></p>
 
     <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 20px;" />
 
     <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">📅 Réservation</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;margin-bottom:24px;">
-      ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+      ${row("Excursion", `<strong>${safeTitle}</strong>`)}
       ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
       ${row("Passagers", `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""} <strong>(${pax} pers.)</strong>`)}
       ${row("Total", `<strong style="color:#d97706;font-size:17px;">${data.totalPrice.toFixed(2)} €</strong>`)}
-      ${data.notes ? row("Notes", `<em style="color:#64748b;">${data.notes}</em>`) : ""}
+      ${safeNotes ? row("Notes", `<em style="color:#64748b;">${safeNotes}</em>`) : ""}
     </table>
 
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -221,6 +235,9 @@ export async function sendConfirmationEmail(data: ReservationData) {
   const retTime   = exc?.returnTime    ?? "17h00";
   const depPoint  = exc?.departurePoint ?? "Marina de Pointe-à-Pitre / Le Gosier";
   const icsBase64 = Buffer.from(generateICS(data, exc)).toString("base64");
+  const safeName  = esc(data.customerName);
+  const safeTitle = esc(data.excursionTitle);
+  const safeNotes = esc(data.notes);
   const pax       = `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""}`;
 
   const html = `<!DOCTYPE html>
@@ -236,9 +253,9 @@ export async function sendConfirmationEmail(data: ReservationData) {
   <!-- Corps blanc -->
   <tr><td style="background:#ffffff;padding:32px;">
 
-    <p style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 6px;">Bonjour ${data.customerName},</p>
+    <p style="font-size:16px;font-weight:700;color:#0f172a;margin:0 0 6px;">Bonjour ${safeName},</p>
     <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0 0 28px;">
-      Votre réservation pour <strong style="color:#0f172a;">${data.excursionTitle}</strong> est confirmée. Nous avons hâte de vous accueillir à bord !
+      Votre réservation pour <strong style="color:#0f172a;">${safeTitle}</strong> est confirmée. Nous avons hâte de vous accueillir à bord !
     </p>
 
     <!-- Récap -->
@@ -246,7 +263,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
       <tr><td style="padding:16px 20px 10px;">
         <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 14px;">📋 Récapitulatif</p>
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+          ${row("Excursion", `<strong>${safeTitle}</strong>`)}
           ${divider()}
           ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
           ${row("Départ", `<strong style="color:#0088cc;">${depTime}</strong>`)}
@@ -282,11 +299,11 @@ export async function sendConfirmationEmail(data: ReservationData) {
       </td></tr>
     </table>
 
-    ${data.notes ? `
+    ${safeNotes ? `
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left:4px solid #3b82f6;background:#eff6ff;border-radius:0 8px 8px 0;margin-bottom:20px;">
       <tr><td style="padding:12px 16px;">
         <p style="font-size:10px;font-weight:700;color:#1d4ed8;margin:0 0 4px;">📝 Votre remarque</p>
-        <p style="font-size:13px;color:#1e40af;margin:0;">${data.notes}</p>
+        <p style="font-size:13px;color:#1e40af;margin:0;">${safeNotes}</p>
       </td></tr>
     </table>` : ""}
 
@@ -328,6 +345,11 @@ export async function sendAdminNotification(data: ReservationData) {
   const pax       = data.adults + (data.children ?? 0) + (data.infants ?? 0);
   const isDeposit = data.paymentType === "deposit";
   const remaining = data.totalPrice - data.depositAmount;
+  const safeName  = esc(data.customerName);
+  const safePhone = esc(data.customerPhone);
+  const safeEmail = esc(data.customerEmail);
+  const safeTitle = esc(data.excursionTitle);
+  const safeNotes = esc(data.notes);
 
   const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"></head>
@@ -337,7 +359,7 @@ export async function sendAdminNotification(data: ReservationData) {
 <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
 
   <!-- Header -->
-  <tr><td>${logoHeader(`${data.excursionTitle} · ${formatDate(data.date)}`, isDeposit ? "#d97706" : "#16a34a", isDeposit ? "💰 Acompte reçu" : "✅ Paiement intégral")}</td></tr>
+  <tr><td>${logoHeader(`${safeTitle} · ${formatDate(data.date)}`, isDeposit ? "#d97706" : "#16a34a", isDeposit ? "💰 Acompte reçu" : "✅ Paiement intégral")}</td></tr>
 
   <!-- Bandeau montant -->
   <tr><td style="background:${isDeposit ? "#d97706" : "#16a34a"};padding:10px 24px;">
@@ -353,16 +375,16 @@ export async function sendAdminNotification(data: ReservationData) {
 
     <!-- Client -->
     <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">👤 Client</p>
-    <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${data.customerName}</p>
-    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${data.customerPhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${data.customerPhone}</a></p>
-    <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${data.customerEmail}" style="color:#2563eb;text-decoration:none;">${data.customerEmail}</a></p>
+    <p style="font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px;">${safeName}</p>
+    <p style="font-size:13px;margin:0 0 3px;"><a href="tel:${safePhone}" style="color:#0088cc;text-decoration:none;font-weight:600;">${safePhone}</a></p>
+    <p style="font-size:13px;margin:0 0 20px;"><a href="mailto:${safeEmail}" style="color:#2563eb;text-decoration:none;">${safeEmail}</a></p>
 
     <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 20px;" />
 
     <!-- Réservation -->
     <p style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.12em;margin:0 0 10px;">📅 Réservation</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;">
-      ${row("Excursion", `<strong>${data.excursionTitle}</strong>`)}
+      ${row("Excursion", `<strong>${safeTitle}</strong>`)}
       ${row("Date", `<strong>${formatDate(data.date)}</strong>`)}
       ${row("Horaires", `${exc?.departureTime ?? "08h00"} → ${exc?.returnTime ?? "17h00"}`)}
       ${row("Passagers", `${data.adults} adulte${data.adults > 1 ? "s" : ""}${data.children ? ` + ${data.children} enfant${data.children > 1 ? "s" : ""}` : ""}${data.infants ? ` + ${data.infants} bébé${data.infants > 1 ? "s" : ""}` : ""} <strong>(${pax} pers.)</strong>`)}
@@ -378,7 +400,7 @@ export async function sendAdminNotification(data: ReservationData) {
         ? row("Acompte reçu", `<span style="color:#16a34a;font-weight:600;">✓ ${data.depositAmount.toFixed(2)} €</span>`) +
           row("Solde à encaisser", `<strong style="color:#dc2626;font-size:15px;">${remaining.toFixed(2)} €</strong>`)
         : row("Statut", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
-      ${data.notes ? row("Notes client", `<em style="color:#64748b;">${data.notes}</em>`) : ""}
+      ${safeNotes ? row("Notes client", `<em style="color:#64748b;">${safeNotes}</em>`) : ""}
     </table>
 
     <!-- CTA -->

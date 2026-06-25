@@ -18,13 +18,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json() as Record<string, string>;
 
-  const ops = Object.entries(body).map(([id, value]) =>
-    prisma.siteContent.upsert({
-      where:  { id },
-      update: { value },
-      create: { id, value },
-    })
-  );
+  // Seules les clés déjà en base peuvent être mises à jour (pas de création de nouvelles clés)
+  const existingKeys = (await prisma.siteContent.findMany({ select: { id: true } })).map(r => r.id);
+  const ops = Object.entries(body)
+    .filter(([id, value]) => existingKeys.includes(id) && typeof value === "string" && value.length <= 100000)
+    .map(([id, value]) => prisma.siteContent.update({ where: { id }, data: { value } }));
 
   await prisma.$transaction(ops);
   return NextResponse.json({ ok: true });

@@ -23,6 +23,10 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta    = session.metadata!;
 
+    // Idempotence : ignorer les replays Stripe (Stripe peut renvoyer jusqu'à 3 fois)
+    const existing = await prisma.reservation.findFirst({ where: { stripeSessionId: session.id } });
+    if (existing) return NextResponse.json({ received: true });
+
     const adults   = parseInt(meta.adults)   || 0;
     const children = parseInt(meta.children) || 0;
     const infants  = parseInt(meta.infants)  || 0;

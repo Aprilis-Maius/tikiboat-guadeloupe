@@ -16,12 +16,29 @@ export async function GET(req: NextRequest) {
   const date   = searchParams.get("date");
   const status = searchParams.get("status");
 
+  const VALID_STATUSES = ["pending", "confirmed", "cancelled"];
+  if (status && !VALID_STATUSES.includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+  }
+
   const reservations = await prisma.reservation.findMany({
     where: {
       ...(date   ? { date }   : {}),
       ...(status ? { status } : {}),
     },
     orderBy: { date: "asc" },
+    select: {
+      id: true, excursionId: true, excursionTitle: true, date: true,
+      adults: true, children: true, infants: true, source: true,
+      totalPrice: true, depositAmount: true, paymentType: true,
+      status: true, isPaid: true,
+      customerName: true, customerEmail: true, customerPhone: true,
+      notes: true, createdAt: true,
+      // stripeSessionId volontairement exclu
+    },
   });
 
   return NextResponse.json(reservations);
@@ -38,12 +55,13 @@ export async function POST(req: NextRequest) {
   });
   const hasPrivatisation = existingOnDay.some(r => r.excursionId === "privatisation");
 
-  if (body.blocksDay && existingOnDay.length > 0) {
+  const blocksDay = body.blocksDay === true || body.blocksDay === "true";
+  if (blocksDay && existingOnDay.length > 0) {
     return NextResponse.json({
       error: `Impossible : des réservations existent déjà le ${body.date}. Annulez-les d'abord.`,
     }, { status: 409 });
   }
-  if (!body.blocksDay && hasPrivatisation) {
+  if (!blocksDay && hasPrivatisation) {
     return NextResponse.json({
       error: "Ce jour est privatisé. Impossible d'ajouter une réservation.",
     }, { status: 409 });
@@ -93,7 +111,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Privatisation → bloquer le jour pour toutes les excursions (statiques + DB)
-  if (body.blocksDay) {
+  if (blocksDay) {
     const dbExcursions = await prisma.excursion.findMany({ select: { slug: true } });
     const allSlugs = Array.from(new Set([
       ...staticExcursions.map(e => e.slug),

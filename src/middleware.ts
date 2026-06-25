@@ -8,8 +8,11 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Protect /admin/* routes at the edge (except /admin/login)
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+  // Protect /admin/* and /api/admin/* routes at the edge
+  if (
+    (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) ||
+    pathname.startsWith("/api/admin")
+  ) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token) {
       const loginUrl = new URL("/admin/login", req.url);
@@ -26,6 +29,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/api/admin/:path*",
     "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
 };
