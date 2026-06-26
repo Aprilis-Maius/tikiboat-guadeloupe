@@ -25,6 +25,7 @@ const emptyCreate = () => ({
   paymentType: "none" as "full" | "deposit" | "none",
   isPaid: false, status: "pending", notes: "",
   customPrice: 0,
+  passengerNames: ["", ""] as string[], // 1 par passager (adultes d'abord, enfants, bébés)
 });
 
 const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
@@ -129,6 +130,13 @@ export default function ReservationsPage() {
         totalPrice:     total,
         depositAmount:  createForm.paymentType === "deposit" ? Math.round(total * 0.3 * 100) / 100 : 0,
         blocksDay:      isPrivatisation,
+        passengerNames: JSON.stringify(
+          createForm.passengerNames.map((name, i) => ({
+            name,
+            type: i < createForm.adults ? "adult" : i < createForm.adults + createForm.children ? "child" : "infant",
+          }))
+        ),
+        certificationAccepted: true, // admin = confiance implicite
       }),
     });
     await fetchReservations();
@@ -340,15 +348,26 @@ export default function ReservationsPage() {
                 <div key={key}>
                   <label className={labelCls}>{label}</label>
                   <input type="number" min={key === "adults" ? 1 : 0} value={createForm[key] as number}
-                    onChange={e => setCreateForm(p => ({ ...p, [key]: +e.target.value }))}
+                    onChange={e => setCreateForm(p => {
+                      const val = +e.target.value;
+                      const updated = { ...p, [key]: val };
+                      const total = (key === "adults" ? val : p.adults) + (key === "children" ? val : p.children) + (key === "infants" ? val : p.infants);
+                      const names = [...p.passengerNames];
+                      while (names.length < total) names.push("");
+                      return { ...updated, passengerNames: names.slice(0, total) };
+                    })}
                     className={inputCls} />
                 </div>
               ))}
             </div>
             <div>
-              <label className={labelCls}>Nom complet *</label>
+              <label className={labelCls}>Nom du réservant *</label>
               <input value={createForm.customerName} placeholder="Jean Dupont"
-                onChange={e => setCreateForm(p => ({ ...p, customerName: e.target.value }))}
+                onChange={e => setCreateForm(p => {
+                  const names = [...p.passengerNames];
+                  names[0] = e.target.value; // auto-remplit Adulte 1
+                  return { ...p, customerName: e.target.value, passengerNames: names };
+                })}
                 className={inputCls} />
             </div>
             <div>
@@ -395,6 +414,41 @@ export default function ReservationsPage() {
                 <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-tiki-lagon font-bold text-sm">{calcTotal()} €</div>
               )}
             </div>
+            {/* Noms des passagers */}
+            {!isPrivatisation && (createForm.adults + createForm.children + createForm.infants) > 0 && (
+              <div className="md:col-span-2 lg:col-span-3">
+                <label className={labelCls}>👥 Noms des passagers à bord</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {Array.from({ length: createForm.adults + createForm.children + createForm.infants }).map((_, i) => {
+                    const isInfant = i >= createForm.adults + createForm.children;
+                    const isChild  = !isInfant && i >= createForm.adults;
+                    const type      = isInfant ? "Bébé" : isChild ? "Enfant" : "Adulte";
+                    const typeIdx   = isInfant ? i - createForm.adults - createForm.children + 1
+                                    : isChild  ? i - createForm.adults + 1
+                                    : i + 1;
+                    return (
+                      <div key={i}>
+                        <label className={labelCls}>{type} {typeIdx}</label>
+                        <input
+                          type="text"
+                          placeholder={`Prénom et nom — ${type.toLowerCase()} ${typeIdx}`}
+                          value={createForm.passengerNames[i] ?? ""}
+                          readOnly={i === 0}
+                          onChange={e => setCreateForm(p => {
+                            const names = [...p.passengerNames];
+                            names[i] = e.target.value;
+                            return { ...p, passengerNames: names };
+                          })}
+                          className={`${inputCls} ${i === 0 ? "bg-slate-50 text-slate-500" : ""}`}
+                        />
+                        {i === 0 && <p className="text-slate-400 text-[10px] mt-1">Auto-rempli depuis le réservant</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="md:col-span-2 lg:col-span-3">
               <label className={labelCls}>Notes internes</label>
               <textarea rows={2} value={createForm.notes} placeholder="Remarques, demandes spécifiques..."
