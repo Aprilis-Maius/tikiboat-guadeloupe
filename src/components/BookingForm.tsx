@@ -339,7 +339,15 @@ function BookingFormInner() {
                 <label className="block text-slate-600 text-sm font-medium mb-1.5">{label}</label>
                 <input type={type} placeholder={ph}
                   value={data[key as keyof BookingData] as string}
-                  onChange={(e) => setData({ ...data, [key]: e.target.value })}
+                  onChange={(e) => {
+                    if (key === "customerName") {
+                      const names = [...data.passengerNames];
+                      if (names[0]) names[0] = { ...names[0], name: e.target.value };
+                      setData({ ...data, customerName: e.target.value, passengerNames: names });
+                    } else {
+                      setData({ ...data, [key]: e.target.value });
+                    }
+                  }}
                   className={inputCls}
                 />
               </div>
@@ -358,6 +366,7 @@ function BookingFormInner() {
                 {data.passengerNames.map((p, i) => {
                   const typeLabel = p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé";
                   const typeIdx = data.passengerNames.slice(0, i).filter(x => x.type === p.type).length + 1;
+                  const isFirst = i === 0;
                   return (
                     <div key={i}>
                       <label className="block text-slate-400 text-xs mb-1">{typeLabel} {typeIdx}</label>
@@ -365,13 +374,16 @@ function BookingFormInner() {
                         type="text"
                         placeholder={`Prénom et nom — ${typeLabel.toLowerCase()} ${typeIdx}`}
                         value={p.name}
+                        readOnly={isFirst}
                         onChange={(e) => {
+                          if (isFirst) return;
                           const names = [...data.passengerNames];
                           names[i] = { ...names[i], name: e.target.value };
                           setData({ ...data, passengerNames: names });
                         }}
-                        className={inputCls}
+                        className={`${inputCls} ${isFirst ? "bg-slate-50 text-slate-400 cursor-default" : ""}`}
                       />
+                      {isFirst && <p className="text-slate-400 text-[10px] mt-1">Rempli automatiquement depuis votre nom</p>}
                     </div>
                   );
                 })}
