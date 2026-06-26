@@ -17,8 +17,8 @@ export const excursions: Excursion[] = [
     returnTime: "16h00",
     departurePoint: "Marina de Pointe-à-Pitre / Le Gosier",
     maxPassengers: 12,
-    priceAdult: 2,
-    priceChild: 2,
+    priceAdult: 100,
+    priceChild: 60,
     priceAdultHighSeason: 120,
     priceChildHighSeason: 90,
     included: [
