@@ -479,7 +479,7 @@ function BookingFormInner() {
                 <span className="text-slate-700 text-sm font-semibold">Certification santé & sécurité <span className="text-red-500">*</span></span>
               </div>
               <p className="text-slate-500 text-xs leading-relaxed">
-                Je certifie que tous les passagers sont en <strong className="text-slate-700">bonne santé</strong> et ne présentent aucune contre-indication médicale à la pratique d&apos;activités nautiques (problèmes cardiaques, épilepsie, grossesse avancée…). En cas d&apos;allergie alimentaire ou d&apos;intolérance, je m&apos;engage à en informer l&apos;équipage avant l&apos;embarquement.
+                Je certifie que tous les passagers sont en <strong className="text-slate-700">bonne santé</strong>{" "}et ne présentent aucune contre-indication médicale à la pratique d&apos;activités nautiques (problèmes cardiaques, épilepsie, grossesse avancée…). En cas d&apos;allergie alimentaire ou d&apos;intolérance, je m&apos;engage à en informer l&apos;équipage avant l&apos;embarquement.
               </p>
             </div>
           </label>
