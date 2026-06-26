@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import { Clock, Users, MapPin, CheckCircle2, XCircle, ChevronRight, CalendarDays, Star } from "lucide-react";
+import { excursions } from "@/data/excursions";
 import { getExcursionBySlug } from "@/lib/excursions";
 import { formatPrice } from "@/lib/utils";
 
