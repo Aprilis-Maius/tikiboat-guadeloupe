@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? "Boat Trips Guadeloupe — Cruise & Snorkeling"
       : "Excursions en bateau Guadeloupe — Croisière & Snorkeling",
     description: isEn
-      ? "Discover the Grand Cul de Sac Marin by boat. Snorkeling, Creole meal, tropical islands. Full day from €95. Book online."
-      : "Découvrez le Grand Cul de Sac Marin en bateau. Snorkeling, repas créole, îlets tropicaux. Journée complète à partir de 95€. Réservez en ligne.",
+      ? "Discover the Grand Cul de Sac Marin by boat. Snorkeling, Creole meal, tropical islands. Full day from €100. Book online."
+      : "Découvrez le Grand Cul de Sac Marin en bateau. Snorkeling, repas créole, îlets tropicaux. Journée complète à partir de 100€. Réservez en ligne.",
     keywords: isEn
       ? ["boat trips Guadeloupe", "snorkeling Guadeloupe", "cruise Caribbean", "Grand Cul de Sac Marin", "Tiki Boat"]
       : ["excursions bateau Guadeloupe", "snorkeling Guadeloupe", "croisière Caraïbes", "Grand Cul de Sac Marin", "Tiki Boat"],
@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: isEn ? "Tiki Boat — Boat Trips in Guadeloupe" : "Tiki Boat — Excursions en bateau en Guadeloupe",
       description: isEn
-        ? "Cruise, snorkeling, Creole meal. From €95 / adult. Book now!"
-        : "Croisière, snorkeling, repas créole. À partir de 95€ / adulte. Réservez maintenant !",
+        ? "Cruise, snorkeling, Creole meal. From €100 / adult. Book now!"
+        : "Croisière, snorkeling, repas créole. À partir de 100€ / adulte. Réservez maintenant !",
       url,
       type: "website",
       locale: isEn ? "en_US" : "fr_FR",
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: isEn ? "Boat Trips Guadeloupe | Tiki Boat" : "Excursions bateau Guadeloupe | Tiki Boat",
-      description: isEn ? "Cruise, snorkeling, Creole meal from €95" : "Croisière, snorkeling, repas créole à partir de 95€",
+      description: isEn ? "Cruise, snorkeling, Creole meal from €100" : "Croisière, snorkeling, repas créole à partir de 100€",
       images: [OG_IMAGE],
     },
   };
@@ -365,8 +365,8 @@ export default async function HomePage({ params }: Props) {
               <p className="text-slate-400 text-xs mb-6">{t("tarifs.croisiereHoraires")}</p>
               <div className="space-y-3 mb-7">
                 {[
-                  [t("tarifs.adulte"), "95 €"],
-                  [t("tarifs.enfant"), "55 €"],
+                  [t("tarifs.adulte"), "100 €"],
+                  [t("tarifs.enfant"), "60 €"],
                   [t("tarifs.moinsDe3Ans"), t("tarifs.gratuit")],
                 ].map(([l, p]) => (
                   <div key={l} className="flex justify-between text-sm border-b border-slate-200 pb-3 last:border-0 last:pb-0">

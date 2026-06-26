@@ -13,11 +13,11 @@ const OG_IMAGE = `${BASE}/photos/grandculdesacmarin-excursion.png`;
 export const metadata: Metadata = {
   title: "Excursions en bateau en Guadeloupe — Croisières & Sorties mer | Tiki Boat",
   description:
-    "Toutes nos excursions en bateau en Guadeloupe : croisière journée Grand Cul de Sac Marin (95 €), privatisation sur mesure. Snorkeling, repas créole, îlets. Réservez en ligne.",
+    "Toutes nos excursions en bateau en Guadeloupe : croisière journée Grand Cul de Sac Marin (100 €), privatisation sur mesure. Snorkeling, repas créole, îlets. Réservez en ligne.",
   alternates: { canonical: `${BASE}/excursions`, languages: { fr: `${BASE}/excursions`, en: `${BASE}/en/excursions` } },
   openGraph: {
     title: "Excursions en bateau en Guadeloupe | Tiki Boat",
-    description: "Croisière journée, privatisation. Snorkeling, îlets, repas créole. À partir de 95 €.",
+    description: "Croisière journée, privatisation. Snorkeling, îlets, repas créole. À partir de 100 €.",
     url: `${BASE}/excursions`,
     type: "website",
     locale: "fr_FR",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Excursions en bateau Guadeloupe | Tiki Boat",
-    description: "Croisière journée, snorkeling, repas créole. À partir de 95€.",
+    description: "Croisière journée, snorkeling, repas créole. À partir de 100€.",
     images: [OG_IMAGE],
   },
 };

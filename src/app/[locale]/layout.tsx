@@ -65,7 +65,7 @@ const organizationJsonLd = {
           name: "Croisière Grand Cul de Sac Marin",
           description: "Journée complète dans le plus grand lagon des Petites Antilles. Snorkeling, repas créole, îlets.",
         },
-        price: "95",
+        price: "100",
         priceCurrency: "EUR",
       },
     ],
