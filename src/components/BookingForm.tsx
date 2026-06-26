@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import BookingCalendar from "@/components/BookingCalendar";
 import { excursions } from "@/data/excursions";
-import { formatPrice, calculateTotal, calculateDeposit } from "@/lib/utils";
+import { formatPrice, calculateTotal, calculateDeposit, getSeasonalPrices } from "@/lib/utils";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -62,7 +62,10 @@ function BookingFormInner() {
   });
 
   const excursion = excursions.find((e) => e.slug === data.excursionSlug);
-  const total      = excursion ? calculateTotal(data.adults, data.children, excursion.priceAdult, excursion.priceChild) : 0;
+  const { priceAdult: pAdult, priceChild: pChild, isHigh } = excursion && data.date
+    ? getSeasonalPrices(data.date, excursion.priceAdult, excursion.priceChild, excursion.priceAdultHighSeason, excursion.priceChildHighSeason)
+    : { priceAdult: excursion?.priceAdult ?? 0, priceChild: excursion?.priceChild ?? 0, isHigh: false };
+  const total      = excursion ? calculateTotal(data.adults, data.children, pAdult, pChild) : 0;
   const deposit    = calculateDeposit(total);
   const amountToPay = data.paymentType === "deposit" ? deposit : total;
 
@@ -249,11 +252,11 @@ function BookingFormInner() {
                   { label: "Adultes",  sub: "13 ans et +",    count: data.adults,   min: 1, free: false,
                     onDec: () => setData((d) => ({ ...d, adults:   Math.max(1, d.adults - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, adults:   d.adults + 1 } : d),
-                    price: formatPrice(excursion.priceAdult) },
+                    price: formatPrice(pAdult) },
                   { label: "Enfants",  sub: "3–12 ans",        count: data.children, min: 0, free: false,
                     onDec: () => setData((d) => ({ ...d, children: Math.max(0, d.children - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, children: d.children + 1 } : d),
-                    price: formatPrice(excursion.priceChild) },
+                    price: formatPrice(pChild) },
                   { label: "Bébés",    sub: "Moins de 3 ans",  count: data.infants,  min: 0, free: true,
                     onDec: () => setData((d) => ({ ...d, infants:  Math.max(0, d.infants - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, infants:  d.infants + 1 } : d),
@@ -297,14 +300,17 @@ function BookingFormInner() {
             {/* Total */}
             {total > 0 && (
               <div className="bg-tiki-gold/10 border border-tiki-gold/25 rounded-xl p-4 space-y-1.5">
+                {isHigh && (
+                  <div className="text-amber-600 text-xs font-semibold mb-1">🌟 Haute saison (31 oct → 30 avr)</div>
+                )}
                 <div className="flex justify-between text-slate-600 text-sm">
-                  <span>{data.adults} adulte{data.adults > 1 ? "s" : ""} × {formatPrice(excursion.priceAdult)}</span>
-                  <span>{formatPrice(data.adults * excursion.priceAdult)}</span>
+                  <span>{data.adults} adulte{data.adults > 1 ? "s" : ""} × {formatPrice(pAdult)}</span>
+                  <span>{formatPrice(data.adults * pAdult)}</span>
                 </div>
                 {data.children > 0 && (
                   <div className="flex justify-between text-slate-600 text-sm">
-                    <span>{data.children} enfant{data.children > 1 ? "s" : ""} × {formatPrice(excursion.priceChild)}</span>
-                    <span>{formatPrice(data.children * excursion.priceChild)}</span>
+                    <span>{data.children} enfant{data.children > 1 ? "s" : ""} × {formatPrice(pChild)}</span>
+                    <span>{formatPrice(data.children * pChild)}</span>
                   </div>
                 )}
                 {data.infants > 0 && (

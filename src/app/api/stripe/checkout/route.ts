@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getExcursionBySlug } from "@/lib/excursions";
+import { getSeasonalPrices } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
 function getStripe() {
@@ -34,7 +35,14 @@ export async function POST(req: NextRequest) {
     const numAdults   = Math.max(0, parseInt(String(adults))   || 0);
     const numChildren = Math.max(0, parseInt(String(children)) || 0);
     const numInfants  = Math.max(0, parseInt(String(body.infants ?? 0)) || 0);
-    const serverTotal   = numAdults * excursion.priceAdult + numChildren * excursion.priceChild;
+    const { priceAdult: pAdult, priceChild: pChild } = getSeasonalPrices(
+      date,
+      excursion.priceAdult,
+      excursion.priceChild,
+      excursion.priceAdultHighSeason,
+      excursion.priceChildHighSeason,
+    );
+    const serverTotal   = numAdults * pAdult + numChildren * pChild;
     const serverDeposit = paymentType === "deposit" ? Math.round(serverTotal * 0.3 * 100) / 100 : 0;
     const serverAmountToPay = paymentType === "deposit" ? serverDeposit : serverTotal;
     if (serverTotal <= 0) return NextResponse.json({ error: "Prix invalide" }, { status: 400 });

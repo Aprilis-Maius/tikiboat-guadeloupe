@@ -40,6 +40,8 @@ export function dbToExcursion(e: DbExcursion): Excursion {
     youtubeId:      e.youtubeId ?? undefined,
     badge:          e.badge ?? undefined,
     popular:        e.popular,
+    priceAdultHighSeason: s?.priceAdultHighSeason,
+    priceChildHighSeason: s?.priceChildHighSeason,
     subtitleEn:     s?.subtitleEn,
     descriptionEn:  s?.descriptionEn,
     durationEn:     s?.durationEn,

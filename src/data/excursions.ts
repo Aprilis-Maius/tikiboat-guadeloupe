@@ -20,7 +20,7 @@ export const excursions: Excursion[] = [
     priceAdult: 100,
     priceChild: 60,
     priceAdultHighSeason: 120,
-    priceChildHighSeason: 90,
+    priceChildHighSeason: 90,  // haute saison : 31 oct → 30 avr
     included: [
       "Transport bateau aller-retour",
       "Fond de verre (visite des coraux)",
