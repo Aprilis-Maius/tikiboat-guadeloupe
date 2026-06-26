@@ -12,6 +12,7 @@ interface Reservation {
   totalPrice: number; depositAmount: number; paymentType: string; status: string;
   isPaid: boolean; customerName: string; customerEmail: string;
   customerPhone: string; notes?: string; createdAt: string; source?: string;
+  passengerNames?: string; certificationAccepted?: boolean;
 }
 
 const toDay = (d: string) => d.split("T")[0];
@@ -729,9 +730,38 @@ export default function ReservationsPage() {
                   </div>
 
                   {selected.notes && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600 text-xs mb-5">
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-600 text-xs mb-3">
                       <div className="text-slate-400 text-xs mb-1 font-semibold uppercase tracking-wide">Notes</div>
                       {selected.notes}
+                    </div>
+                  )}
+
+                  {selected.passengerNames && (() => {
+                    try {
+                      const passengers: { name: string; type: string }[] = JSON.parse(selected.passengerNames);
+                      if (passengers.length === 0) return null;
+                      return (
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs mb-3">
+                          <div className="text-slate-400 text-xs mb-2 font-semibold uppercase tracking-wide">👥 Passagers à bord</div>
+                          <div className="space-y-1">
+                            {passengers.map((p, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${p.type === "adult" ? "bg-blue-100 text-blue-600" : p.type === "child" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>
+                                  {p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé"}
+                                </span>
+                                <span className="text-slate-700 font-medium">{p.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    } catch { return null; }
+                  })()}
+
+                  {selected.certificationAccepted && (
+                    <div className="flex items-center gap-2 text-emerald-600 text-xs mb-3">
+                      <CheckCircle2 size={13} />
+                      Certification santé acceptée par le client
                     </div>
                   )}
 

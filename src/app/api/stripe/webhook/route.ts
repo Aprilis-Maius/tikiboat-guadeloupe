@@ -49,8 +49,10 @@ export async function POST(req: NextRequest) {
         customerName:    meta.customerName,
         customerEmail:   session.customer_email ?? "",
         customerPhone:   meta.customerPhone,
-        stripeSessionId: session.id,
-        notes:           meta.notes || null,
+        stripeSessionId:       session.id,
+        notes:                 meta.notes || null,
+        passengerNames:        meta.passengerNames || null,
+        certificationAccepted: meta.certificationAccepted === "true",
       },
     });
 

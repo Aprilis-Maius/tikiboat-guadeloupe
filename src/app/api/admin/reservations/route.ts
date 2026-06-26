@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       totalPrice: true, depositAmount: true, paymentType: true,
       status: true, isPaid: true,
       customerName: true, customerEmail: true, customerPhone: true,
-      notes: true, createdAt: true,
+      notes: true, passengerNames: true, certificationAccepted: true, createdAt: true,
       // stripeSessionId volontairement exclu
     },
   });

@@ -25,9 +25,11 @@ model Reservation {
   customerName    String
   customerEmail   String
   customerPhone   String
-  stripeSessionId String?
-  notes           String?
-  createdAt       DateTime @default(now())
+  stripeSessionId       String?
+  notes                 String?
+  passengerNames        String?  // JSON: [{name,type}]
+  certificationAccepted Boolean  @default(false)
+  createdAt             DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([date])

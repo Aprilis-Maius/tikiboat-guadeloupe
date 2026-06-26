@@ -2,12 +2,17 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info } from "lucide-react";
+import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import BookingCalendar from "@/components/BookingCalendar";
 import { excursions } from "@/data/excursions";
 import { formatPrice, calculateTotal, calculateDeposit } from "@/lib/utils";
 
 type Step = 1 | 2 | 3 | 4;
+
+interface PassengerName {
+  name: string;
+  type: "adult" | "child" | "infant";
+}
 
 interface BookingData {
   excursionSlug: string;
@@ -20,10 +25,20 @@ interface BookingData {
   customerPhone: string;
   paymentType: "deposit" | "full";
   notes: string;
+  passengerNames: PassengerName[];
+  certificationAccepted: boolean;
 }
 
 const inputCls =
   "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-4 text-slate-800 placeholder-slate-400 outline-none transition-colors";
+
+function buildPassengerNames(adults: number, children: number, infants: number, existing: PassengerName[]): PassengerName[] {
+  const result: PassengerName[] = [];
+  for (let i = 0; i < adults;   i++) result.push({ name: existing.find((p, idx) => p.type === "adult"   && idx === i)?.name   ?? "", type: "adult"   });
+  for (let i = 0; i < children; i++) result.push({ name: existing.find((p, idx) => p.type === "child"   && idx === adults + i)?.name ?? "", type: "child"   });
+  for (let i = 0; i < infants;  i++) result.push({ name: existing.find((p, idx) => p.type === "infant"  && idx === adults + children + i)?.name ?? "", type: "infant"  });
+  return result;
+}
 
 function BookingFormInner() {
   const searchParams = useSearchParams();
@@ -42,6 +57,8 @@ function BookingFormInner() {
     customerPhone: "",
     paymentType: "deposit",
     notes: "",
+    passengerNames: [{ name: "", type: "adult" }, { name: "", type: "adult" }],
+    certificationAccepted: false,
   });
 
   const excursion = excursions.find((e) => e.slug === data.excursionSlug);
@@ -59,19 +76,40 @@ function BookingFormInner() {
   const canGoNext = () => {
     if (step === 1) return !!data.excursionSlug;
     if (step === 2) return !!data.date && data.adults >= 1;
-    if (step === 3) return !!data.customerName && !!data.customerEmail && !!data.customerPhone;
+    if (step === 3) {
+      const hasInfo = !!data.customerName && !!data.customerEmail && !!data.customerPhone;
+      const requiredNames = data.adults + data.children + data.infants;
+      const filledNames = data.passengerNames.filter((p) => p.name.trim().length > 0).length;
+      return hasInfo && filledNames >= requiredNames;
+    }
     return false;
+  };
+
+  const goToStep3 = () => {
+    // Synchronise les noms avec le nombre de passagers actuel
+    setData((d) => ({
+      ...d,
+      passengerNames: buildPassengerNames(d.adults, d.children, d.infants, d.passengerNames),
+    }));
+    setStep(3);
   };
 
   const handleSubmit = async () => {
     if (!excursion) return;
+    if (!data.certificationAccepted) return;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, totalPrice: total, depositAmount: deposit, amountToPay }),
+        body: JSON.stringify({
+          ...data,
+          totalPrice: total,
+          depositAmount: deposit,
+          amountToPay,
+          passengerNames: JSON.stringify(data.passengerNames),
+        }),
       });
       if (res.status === 409) {
         const json = await res.json();
@@ -177,7 +215,6 @@ function BookingFormInner() {
                 onChange={(date) => { setData({ ...data, date }); setError(null); }}
                 onSpotsChange={(spots) => {
                   setSpotsLeft(spots);
-                  // Ajuste les passagers si ils dépassent le nouveau max
                   if (spots !== null) {
                     setData(d => {
                       const tot = d.adults + d.children + d.infants;
@@ -205,7 +242,6 @@ function BookingFormInner() {
               </label>
               {(() => {
                 const selected = data.adults + data.children + data.infants;
-                // Priorité aux places réelles du jour, sinon capacité max du bateau
                 const maxAvail = spotsLeft !== null ? Math.min(excursion.maxPassengers, spotsLeft) : excursion.maxPassengers;
                 const remaining = maxAvail - selected;
                 const canAdd = (d: BookingData) => d.adults + d.children + d.infants < maxAvail;
@@ -292,10 +328,12 @@ function BookingFormInner() {
         <div>
           <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">Vos informations</h2>
           <div className="space-y-4">
+
+            {/* Infos contact */}
             {[
-              { label: "Nom complet *",         type: "text",  ph: "Jean Dupont",          key: "customerName"  },
-              { label: "Email *",               type: "email", ph: "jean@email.com",         key: "customerEmail" },
-              { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00",    key: "customerPhone" },
+              { label: "Nom complet *",          type: "text",  ph: "Jean Dupont",       key: "customerName"  },
+              { label: "Email *",                type: "email", ph: "jean@email.com",     key: "customerEmail" },
+              { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00", key: "customerPhone" },
             ].map(({ label, type, ph, key }) => (
               <div key={key}>
                 <label className="block text-slate-600 text-sm font-medium mb-1.5">{label}</label>
@@ -306,6 +344,41 @@ function BookingFormInner() {
                 />
               </div>
             ))}
+
+            {/* Noms des passagers */}
+            <div className="pt-2">
+              <label className="block text-slate-600 text-sm font-medium mb-1">
+                <Users size={14} className="inline mr-1.5 text-tiki-gold" />
+                Noms de tous les passagers *
+              </label>
+              <p className="text-slate-400 text-xs mb-3">
+                Requis par l&apos;équipage — liste des personnes à bord.
+              </p>
+              <div className="space-y-2">
+                {data.passengerNames.map((p, i) => {
+                  const typeLabel = p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé";
+                  const typeIdx = data.passengerNames.slice(0, i).filter(x => x.type === p.type).length + 1;
+                  return (
+                    <div key={i}>
+                      <label className="block text-slate-400 text-xs mb-1">{typeLabel} {typeIdx}</label>
+                      <input
+                        type="text"
+                        placeholder={`Prénom et nom — ${typeLabel.toLowerCase()} ${typeIdx}`}
+                        value={p.name}
+                        onChange={(e) => {
+                          const names = [...data.passengerNames];
+                          names[i] = { ...names[i], name: e.target.value };
+                          setData({ ...data, passengerNames: names });
+                        }}
+                        className={inputCls}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Remarques */}
             <div>
               <label className="block text-slate-600 text-sm font-medium mb-1.5">Remarques particulières</label>
               <textarea placeholder="Allergie alimentaire, besoin spécifique..."
@@ -333,13 +406,25 @@ function BookingFormInner() {
                 data.children ? `${data.children} enfant${data.children > 1 ? "s" : ""}` : "",
                 data.infants  ? `${data.infants} bébé${data.infants > 1 ? "s" : ""} (gratuit)` : "",
               ].filter(Boolean).join(" + ")],
-              ["Nom", data.customerName],
+              ["Nom réservation", data.customerName],
             ].map(([l, v]) => (
               <div key={l} className="flex justify-between gap-2">
                 <span className="text-slate-400">{l}</span>
                 <span className="text-slate-800 text-right">{v}</span>
               </div>
             ))}
+            {/* Passagers à bord */}
+            {data.passengerNames.length > 0 && (
+              <div className="border-t border-slate-100 pt-2 space-y-1">
+                <div className="text-slate-400 text-xs font-medium uppercase tracking-wide">Passagers à bord</div>
+                {data.passengerNames.map((p, i) => (
+                  <div key={i} className="flex justify-between gap-2">
+                    <span className="text-slate-400 text-xs">{p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé"}</span>
+                    <span className="text-slate-700 text-xs font-medium">{p.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex justify-between font-bold text-tiki-gold border-t border-slate-200 pt-2">
               <span>Total</span><span>{formatPrice(total)}</span>
             </div>
@@ -376,6 +461,29 @@ function BookingFormInner() {
             ))}
           </div>
 
+          {/* Certification santé — obligatoire */}
+          <label className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all mb-5 ${
+            data.certificationAccepted
+              ? "border-tiki-gold bg-tiki-gold/8"
+              : "border-slate-200 bg-slate-50 hover:border-slate-300"
+          }`}>
+            <input
+              type="checkbox"
+              checked={data.certificationAccepted}
+              onChange={(e) => setData({ ...data, certificationAccepted: e.target.checked })}
+              className="mt-0.5 w-5 h-5 accent-amber-500 shrink-0 cursor-pointer"
+            />
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <ShieldCheck size={14} className="text-tiki-gold shrink-0" />
+                <span className="text-slate-700 text-sm font-semibold">Certification santé & sécurité <span className="text-red-500">*</span></span>
+              </div>
+              <p className="text-slate-500 text-xs leading-relaxed">
+                Je certifie que tous les passagers sont en <strong className="text-slate-700">bonne santé</strong> et ne présentent aucune contre-indication médicale à la pratique d&apos;activités nautiques (problèmes cardiaques, épilepsie, grossesse avancée…). En cas d&apos;allergie alimentaire ou d&apos;intolérance, je m&apos;engage à en informer l&apos;équipage avant l&apos;embarquement.
+              </p>
+            </div>
+          </label>
+
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CreditCard size={14} className="text-tiki-gold" />
             Paiement sécurisé · CB, Apple Pay, Google Pay
@@ -406,14 +514,15 @@ function BookingFormInner() {
 
         {step < 4 ? (
           <button type="button"
-            onClick={() => setStep((s) => (s + 1) as Step)}
+            onClick={() => step === 2 ? goToStep3() : setStep((s) => (s + 1) as Step)}
             disabled={!canGoNext()}
             className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed min-h-[48px] text-sm">
             Continuer <ChevronRight size={18} />
           </button>
         ) : (
-          <button type="button" onClick={handleSubmit} disabled={loading}
-            className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-50 min-h-[48px] text-sm">
+          <button type="button" onClick={handleSubmit}
+            disabled={loading || !data.certificationAccepted}
+            className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] text-sm">
             {loading ? (
               <>
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
