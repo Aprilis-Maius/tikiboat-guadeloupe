@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import { Clock, Users, MapPin, CheckCircle2, XCircle, ChevronRight, CalendarDays, Star } from "lucide-react";
-import { excursions, getExcursionBySlug } from "@/data/excursions";
+import { getExcursionBySlug } from "@/lib/excursions";
 import { formatPrice } from "@/lib/utils";
 
 const BASE = "https://tikiboat.fr";
@@ -15,7 +15,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, locale } = await params;
-  const exc = getExcursionBySlug(slug);
+  const exc = await getExcursionBySlug(slug);
   if (!exc) return {};
   const isEn = locale === "en";
   const url = `${BASE}${isEn ? "/en" : ""}/excursions/${slug}`;
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ExcursionDetailPage({ params }: Props) {
   const { slug, locale } = await params;
-  const excursion = getExcursionBySlug(slug);
+  const excursion = await getExcursionBySlug(slug);
   if (!excursion) notFound();
 
   const t = await getTranslations("excursionDetail");
