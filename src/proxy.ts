@@ -8,11 +8,13 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Protect /admin/* and /api/admin/* routes at the edge
-  if (
-    (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) ||
-    pathname.startsWith("/api/admin")
-  ) {
+  // Admin routes : jamais touchées par intl
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    // Page de login : accessible sans token
+    if (pathname.startsWith("/admin/login")) {
+      return NextResponse.next();
+    }
+    // Toutes les autres pages/API admin : token requis
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token) {
       const loginUrl = new URL("/admin/login", req.url);
@@ -22,7 +24,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Apply next-intl locale routing for public pages
+  // Pages publiques : routing i18n next-intl
   return intlMiddleware(req);
 }
 
