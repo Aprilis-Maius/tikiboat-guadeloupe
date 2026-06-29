@@ -89,12 +89,6 @@ export default async function ExcursionDetailPage({ params }: Props) {
         url: `${BASE}/reservation?excursion=${slug}`,
       },
     } : {}),
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "600",
-      bestRating: "5",
-    },
     itinerary: {
       "@type": "ItemList",
       itemListElement: excursion.highlights.map((h, i) => ({
