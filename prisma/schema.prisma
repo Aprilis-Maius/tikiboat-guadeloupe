@@ -25,7 +25,7 @@ model Reservation {
   customerName    String
   customerEmail   String
   customerPhone   String
-  stripeSessionId       String?
+  stripeSessionId       String?  @unique
   notes                 String?
   passengerNames        String?  // JSON: [{name,type}]
   certificationAccepted Boolean  @default(false)

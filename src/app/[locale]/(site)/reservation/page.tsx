@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: { url: "https://tikiboat.fr/reservation", type: "website" },
   title: "Réserver une excursion",
   description:
-    "Réservez votre excursion Tiki Boat en ligne. Paiement sécurisé, confirmation instantanée par email.",
+    "Réservez votre excursion Tiki Boat en ligne. Paiement sécurisé, email récapitulatif immédiat, confirmation sous 24h.",
 };
 
 export default function ReservationPage() {

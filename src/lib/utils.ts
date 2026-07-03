@@ -12,13 +12,21 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
+// Parse "YYYY-MM-DD" en date locale à midi — évite le décalage d'un jour
+// pour les fuseaux négatifs (Guadeloupe UTC-4) : new Date("2026-07-10")
+// serait minuit UTC, affiché "9 juillet" en heure locale.
+export function parseDateSafe(dateString: string): Date {
+  const [y, m, d] = dateString.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1, 12, 0, 0);
+}
+
 export function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat("fr-FR", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(new Date(dateString));
+  }).format(parseDateSafe(dateString));
 }
 
 export function formatShortDate(dateString: string): string {
@@ -26,7 +34,13 @@ export function formatShortDate(dateString: string): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(dateString));
+  }).format(parseDateSafe(dateString));
+}
+
+// "YYYY-MM-DD" du jour en heure locale (pas UTC)
+export function todayYMD(): string {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
 }
 
 export function calculateTotal(adults: number, children: number, priceAdult: number, priceChild: number): number {

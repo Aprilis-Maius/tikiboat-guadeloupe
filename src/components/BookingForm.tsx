@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import BookingCalendar from "@/components/BookingCalendar";
 import { excursions } from "@/data/excursions";
-import { formatPrice, calculateTotal, calculateDeposit, getSeasonalPrices } from "@/lib/utils";
+import { formatPrice, calculateTotal, calculateDeposit, getSeasonalPrices, parseDateSafe } from "@/lib/utils";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -33,12 +33,21 @@ const inputCls =
   "w-full bg-white border border-slate-200 focus:border-tiki-gold rounded-xl px-4 py-4 text-slate-800 placeholder-slate-400 outline-none transition-colors";
 
 function buildPassengerNames(adults: number, children: number, infants: number, existing: PassengerName[]): PassengerName[] {
+  // Ré-associe par type (pas par index absolu) : changer le nombre d'adultes
+  // ne doit pas effacer les noms d'enfants déjà saisis.
+  const byType = {
+    adult:  existing.filter((p) => p.type === "adult"),
+    child:  existing.filter((p) => p.type === "child"),
+    infant: existing.filter((p) => p.type === "infant"),
+  };
   const result: PassengerName[] = [];
-  for (let i = 0; i < adults;   i++) result.push({ name: existing.find((p, idx) => p.type === "adult"   && idx === i)?.name   ?? "", type: "adult"   });
-  for (let i = 0; i < children; i++) result.push({ name: existing.find((p, idx) => p.type === "child"   && idx === adults + i)?.name ?? "", type: "child"   });
-  for (let i = 0; i < infants;  i++) result.push({ name: existing.find((p, idx) => p.type === "infant"  && idx === adults + children + i)?.name ?? "", type: "infant"  });
+  for (let i = 0; i < adults;   i++) result.push({ name: byType.adult[i]?.name  ?? "", type: "adult"  });
+  for (let i = 0; i < children; i++) result.push({ name: byType.child[i]?.name  ?? "", type: "child"  });
+  for (let i = 0; i < infants;  i++) result.push({ name: byType.infant[i]?.name ?? "", type: "infant" });
   return result;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function BookingFormInner() {
   const searchParams = useSearchParams();
@@ -80,7 +89,7 @@ function BookingFormInner() {
     if (step === 1) return !!data.excursionSlug;
     if (step === 2) return !!data.date && data.adults >= 1;
     if (step === 3) {
-      const hasInfo = !!data.customerName && !!data.customerEmail && !!data.customerPhone;
+      const hasInfo = !!data.customerName && EMAIL_RE.test(data.customerEmail.trim()) && !!data.customerPhone;
       const requiredNames = data.adults + data.children + data.infants;
       const filledNames = data.passengerNames.filter((p) => p.name.trim().length > 0).length;
       return hasInfo && filledNames >= requiredNames;
@@ -121,9 +130,20 @@ function BookingFormInner() {
         setLoading(false);
         return;
       }
+      if (!res.ok) {
+        setError("Une erreur est survenue lors de la préparation du paiement. Réessayez dans un instant, ou contactez-nous sur WhatsApp — nous prendrons votre réservation directement.");
+        setLoading(false);
+        return;
+      }
       const { url } = await res.json();
-      if (url) window.location.href = url;
+      if (url) {
+        window.location.href = url;
+      } else {
+        setError("Une erreur est survenue lors de la préparation du paiement. Réessayez dans un instant, ou contactez-nous sur WhatsApp.");
+        setLoading(false);
+      }
     } catch {
+      setError("Connexion impossible. Vérifiez votre connexion internet et réessayez, ou contactez-nous sur WhatsApp.");
       setLoading(false);
     }
   };
@@ -231,7 +251,7 @@ function BookingFormInner() {
               />
               {data.date && (
                 <p className="text-slate-500 text-xs mt-2">
-                  {new Date(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  {parseDateSafe(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   {" · "}Départ {excursion.departureTime} · Retour {excursion.returnTime}
                 </p>
               )}
@@ -337,13 +357,13 @@ function BookingFormInner() {
 
             {/* Infos contact */}
             {[
-              { label: "Nom complet *",          type: "text",  ph: "Jean Dupont",       key: "customerName"  },
-              { label: "Email *",                type: "email", ph: "jean@email.com",     key: "customerEmail" },
-              { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00", key: "customerPhone" },
-            ].map(({ label, type, ph, key }) => (
+              { label: "Nom complet *",          type: "text",  ph: "Jean Dupont",       key: "customerName",  ac: "name"  },
+              { label: "Email *",                type: "email", ph: "jean@email.com",     key: "customerEmail", ac: "email" },
+              { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00", key: "customerPhone", ac: "tel"   },
+            ].map(({ label, type, ph, key, ac }) => (
               <div key={key}>
                 <label className="block text-slate-600 text-sm font-medium mb-1.5">{label}</label>
-                <input type={type} placeholder={ph}
+                <input type={type} placeholder={ph} autoComplete={ac} name={ac}
                   value={data[key as keyof BookingData] as string}
                   onChange={(e) => {
                     if (key === "customerName") {
@@ -402,7 +422,7 @@ function BookingFormInner() {
               <textarea placeholder="Allergie alimentaire, besoin spécifique..."
                 value={data.notes}
                 onChange={(e) => setData({ ...data, notes: e.target.value })}
-                rows={3} className={`${inputCls} resize-none`}
+                rows={3} maxLength={400} className={`${inputCls} resize-none`}
               />
             </div>
           </div>
@@ -418,7 +438,7 @@ function BookingFormInner() {
           <div className="bg-white border border-slate-200 rounded-xl p-4 mb-5 space-y-2 text-sm">
             {[
               ["Excursion", excursion.title],
-              ["Date", data.date ? new Date(data.date).toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }) : "—"],
+              ["Date", data.date ? parseDateSafe(data.date).toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }) : "—"],
               ["Passagers", [
                 `${data.adults} adulte${data.adults > 1 ? "s" : ""}`,
                 data.children ? `${data.children} enfant${data.children > 1 ? "s" : ""}` : "",
@@ -506,9 +526,16 @@ function BookingFormInner() {
             <CreditCard size={14} className="text-tiki-gold" />
             Paiement sécurisé · CB, Apple Pay, Google Pay
           </div>
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
+          <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CheckCircle2 size={14} className="text-tiki-gold" />
-            Confirmation immédiate par email
+            Email récapitulatif immédiat · Confirmation de l&apos;équipage sous 24-48h
+          </div>
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
+            <Info size={14} className="text-tiki-gold" />
+            Annulation gratuite jusqu&apos;à 7 jours avant le départ ·{" "}
+            <a href="/cgv" target="_blank" rel="noopener noreferrer" className="underline hover:text-tiki-gold transition-colors">
+              voir conditions
+            </a>
           </div>
         </div>
       )}

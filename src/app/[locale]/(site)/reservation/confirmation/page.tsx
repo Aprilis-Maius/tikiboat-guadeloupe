@@ -12,7 +12,9 @@ function getStripe() {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", {
+  // Parse en local à midi pour éviter le décalage de fuseau (Guadeloupe UTC-4)
+  const [y, m, day] = d.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, day || 1, 12).toLocaleDateString("fr-FR", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 }
@@ -26,12 +28,17 @@ export default async function ConfirmationPage({
 
   let meta: Record<string, string> | null = null;
   let customerEmail: string | null = null;
+  let reference: string | null = null;
 
   if (session_id) {
     try {
       const session = await getStripe().checkout.sessions.retrieve(session_id);
-      meta = session.metadata as Record<string, string>;
-      customerEmail = session.customer_email;
+      // N'affiche le récap que si le paiement a bien été effectué
+      if (session.payment_status === "paid") {
+        meta = session.metadata as Record<string, string>;
+        customerEmail = session.customer_email;
+        reference = session_id.slice(-8).toUpperCase();
+      }
     } catch {}
   }
 
@@ -65,7 +72,9 @@ export default async function ConfirmationPage({
             {/* Header */}
             <div className="bg-tiki-ocean px-6 py-4 flex items-center justify-between">
               <div>
-                <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-0.5">Votre réservation</p>
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-0.5">
+                  Votre réservation{reference ? ` · Réf. ${reference}` : ""}
+                </p>
                 <p className="text-white font-bold text-lg leading-tight">{meta.excursionTitle}</p>
               </div>
               <div className="bg-amber-400/20 border border-amber-400/40 rounded-full px-3 py-1">

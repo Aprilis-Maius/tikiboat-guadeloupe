@@ -31,7 +31,9 @@ function esc(s: string | undefined | null): string {
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  // Parse "YYYY-MM-DD" à midi local — insensible au fuseau du serveur
+  const [y, m, day] = d.split("T")[0].split("-").map(Number);
+  return new Date(y, (m || 1) - 1, day || 1, 12).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
 
 function row(label: string, value: string, opts: { bold?: boolean; color?: string; large?: boolean } = {}) {

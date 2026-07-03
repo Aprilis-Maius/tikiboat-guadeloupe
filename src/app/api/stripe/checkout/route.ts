@@ -31,10 +31,23 @@ export async function POST(req: NextRequest) {
     const excursion = await getExcursionBySlug(excursionSlug);
     if (!excursion) return NextResponse.json({ error: "Excursion not found" }, { status: 404 });
 
+    // Validation date : format YYYY-MM-DD et pas dans le passé
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
+      return NextResponse.json({ error: "Date invalide" }, { status: 400 });
+    }
+    const n = new Date();
+    const todayStr = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+    if (String(date) < todayStr) {
+      return NextResponse.json({ error: "Cette date est déjà passée." }, { status: 400 });
+    }
+
     // Prix recalculés côté serveur — ne jamais faire confiance au client
     const numAdults   = Math.max(0, parseInt(String(adults))   || 0);
     const numChildren = Math.max(0, parseInt(String(children)) || 0);
     const numInfants  = Math.max(0, parseInt(String(body.infants ?? 0)) || 0);
+    if (numAdults < 1) {
+      return NextResponse.json({ error: "Au moins un adulte est requis." }, { status: 400 });
+    }
     const { priceAdult: pAdult, priceChild: pChild } = getSeasonalPrices(
       date,
       excursion.priceAdult,
@@ -72,10 +85,26 @@ export async function POST(req: NextRequest) {
     const isDeposit = paymentType === "deposit";
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
+    // Metadata Stripe : 500 caractères max par valeur.
+    // Format compact [["nom","a"],...] pour tenir 12 passagers ; notes tronquées.
+    let passengerNamesCompact = "[]";
+    try {
+      const parsed = typeof body.passengerNames === "string" ? JSON.parse(body.passengerNames) : (body.passengerNames || []);
+      const typeShort: Record<string, string> = { adult: "a", child: "c", infant: "i" };
+      passengerNamesCompact = JSON.stringify(
+        (parsed as { name?: string; type?: string }[]).slice(0, 15).map((p) => [String(p.name ?? "").slice(0, 40), typeShort[p.type ?? ""] ?? "a"])
+      );
+      if (passengerNamesCompact.length > 490) passengerNamesCompact = passengerNamesCompact.slice(0, 490);
+    } catch {}
+    const notesSafe = String(notes || "").slice(0, 400);
+
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       customer_email: customerEmail,
+      // La session expire vite pour réduire la fenêtre de double réservation
+      // (défaut Stripe = 24h ; 30 min est le minimum autorisé)
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       line_items: [
         {
           price_data: {
@@ -104,8 +133,8 @@ export async function POST(req: NextRequest) {
         totalPrice:           String(serverTotal),
         depositAmount:        String(serverDeposit),
         paymentType,
-        notes:                notes || "",
-        passengerNames:       typeof body.passengerNames === "string" ? body.passengerNames : JSON.stringify(body.passengerNames || []),
+        notes:                notesSafe,
+        passengerNames:       passengerNamesCompact,
         certificationAccepted: String(body.certificationAccepted === true),
       },
       success_url: `${baseUrl}/reservation/confirmation?session_id={CHECKOUT_SESSION_ID}`,

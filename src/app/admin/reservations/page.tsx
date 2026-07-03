@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock, Phone, Mail, Filter, Download, Plus, X, Save, Pencil, Trash2, MessageCircle, Copy, Check, Euro } from "lucide-react";
 import { excursions } from "@/data/excursions";
+import { parseDateSafe, todayYMD } from "@/lib/utils";
 
 interface Reservation {
   id: string; excursionId: string; excursionTitle: string; date: string;
@@ -19,7 +20,7 @@ const toDay = (d: string) => d.split("T")[0];
 
 const emptyCreate = () => ({
   excursionSlug: excursions[0]?.slug ?? "",
-  date: new Date().toISOString().split("T")[0],
+  date: todayYMD(),
   adults: 2, children: 0, infants: 0,
   customerName: "", customerEmail: "", customerPhone: "",
   paymentType: "none" as "full" | "deposit" | "none",
@@ -239,7 +240,7 @@ export default function ReservationsPage() {
     if (pendingItems.length === 0) return;
     const date = pendingItems[0].date;
     const names = pendingItems.map(r => r.customerName).join(", ");
-    if (!window.confirm(`Confirmer ${pendingItems.length} réservation${pendingItems.length > 1 ? "s" : ""} du ${new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} ?\n\n${names}\n\nUn email de confirmation sera envoyé à chaque client.`)) return;
+    if (!window.confirm(`Confirmer ${pendingItems.length} réservation${pendingItems.length > 1 ? "s" : ""} du ${parseDateSafe(toDay(date)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} ?\n\n${names}\n\nUn email de confirmation sera envoyé à chaque client.`)) return;
     setDayConfirming(date);
     await Promise.all(pendingItems.map(r =>
       fetch("/api/admin/reservations", {
@@ -258,7 +259,9 @@ export default function ReservationsPage() {
     <div className="p-8 text-slate-400 text-sm">Chargement...</div>
   );
 
-  const today = new Date(new Date().toDateString());
+  // Comparaison en string "YYYY-MM-DD" (heure locale) — pas de décalage UTC :
+  // les excursions du jour restent "À venir" toute la journée en Guadeloupe.
+  const today = todayYMD();
 
   const applyPaymentFilter = (r: Reservation) => {
     if (paymentFilter === "paid")    return r.isPaid && r.paymentType === "full";
@@ -276,8 +279,8 @@ export default function ReservationsPage() {
     return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
   };
 
-  const upcoming = groupByDate(filteredReservations.filter(r => new Date(r.date) >= today));
-  const past     = groupByDate(filteredReservations.filter(r => new Date(r.date) <  today));
+  const upcoming = groupByDate(filteredReservations.filter(r => toDay(r.date) >= today));
+  const past     = groupByDate(filteredReservations.filter(r => toDay(r.date) <  today));
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl">
@@ -532,7 +535,7 @@ export default function ReservationsPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">À venir</span>
                 <span className="text-xs bg-tiki-lagon/10 text-tiki-lagon border border-tiki-lagon/20 px-2 py-0.5 rounded-full font-bold">
-                  {reservations.filter(r => new Date(r.date) >= today).length}
+                  {reservations.filter(r => toDay(r.date) >= today).length}
                 </span>
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -543,7 +546,7 @@ export default function ReservationsPage() {
                   const fillRate = total / MAX_PASSENGERS;
                   const fillColor = fillRate >= 1 ? "bg-red-400" : fillRate >= 0.7 ? "bg-amber-400" : "bg-emerald-400";
                   const countColor = fillRate >= 1 ? "text-red-500" : fillRate >= 0.7 ? "text-amber-500" : "text-slate-500";
-                  const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  const dateLabel = parseDateSafe(toDay(date)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
                   const isConfirming = dayConfirming === date;
                   return (
                     <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
@@ -611,12 +614,12 @@ export default function ReservationsPage() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Passées</span>
                 <span className="text-xs bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full font-bold">
-                  {reservations.filter(r => new Date(r.date) < today).length}
+                  {reservations.filter(r => toDay(r.date) < today).length}
                 </span>
               </div>
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-60">
                 {past.map(({ date, items }, gi) => {
-                  const dateLabel = new Date(date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  const dateLabel = parseDateSafe(toDay(date)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
                   return (
                     <div key={date} className={gi > 0 ? "border-t border-slate-100" : ""}>
                       <div className="flex items-center px-5 py-2.5 bg-slate-50/80 border-b border-slate-100">
@@ -663,7 +666,7 @@ export default function ReservationsPage() {
               <div>
                 <h2 className="font-bold text-slate-800 text-base">{selected.customerName}</h2>
                 <p className="text-slate-400 text-xs mt-0.5">
-                  {new Date(selected.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  {parseDateSafe(toDay(selected.date)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                 </p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 transition-colors p-1">
@@ -761,7 +764,7 @@ export default function ReservationsPage() {
                   <div className="bg-slate-50 rounded-xl border border-slate-200 divide-y divide-slate-200 mb-5">
                     {([
                       ["Excursion", selected.excursionTitle],
-                      ["Date", new Date(selected.date).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
+                      ["Date", parseDateSafe(toDay(selected.date)).toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" })],
                       ["Adultes", selected.adults],
                       ["Enfants", selected.children],
                       ...(selected.infants > 0 ? [["Bébés", selected.infants] as [string, number]] : []),
