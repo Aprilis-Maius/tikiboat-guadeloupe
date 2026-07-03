@@ -26,6 +26,8 @@ model Reservation {
   customerEmail   String
   customerPhone   String
   stripeSessionId       String?  @unique
+  stripePaymentIntentId String?
+  refundedAmount        Float?
   notes                 String?
   passengerNames        String?  // JSON: [{name,type}]
   certificationAccepted Boolean  @default(false)

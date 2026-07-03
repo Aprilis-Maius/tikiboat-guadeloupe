@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
       status: true, isPaid: true,
       customerName: true, customerEmail: true, customerPhone: true,
       notes: true, passengerNames: true, certificationAccepted: true, createdAt: true,
-      // stripeSessionId volontairement exclu
+      refundedAmount: true,
+      // Bool uniquement — l'ID Stripe lui-même ne sort pas de l'API
+      stripePaymentIntentId: true,
     },
   });
 

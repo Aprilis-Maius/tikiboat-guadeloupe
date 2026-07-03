@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM   = process.env.EMAIL_FROM ?? "Tiki Boat <onboarding@resend.dev>";
 const TO     = process.env.ADMIN_EMAIL_NOTIF ?? "tikiboatguadeloupe@gmail.com";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -12,11 +15,23 @@ function esc(s: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // 3 messages / 10 min par IP — bloque le spam qui brûle le quota Resend
+    const limit = rateLimit(`contact:${clientIp(req)}`, 3, 10 * 60 * 1000);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: "Trop de messages envoyés. Réessayez dans quelques minutes ou contactez-nous sur WhatsApp." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+      );
+    }
+
     const body = await req.json();
     const { name, email, phone, subject, message } = body as Record<string, string>;
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
+    }
+    if (!EMAIL_RE.test(String(email).trim())) {
+      return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 });
     }
 
     const safeName    = esc(String(name));

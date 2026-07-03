@@ -13,6 +13,7 @@ function ContactFormInner() {
   const searchParams = useSearchParams();
   const [sent, setSent]       = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<string | null>(null);
   const [form, setForm] = useState({
     name:    "",
     email:   "",
@@ -32,15 +33,21 @@ function ContactFormInner() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      await fetch("/api/contact", {
+      const res = await fetch("/api/contact", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(form),
       });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error ?? t("sendError"));
+        return;
+      }
       setSent(true);
     } catch {
-      // fail silently
+      setError(t("sendError"));
     } finally {
       setLoading(false);
     }
@@ -127,6 +134,12 @@ function ContactFormInner() {
           className={`${inputCls} resize-none`}
         />
       </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+          {error}
+        </div>
+      )}
 
       <button
         type="submit"

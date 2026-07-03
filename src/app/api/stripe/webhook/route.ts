@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
           customerEmail:   session.customer_email ?? "",
           customerPhone:   meta.customerPhone,
           stripeSessionId:       session.id,
+          stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null,
           notes:                 notesWithAlert,
           passengerNames:        passengerNamesJson,
           certificationAccepted: meta.certificationAccepted === "true",

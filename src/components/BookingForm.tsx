@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import BookingCalendar from "@/components/BookingCalendar";
 import { excursions } from "@/data/excursions";
@@ -49,7 +50,30 @@ function buildPassengerNames(adults: number, children: number, infants: number, 
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+// Persistance du formulaire : un reload ou un retour depuis Stripe
+// ne doit pas effacer la saisie (noms des passagers, coordonnées…)
+const STORAGE_KEY = "tikiboat-booking";
+const STORAGE_TTL = 60 * 60 * 1000; // 1h
+
+function loadSaved(): { data: BookingData; step: Step } | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (!saved.ts || Date.now() - saved.ts > STORAGE_TTL) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return { data: saved.data, step: saved.step };
+  } catch {
+    return null;
+  }
+}
+
 function BookingFormInner() {
+  const t = useTranslations("booking");
+  const locale = useLocale();
+  const dateLocale = locale === "en" ? "en-US" : "fr-FR";
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
@@ -70,6 +94,28 @@ function BookingFormInner() {
     certificationAccepted: false,
   });
 
+  // Restaure la saisie sauvegardée (au mount uniquement, côté client)
+  useEffect(() => {
+    const saved = loadSaved();
+    if (!saved) return;
+    const urlSlug = searchParams.get("excursion");
+    setData({
+      ...saved.data,
+      // L'URL prime sur la sauvegarde si elle désigne une autre excursion
+      excursionSlug: urlSlug && urlSlug !== saved.data.excursionSlug ? urlSlug : saved.data.excursionSlug,
+      certificationAccepted: false, // toujours re-cocher la certification
+    });
+    if (!(urlSlug && urlSlug !== saved.data.excursionSlug)) setStep(saved.step);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sauvegarde à chaque changement
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ data, step, ts: Date.now() }));
+    } catch {}
+  }, [data, step]);
+
   const excursion = excursions.find((e) => e.slug === data.excursionSlug);
   const { priceAdult: pAdult, priceChild: pChild, isHigh } = excursion && data.date
     ? getSeasonalPrices(data.date, excursion.priceAdult, excursion.priceChild, excursion.priceAdultHighSeason, excursion.priceChildHighSeason)
@@ -79,10 +125,10 @@ function BookingFormInner() {
   const amountToPay = data.paymentType === "deposit" ? deposit : total;
 
   const steps = [
-    { num: 1, label: "Excursion" },
-    { num: 2, label: "Date" },
-    { num: 3, label: "Infos" },
-    { num: 4, label: "Paiement" },
+    { num: 1, label: t("steps.excursion") },
+    { num: 2, label: t("steps.date") },
+    { num: 3, label: t("steps.infos") },
+    { num: 4, label: t("steps.payment") },
   ];
 
   const canGoNext = () => {
@@ -117,6 +163,7 @@ function BookingFormInner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
+          locale,
           totalPrice: total,
           depositAmount: deposit,
           amountToPay,
@@ -125,13 +172,13 @@ function BookingFormInner() {
       });
       if (res.status === 409) {
         const json = await res.json();
-        setError(json.error ?? "Plus de places disponibles pour cette date.");
+        setError(json.error ?? t("errNoSpots"));
         if (json.spotsLeft !== undefined) setSpotsLeft(json.spotsLeft);
         setLoading(false);
         return;
       }
       if (!res.ok) {
-        setError("Une erreur est survenue lors de la préparation du paiement. Réessayez dans un instant, ou contactez-nous sur WhatsApp — nous prendrons votre réservation directement.");
+        setError(t("errGeneric"));
         setLoading(false);
         return;
       }
@@ -139,11 +186,11 @@ function BookingFormInner() {
       if (url) {
         window.location.href = url;
       } else {
-        setError("Une erreur est survenue lors de la préparation du paiement. Réessayez dans un instant, ou contactez-nous sur WhatsApp.");
+        setError(t("errGeneric"));
         setLoading(false);
       }
     } catch {
-      setError("Connexion impossible. Vérifiez votre connexion internet et réessayez, ou contactez-nous sur WhatsApp.");
+      setError(t("errNetwork"));
       setLoading(false);
     }
   };
@@ -177,7 +224,7 @@ function BookingFormInner() {
       {/* ── STEP 1 — Excursion ── */}
       {step === 1 && (
         <div>
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">Quelle excursion ?</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">{t("step1Title")}</h2>
           <div className="space-y-3">
             {excursions.filter((e) => !e.pricePrivate).map((exc) => (
               <label key={exc.id}
@@ -199,11 +246,11 @@ function BookingFormInner() {
                   <div className="flex justify-between items-start gap-2 flex-wrap">
                     <div>
                       <div className="font-bold text-slate-800 text-sm leading-tight">{exc.title}</div>
-                      <div className="text-slate-400 text-xs mt-0.5">{exc.duration}</div>
+                      <div className="text-slate-400 text-xs mt-0.5">{locale === "en" ? (exc.durationEn ?? exc.duration) : exc.duration}</div>
                     </div>
                     <div className="text-right shrink-0">
                       <div className="text-tiki-gold font-bold text-sm">{formatPrice(exc.priceAdult)}</div>
-                      <div className="text-slate-400 text-xs">/ adulte</div>
+                      <div className="text-slate-400 text-xs">{t("perAdult")}</div>
                     </div>
                   </div>
                 </div>
@@ -212,8 +259,10 @@ function BookingFormInner() {
             <div className="flex items-start gap-3 p-4 rounded-xl bg-sky-50 border border-slate-200">
               <Info size={16} className="text-tiki-gold shrink-0 mt-0.5" />
               <p className="text-slate-500 text-sm">
-                Pour une <strong className="text-slate-800">privatisation</strong>,{" "}
-                <a href="/contact?type=privatisation" className="text-tiki-gold underline">contactez-nous</a> pour un devis.
+                {t.rich("privatisationText", {
+                  strong: (chunks) => <strong className="text-slate-800">{chunks}</strong>,
+                  link: (chunks) => <a href={locale === "en" ? "/en/contact?type=privatisation" : "/contact?type=privatisation"} className="text-tiki-gold underline">{chunks}</a>,
+                })}
               </p>
             </div>
           </div>
@@ -223,14 +272,14 @@ function BookingFormInner() {
       {/* ── STEP 2 — Date & passagers ── */}
       {step === 2 && excursion && (
         <div>
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">Date & passagers</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">{t("step2Title")}</h2>
           <div className="space-y-6">
 
             {/* Date */}
             <div>
               <label className="block text-slate-600 text-sm font-medium mb-3">
                 <CalendarDays size={14} className="inline mr-1.5 text-tiki-gold" />
-                Date de l&apos;excursion *
+                {t("dateLabel")}
               </label>
               <BookingCalendar
                 excursionSlug={data.excursionSlug}
@@ -251,8 +300,8 @@ function BookingFormInner() {
               />
               {data.date && (
                 <p className="text-slate-500 text-xs mt-2">
-                  {parseDateSafe(data.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                  {" · "}Départ {excursion.departureTime} · Retour {excursion.returnTime}
+                  {parseDateSafe(data.date).toLocaleDateString(dateLocale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  {" · "}{t("departReturn", { depart: excursion.departureTime, retour: excursion.returnTime })}
                 </p>
               )}
             </div>
@@ -261,7 +310,7 @@ function BookingFormInner() {
             <div>
               <label className="block text-slate-600 text-sm font-medium mb-3">
                 <Users size={14} className="inline mr-1.5 text-tiki-gold" />
-                Nombre de passagers
+                {t("passengersLabel")}
               </label>
               {(() => {
                 const selected = data.adults + data.children + data.infants;
@@ -269,18 +318,18 @@ function BookingFormInner() {
                 const remaining = maxAvail - selected;
                 const canAdd = (d: BookingData) => d.adults + d.children + d.infants < maxAvail;
                 const counters = [
-                  { label: "Adultes",  sub: "13 ans et +",    count: data.adults,   min: 1, free: false,
+                  { label: t("adults"),   sub: t("adultsSub"),   count: data.adults,   min: 1, free: false,
                     onDec: () => setData((d) => ({ ...d, adults:   Math.max(1, d.adults - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, adults:   d.adults + 1 } : d),
                     price: formatPrice(pAdult) },
-                  { label: "Enfants",  sub: "3–12 ans",        count: data.children, min: 0, free: false,
+                  { label: t("children"), sub: t("childrenSub"), count: data.children, min: 0, free: false,
                     onDec: () => setData((d) => ({ ...d, children: Math.max(0, d.children - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, children: d.children + 1 } : d),
                     price: formatPrice(pChild) },
-                  { label: "Bébés",    sub: "Moins de 3 ans",  count: data.infants,  min: 0, free: true,
+                  { label: t("infants"),  sub: t("infantsSub"),  count: data.infants,  min: 0, free: true,
                     onDec: () => setData((d) => ({ ...d, infants:  Math.max(0, d.infants - 1) })),
                     onInc: () => setData((d) => canAdd(d) ? { ...d, infants:  d.infants + 1 } : d),
-                    price: "Gratuit" },
+                    price: t("free") },
                 ];
                 return (
                   <>
@@ -301,7 +350,7 @@ function BookingFormInner() {
                             </button>
                           </div>
                           <div className={`text-xs mt-2 ${p.free ? "text-emerald-400" : "text-slate-400"}`}>
-                            {p.free ? "Gratuit" : `${p.price} / pers.`}
+                            {p.free ? t("free") : t("perPerson", { price: p.price })}
                           </div>
                         </div>
                       ))}
@@ -309,8 +358,8 @@ function BookingFormInner() {
                     <p className="text-slate-400 text-xs mt-2 flex items-center gap-1.5">
                       <Info size={11} className="shrink-0" />
                       {spotsLeft !== null
-                        ? `${excursion.maxPassengers - spotsLeft} / ${excursion.maxPassengers} passagers déjà — ${remaining} place${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`
-                        : `${selected} passager${selected !== 1 ? "s" : ""} sélectionné${selected !== 1 ? "s" : ""}`}
+                        ? t("spotsInfo", { taken: excursion.maxPassengers - spotsLeft, max: excursion.maxPassengers, remaining })
+                        : t("selectedInfo", { count: selected })}
                     </p>
                   </>
                 );
@@ -321,26 +370,26 @@ function BookingFormInner() {
             {total > 0 && (
               <div className="bg-tiki-gold/10 border border-tiki-gold/25 rounded-xl p-4 space-y-1.5">
                 {isHigh && (
-                  <div className="text-amber-600 text-xs font-semibold mb-1">🌟 Haute saison (31 oct → 30 avr)</div>
+                  <div className="text-amber-600 text-xs font-semibold mb-1">{t("highSeason")}</div>
                 )}
                 <div className="flex justify-between text-slate-600 text-sm">
-                  <span>{data.adults} adulte{data.adults > 1 ? "s" : ""} × {formatPrice(pAdult)}</span>
+                  <span>{t("adultsCount", { count: data.adults })} × {formatPrice(pAdult)}</span>
                   <span>{formatPrice(data.adults * pAdult)}</span>
                 </div>
                 {data.children > 0 && (
                   <div className="flex justify-between text-slate-600 text-sm">
-                    <span>{data.children} enfant{data.children > 1 ? "s" : ""} × {formatPrice(pChild)}</span>
+                    <span>{t("childrenCount", { count: data.children })} × {formatPrice(pChild)}</span>
                     <span>{formatPrice(data.children * pChild)}</span>
                   </div>
                 )}
                 {data.infants > 0 && (
                   <div className="flex justify-between text-emerald-400/80 text-sm">
-                    <span>{data.infants} bébé{data.infants > 1 ? "s" : ""} (−3 ans)</span>
-                    <span>Gratuit</span>
+                    <span>{t("infantsCount", { count: data.infants })}</span>
+                    <span>{t("free")}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-tiki-gold border-t border-tiki-gold/20 pt-2">
-                  <span>Total</span>
+                  <span>{t("total")}</span>
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
@@ -352,14 +401,14 @@ function BookingFormInner() {
       {/* ── STEP 3 — Informations client ── */}
       {step === 3 && (
         <div>
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">Vos informations</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">{t("step3Title")}</h2>
           <div className="space-y-4">
 
             {/* Infos contact */}
             {[
-              { label: "Nom complet *",          type: "text",  ph: "Jean Dupont",       key: "customerName",  ac: "name"  },
-              { label: "Email *",                type: "email", ph: "jean@email.com",     key: "customerEmail", ac: "email" },
-              { label: "Téléphone (WhatsApp) *", type: "tel",   ph: "+590 690 00 00 00", key: "customerPhone", ac: "tel"   },
+              { label: t("nameLabel"),  type: "text",  ph: t("namePh"),  key: "customerName",  ac: "name"  },
+              { label: t("emailLabel"), type: "email", ph: t("emailPh"), key: "customerEmail", ac: "email" },
+              { label: t("phoneLabel"), type: "tel",   ph: t("phonePh"), key: "customerPhone", ac: "tel"   },
             ].map(({ label, type, ph, key, ac }) => (
               <div key={key}>
                 <label className="block text-slate-600 text-sm font-medium mb-1.5">{label}</label>
@@ -383,14 +432,14 @@ function BookingFormInner() {
             <div className="pt-2">
               <label className="block text-slate-600 text-sm font-medium mb-1">
                 <Users size={14} className="inline mr-1.5 text-tiki-gold" />
-                Noms de tous les passagers *
+                {t("passengerNamesLabel")}
               </label>
               <p className="text-slate-400 text-xs mb-3">
-                Requis par l&apos;équipage — liste des personnes à bord.
+                {t("passengerNamesSub")}
               </p>
               <div className="space-y-2">
                 {data.passengerNames.map((p, i) => {
-                  const typeLabel = p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé";
+                  const typeLabel = p.type === "adult" ? t("adult") : p.type === "child" ? t("child") : t("infant");
                   const typeIdx = data.passengerNames.slice(0, i).filter(x => x.type === p.type).length + 1;
                   const isFirst = i === 0;
                   return (
@@ -398,7 +447,7 @@ function BookingFormInner() {
                       <label className="block text-slate-400 text-xs mb-1">{typeLabel} {typeIdx}</label>
                       <input
                         type="text"
-                        placeholder={`Prénom et nom — ${typeLabel.toLowerCase()} ${typeIdx}`}
+                        placeholder={t("passengerPh", { type: typeLabel.toLowerCase(), num: typeIdx })}
                         value={p.name}
                         readOnly={isFirst}
                         onChange={(e) => {
@@ -409,7 +458,7 @@ function BookingFormInner() {
                         }}
                         className={`${inputCls} ${isFirst ? "bg-slate-50 text-slate-400 cursor-default" : ""}`}
                       />
-                      {isFirst && <p className="text-slate-400 text-[10px] mt-1">Rempli automatiquement depuis votre nom</p>}
+                      {isFirst && <p className="text-slate-400 text-[10px] mt-1">{t("autoFilled")}</p>}
                     </div>
                   );
                 })}
@@ -418,8 +467,8 @@ function BookingFormInner() {
 
             {/* Remarques */}
             <div>
-              <label className="block text-slate-600 text-sm font-medium mb-1.5">Remarques particulières</label>
-              <textarea placeholder="Allergie alimentaire, besoin spécifique..."
+              <label className="block text-slate-600 text-sm font-medium mb-1.5">{t("notesLabel")}</label>
+              <textarea placeholder={t("notesPh")}
                 value={data.notes}
                 onChange={(e) => setData({ ...data, notes: e.target.value })}
                 rows={3} maxLength={400} className={`${inputCls} resize-none`}
@@ -432,19 +481,19 @@ function BookingFormInner() {
       {/* ── STEP 4 — Paiement ── */}
       {step === 4 && excursion && (
         <div>
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">Récapitulatif & Paiement</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-tiki-gold mb-5">{t("step4Title")}</h2>
 
           {/* Récap */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 mb-5 space-y-2 text-sm">
             {[
-              ["Excursion", excursion.title],
-              ["Date", data.date ? parseDateSafe(data.date).toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }) : "—"],
-              ["Passagers", [
-                `${data.adults} adulte${data.adults > 1 ? "s" : ""}`,
-                data.children ? `${data.children} enfant${data.children > 1 ? "s" : ""}` : "",
-                data.infants  ? `${data.infants} bébé${data.infants > 1 ? "s" : ""} (gratuit)` : "",
+              [t("recapExcursion"), excursion.title],
+              [t("recapDate"), data.date ? parseDateSafe(data.date).toLocaleDateString(dateLocale, { day:"numeric", month:"long", year:"numeric" }) : "—"],
+              [t("recapPassengers"), [
+                t("adultsCount", { count: data.adults }),
+                data.children ? t("childrenCount", { count: data.children }) : "",
+                data.infants  ? `${t("infantsCount", { count: data.infants }).replace(/ \(.*\)$/, "")} ${t("infantsFree")}` : "",
               ].filter(Boolean).join(" + ")],
-              ["Nom réservation", data.customerName],
+              [t("recapName"), data.customerName],
             ].map(([l, v]) => (
               <div key={l} className="flex justify-between gap-2">
                 <span className="text-slate-400">{l}</span>
@@ -454,17 +503,17 @@ function BookingFormInner() {
             {/* Passagers à bord */}
             {data.passengerNames.length > 0 && (
               <div className="border-t border-slate-100 pt-2 space-y-1">
-                <div className="text-slate-400 text-xs font-medium uppercase tracking-wide">Passagers à bord</div>
+                <div className="text-slate-400 text-xs font-medium uppercase tracking-wide">{t("onBoard")}</div>
                 {data.passengerNames.map((p, i) => (
                   <div key={i} className="flex justify-between gap-2">
-                    <span className="text-slate-400 text-xs">{p.type === "adult" ? "Adulte" : p.type === "child" ? "Enfant" : "Bébé"}</span>
+                    <span className="text-slate-400 text-xs">{p.type === "adult" ? t("adult") : p.type === "child" ? t("child") : t("infant")}</span>
                     <span className="text-slate-700 text-xs font-medium">{p.name}</span>
                   </div>
                 ))}
               </div>
             )}
             <div className="flex justify-between font-bold text-tiki-gold border-t border-slate-200 pt-2">
-              <span>Total</span><span>{formatPrice(total)}</span>
+              <span>{t("total")}</span><span>{formatPrice(total)}</span>
             </div>
           </div>
 
@@ -472,11 +521,11 @@ function BookingFormInner() {
           <div className="space-y-3 mb-5">
             {[
               { val: "deposit" as const,
-                title: `Acompte 30% — ${formatPrice(deposit)}`,
-                sub: `Solde de ${formatPrice(total - deposit)} à régler le jour J` },
+                title: t("deposit", { amount: formatPrice(deposit) }),
+                sub: t("depositSub", { amount: formatPrice(total - deposit) }) },
               { val: "full" as const,
-                title: `Paiement total — ${formatPrice(total)}`,
-                sub: "Tout réglé maintenant, rien à payer le jour J" },
+                title: t("fullPayment", { amount: formatPrice(total) }),
+                sub: t("fullPaymentSub") },
             ].map(({ val, title, sub }) => (
               <label key={val}
                 className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all min-h-[64px] ${
@@ -514,27 +563,29 @@ function BookingFormInner() {
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <ShieldCheck size={14} className="text-tiki-gold shrink-0" />
-                <span className="text-slate-700 text-sm font-semibold">Certification santé & sécurité <span className="text-red-500">*</span></span>
+                <span className="text-slate-700 text-sm font-semibold">{t("certifTitle")} <span className="text-red-500">*</span></span>
               </div>
               <p className="text-slate-500 text-xs leading-relaxed">
-                Je certifie que tous les passagers sont en <strong className="text-slate-700">bonne santé</strong>{" "}et ne présentent aucune contre-indication médicale à la pratique d&apos;activités nautiques (problèmes cardiaques, épilepsie, grossesse avancée…). En cas d&apos;allergie alimentaire ou d&apos;intolérance, je m&apos;engage à en informer l&apos;équipage avant l&apos;embarquement.
+                {t.rich("certifText", {
+                  strong: (chunks) => <strong className="text-slate-700">{chunks}</strong>,
+                })}
               </p>
             </div>
           </label>
 
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CreditCard size={14} className="text-tiki-gold" />
-            Paiement sécurisé · CB, Apple Pay, Google Pay
+            {t("securePayment")}
           </div>
           <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
             <CheckCircle2 size={14} className="text-tiki-gold" />
-            Email récapitulatif immédiat · Confirmation de l&apos;équipage sous 24-48h
+            {t("recapEmail")}
           </div>
           <div className="flex items-center gap-2 text-slate-400 text-xs">
             <Info size={14} className="text-tiki-gold" />
-            Annulation gratuite jusqu&apos;à 7 jours avant le départ ·{" "}
-            <a href="/cgv" target="_blank" rel="noopener noreferrer" className="underline hover:text-tiki-gold transition-colors">
-              voir conditions
+            {t("cancellation")}{" "}
+            <a href={locale === "en" ? "/en/cgv" : "/cgv"} target="_blank" rel="noopener noreferrer" className="underline hover:text-tiki-gold transition-colors">
+              {t("seeConditions")}
             </a>
           </div>
         </div>
@@ -554,7 +605,7 @@ function BookingFormInner() {
           onClick={() => setStep((s) => (s - 1) as Step)}
           disabled={step === 1}
           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 disabled:opacity-20 disabled:cursor-not-allowed transition-colors font-medium text-sm py-3 px-4 min-h-[48px]">
-          <ChevronLeft size={18} /> Retour
+          <ChevronLeft size={18} /> {t("back")}
         </button>
 
         {step < 4 ? (
@@ -562,7 +613,7 @@ function BookingFormInner() {
             onClick={() => step === 2 ? goToStep3() : setStep((s) => (s + 1) as Step)}
             disabled={!canGoNext()}
             className="flex items-center gap-2 bg-tiki-gold hover:bg-tiki-gold-dark text-tiki-ocean font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed min-h-[48px] text-sm">
-            Continuer <ChevronRight size={18} />
+            {t("continue")} <ChevronRight size={18} />
           </button>
         ) : (
           <button type="button" onClick={handleSubmit}
@@ -574,10 +625,10 @@ function BookingFormInner() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Redirection...
+                {t("redirecting")}
               </>
             ) : (
-              <><CreditCard size={16} /> Procéder au paiement</>
+              <><CreditCard size={16} /> {t("proceedPayment")}</>
             )}
           </button>
         )}

@@ -14,6 +14,7 @@ interface Reservation {
   isPaid: boolean; customerName: string; customerEmail: string;
   customerPhone: string; notes?: string; createdAt: string; source?: string;
   passengerNames?: string; certificationAccepted?: boolean;
+  stripePaymentIntentId?: string | null; refundedAmount?: number | null;
 }
 
 const toDay = (d: string) => d.split("T")[0];
@@ -57,6 +58,8 @@ export default function ReservationsPage() {
     notes: string; status: string; isPaid: boolean; paymentType: string;
   } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmRefund, setConfirmRefund] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [dayConfirming, setDayConfirming] = useState<string | null>(null);
 
@@ -211,6 +214,27 @@ export default function ReservationsPage() {
     setSaving(false);
   };
 
+  const refundReservation = async () => {
+    if (!selected) return;
+    setSaving(true);
+    setRefundError(null);
+    const res = await fetch("/api/admin/reservations/refund", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selected.id }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setRefundError(json.error ?? "Échec du remboursement");
+      setSaving(false);
+      return;
+    }
+    await fetchReservations();
+    setSelected(prev => prev ? { ...prev, refundedAmount: json.totalRefunded, status: json.status } : null);
+    setConfirmRefund(false);
+    setSaving(false);
+  };
+
   const markPayment = async (id: string, paymentType: string, isPaid: boolean) => {
     setSaving(true);
     await fetch("/api/admin/reservations", {
@@ -253,7 +277,7 @@ export default function ReservationsPage() {
     setDayConfirming(null);
   };
 
-  const closeModal = () => { setSelected(null); setEditMode(false); setEditForm(null); setConfirmDelete(false); };
+  const closeModal = () => { setSelected(null); setEditMode(false); setEditForm(null); setConfirmDelete(false); setConfirmRefund(false); setRefundError(null); };
 
   if (status === "loading" || !session) return (
     <div className="p-8 text-slate-400 text-sm">Chargement...</div>
@@ -871,6 +895,42 @@ export default function ReservationsPage() {
                         <MessageCircle size={12} /> WhatsApp
                       </a>
                     </div>
+
+                    {/* Remboursement Stripe (résas en ligne payées) */}
+                    {selected.stripePaymentIntentId && selected.isPaid && (() => {
+                      const paidOnline = selected.paymentType === "deposit" ? selected.depositAmount : selected.totalPrice;
+                      const refunded = selected.refundedAmount ?? 0;
+                      const refundable = Math.max(0, paidOnline - refunded);
+                      if (refundable <= 0) return (
+                        <div className="w-full py-2.5 rounded-xl text-xs font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 text-center">
+                          ✓ Remboursé intégralement ({refunded.toFixed(2)} €)
+                        </div>
+                      );
+                      return !confirmRefund ? (
+                        <button onClick={() => { setConfirmRefund(true); setRefundError(null); }}
+                          className="w-full py-2.5 rounded-xl text-xs font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 border border-amber-200 hover:border-amber-300 transition-all flex items-center justify-center gap-1.5">
+                          <Euro size={12} /> Rembourser {refundable.toFixed(2)} € (Stripe)
+                        </button>
+                      ) : (
+                        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
+                          <p className="text-amber-800 text-sm font-medium">
+                            Rembourser <strong>{refundable.toFixed(2)} €</strong> à {selected.customerName} ?
+                          </p>
+                          <p className="text-amber-600 text-xs">Le remboursement Stripe est irréversible (3-10 jours ouvrés sur la carte du client). La réservation passera en &quot;Annulé&quot;.</p>
+                          {refundError && <p className="text-red-600 text-xs font-medium">{refundError}</p>}
+                          <div className="flex gap-2">
+                            <button onClick={refundReservation} disabled={saving}
+                              className="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50">
+                              {saving ? "..." : "Oui, rembourser"}
+                            </button>
+                            <button onClick={() => { setConfirmRefund(false); setRefundError(null); }}
+                              className="flex-1 py-2 border border-slate-200 text-slate-600 hover:text-slate-800 rounded-lg text-sm transition-colors">
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {!confirmDelete ? (
                       <button onClick={() => setConfirmDelete(true)}

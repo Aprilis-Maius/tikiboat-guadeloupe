@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { getExcursionBySlug } from "@/lib/excursions";
 import { getSeasonalPrices } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -12,6 +13,15 @@ function getStripe() {
 
 export async function POST(req: NextRequest) {
   try {
+    // 10 tentatives / 10 min par IP — largement assez pour un client légitime
+    const limit = rateLimit(`checkout:${clientIp(req)}`, 10, 10 * 60 * 1000);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: "Trop de tentatives. Patientez quelques minutes puis réessayez." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+      );
+    }
+
     const body = await req.json();
     const {
       excursionSlug,
@@ -84,6 +94,9 @@ export async function POST(req: NextRequest) {
 
     const isDeposit = paymentType === "deposit";
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    // Locale du client : tunnel Stripe + pages de retour dans sa langue
+    const isEn = body.locale === "en";
+    const localePrefix = isEn ? "/en" : "";
 
     // Metadata Stripe : 500 caractères max par valeur.
     // Format compact [["nom","a"],...] pour tenir 12 passagers ; notes tronquées.
@@ -111,9 +124,11 @@ export async function POST(req: NextRequest) {
             currency: "eur",
             product_data: {
               name: isDeposit
-                ? `Acompte — ${excursion.title}`
+                ? (isEn ? `Deposit — ${excursion.title}` : `Acompte — ${excursion.title}`)
                 : excursion.title,
-              description: `${date} · ${numAdults} adulte${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} enfant${numChildren > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
+              description: isEn
+                ? `${date} · ${numAdults} adult${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} child${numChildren > 1 ? "ren" : ""}` : ""} · Departure ${excursion.departureTime} · Return ${excursion.returnTime}`
+                : `${date} · ${numAdults} adulte${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} enfant${numChildren > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
               images: excursion.images[0] ? [`${baseUrl}${excursion.images[0]}`] : [],
             },
             unit_amount: Math.round(serverAmountToPay * 100),
@@ -137,9 +152,9 @@ export async function POST(req: NextRequest) {
         passengerNames:       passengerNamesCompact,
         certificationAccepted: String(body.certificationAccepted === true),
       },
-      success_url: `${baseUrl}/reservation/confirmation?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/reservation?excursion=${excursionSlug}`,
-      locale: "fr",
+      success_url: `${baseUrl}${localePrefix}/reservation/confirmation?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}${localePrefix}/reservation?excursion=${excursionSlug}`,
+      locale: isEn ? "en" : "fr",
     });
 
     return NextResponse.json({ url: session.url });
