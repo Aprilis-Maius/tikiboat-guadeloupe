@@ -13,10 +13,8 @@ export const metadata: Metadata = {
     template: "%s | Tiki Boat Guadeloupe",
   },
   icons: { icon: "/favicon.png", shortcut: "/favicon.png", apple: "/favicon.png" },
-  alternates: {
-    canonical: BASE,
-    languages: { "fr": BASE, "en": `${BASE}/en` },
-  },
+  // Pas de canonical global : chaque page définit le sien (un canonical hérité
+  // ferait pointer toutes les pages sans metadata vers l'accueil).
   twitter: { site: "@tikiboatguadeloupe" },
 };
 
@@ -89,7 +87,7 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c") }}
       />
       {children}
     </NextIntlClientProvider>

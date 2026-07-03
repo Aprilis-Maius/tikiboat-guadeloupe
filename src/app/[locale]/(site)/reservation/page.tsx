@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
 import BookingForm from "@/components/BookingForm";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "https://tikiboat.fr/reservation" },
-  openGraph: { url: "https://tikiboat.fr/reservation", type: "website" },
-  title: "Réserver une excursion",
-  description:
-    "Réservez votre excursion Tiki Boat en ligne. Paiement sécurisé, email récapitulatif immédiat, confirmation sous 24h.",
-};
+const BASE = "https://tikiboat.fr";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en/reservation` : `${BASE}/reservation`;
+  return {
+    title: isEn ? "Book a Boat Trip" : "Réserver une excursion",
+    description: isEn
+      ? "Book your Tiki Boat trip online. Secure payment, instant recap email, confirmation within 24h."
+      : "Réservez votre excursion Tiki Boat en ligne. Paiement sécurisé, email récapitulatif immédiat, confirmation sous 24h.",
+    alternates: { canonical: url, languages: { fr: `${BASE}/reservation`, en: `${BASE}/en/reservation` } },
+    openGraph: { url, type: "website" },
+  };
+}
 
 export default function ReservationPage() {
   return (

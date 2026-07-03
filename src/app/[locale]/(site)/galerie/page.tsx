@@ -2,31 +2,43 @@ import type { Metadata } from "next";
 import { Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+const OG_IMAGE = "https://tikiboat.fr/og.jpg";
 
-export const metadata: Metadata = {
-  title: "Galerie photos & vidéos — Tiki Boat Guadeloupe",
-  description: "Découvrez en vidéo les excursions Tiki Boat en Guadeloupe : Grand Cul de Sac Marin, îlets, snorkeling, repas créole les pieds dans l'eau.",
-  alternates: { canonical: "https://tikiboat.fr/galerie" },
-  openGraph: {
-    title: "Galerie Tiki Boat — Excursions en Guadeloupe en vidéo",
-    description: "Vivez l'expérience Tiki Boat avant de monter à bord. Vidéos et photos des îlets et du lagon.",
-    url: "https://tikiboat.fr/galerie",
-    type: "website",
-    locale: "fr_FR",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Grand Cul de Sac Marin" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Galerie Tiki Boat — Guadeloupe en vidéo",
-    description: "Vidéos et photos des excursions en bateau en Guadeloupe.",
-    images: [OG_IMAGE],
-  },
-};
-
+const BASE = "https://tikiboat.fr";
 
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en/galerie` : `${BASE}/galerie`;
+  return {
+    title: isEn ? "Photo & Video Gallery — Tiki Boat Guadeloupe" : "Galerie photos & vidéos — Tiki Boat Guadeloupe",
+    description: isEn
+      ? "Watch Tiki Boat trips in Guadeloupe on video: Grand Cul de Sac Marin, islets, snorkeling, Creole meal with your feet in the water."
+      : "Découvrez en vidéo les excursions Tiki Boat en Guadeloupe : Grand Cul de Sac Marin, îlets, snorkeling, repas créole les pieds dans l'eau.",
+    alternates: { canonical: url, languages: { fr: `${BASE}/galerie`, en: `${BASE}/en/galerie` } },
+    openGraph: {
+      title: isEn ? "Tiki Boat Gallery — Guadeloupe trips on video" : "Galerie Tiki Boat — Excursions en Guadeloupe en vidéo",
+      description: isEn
+        ? "Experience Tiki Boat before you board. Videos and photos of the islets and lagoon."
+        : "Vivez l'expérience Tiki Boat avant de monter à bord. Vidéos et photos des îlets et du lagon.",
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Grand Cul de Sac Marin" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isEn ? "Tiki Boat Gallery — Guadeloupe on video" : "Galerie Tiki Boat — Guadeloupe en vidéo",
+      description: isEn
+        ? "Videos and photos of boat trips in Guadeloupe."
+        : "Vidéos et photos des excursions en bateau en Guadeloupe.",
+      images: [OG_IMAGE],
+    },
+  };
 }
 
 export default async function GaleriePage({ params }: Props) {

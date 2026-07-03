@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isEn = locale === "en";
   const url = `${BASE}${isEn ? "/en" : ""}/excursions/${slug}`;
   const description = isEn ? (exc.descriptionEn ?? exc.description) : exc.description;
-  const imageUrl = exc.images[0]?.startsWith("http") ? exc.images[0] : `${BASE}${exc.images[0]}`;
+  const imageUrl = `${BASE}/og.jpg`; // version 1200x630 optimisée pour les partages
   return {
     title: isEn ? `${exc.title} — Guadeloupe Boat Trip` : `${exc.title} — Excursion bateau Guadeloupe`,
     description,
@@ -82,8 +82,10 @@ export default async function ExcursionDetailPage({ params }: Props) {
     },
     ...(excursion.priceAdult > 0 ? {
       offers: {
-        "@type": "Offer",
-        price: excursion.priceAdult,
+        // AggregateOffer : couvre basse (100€) et haute saison (120€)
+        "@type": "AggregateOffer",
+        lowPrice: excursion.priceAdult,
+        highPrice: excursion.priceAdultHighSeason ?? excursion.priceAdult,
         priceCurrency: "EUR",
         availability: "https://schema.org/InStock",
         url: `${BASE}/reservation?excursion=${slug}`,
@@ -91,7 +93,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
     } : {}),
     itinerary: {
       "@type": "ItemList",
-      itemListElement: excursion.highlights.map((h, i) => ({
+      itemListElement: highlights.map((h, i) => ({
         "@type": "ListItem",
         position: i + 1,
         name: h,
@@ -103,7 +105,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(touristTripJsonLd).replace(/</g, "\\u003c") }}
       />
       {/* Hero */}
       <section className="relative">
@@ -265,7 +267,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
                 <div className="mt-6 pt-6 border-t border-tiki-gold/20">
                   <div className="flex items-center gap-2 justify-center">
                     {[...Array(5)].map((_, i) => <Star key={i} className="text-tiki-gold fill-tiki-gold" size={14} />)}
-                    <span className="text-slate-800 text-sm font-bold ml-1">4.8/5</span>
+                    <span className="text-slate-800 text-sm font-bold ml-1">4.9/5</span>
                   </div>
                   <p className="text-center text-slate-500 text-xs mt-1">600+ avis</p>
                 </div>

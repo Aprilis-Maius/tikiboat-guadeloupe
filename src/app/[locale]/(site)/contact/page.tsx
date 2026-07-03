@@ -3,27 +3,38 @@ import ContactForm from "@/components/ContactForm";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+const OG_IMAGE = "https://tikiboat.fr/og.jpg";
 
-export const metadata: Metadata = {
-  title: "Contact — Tiki Boat Guadeloupe",
-  description: "Contactez Tiki Boat par téléphone, WhatsApp ou email pour réserver votre excursion en bateau en Guadeloupe. Réponse rapide garantie.",
-  alternates: { canonical: "https://tikiboat.fr/contact" },
-  openGraph: {
-    title: "Contactez Tiki Boat — Excursions en Guadeloupe",
-    description: "Téléphone, WhatsApp, email. Réponse rapide pour toute question sur vos excursions.",
-    url: "https://tikiboat.fr/contact",
-    type: "website",
-    locale: "fr_FR",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Tiki Boat Guadeloupe" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contactez Tiki Boat — Excursions en Guadeloupe",
-    description: "Téléphone, WhatsApp, email. Réponse rapide.",
-    images: [OG_IMAGE],
-  },
-};
+const BASE = "https://tikiboat.fr";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en/contact` : `${BASE}/contact`;
+  return {
+    title: isEn ? "Contact — Tiki Boat Guadeloupe" : "Contact — Tiki Boat Guadeloupe",
+    description: isEn
+      ? "Contact Tiki Boat by phone, WhatsApp or email to book your boat trip in Guadeloupe. Fast response guaranteed."
+      : "Contactez Tiki Boat par téléphone, WhatsApp ou email pour réserver votre excursion en bateau en Guadeloupe. Réponse rapide garantie.",
+    alternates: { canonical: url, languages: { fr: `${BASE}/contact`, en: `${BASE}/en/contact` } },
+    openGraph: {
+      title: isEn ? "Contact Tiki Boat — Boat Trips in Guadeloupe" : "Contactez Tiki Boat — Excursions en Guadeloupe",
+      description: isEn
+        ? "Phone, WhatsApp, email. Fast response for any question about your trip."
+        : "Téléphone, WhatsApp, email. Réponse rapide pour toute question sur vos excursions.",
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Tiki Boat Guadeloupe" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isEn ? "Contact Tiki Boat — Guadeloupe" : "Contactez Tiki Boat — Excursions en Guadeloupe",
+      description: isEn ? "Phone, WhatsApp, email. Fast response." : "Téléphone, WhatsApp, email. Réponse rapide.",
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 export default async function ContactPage() {
   const t = await getTranslations("contact");

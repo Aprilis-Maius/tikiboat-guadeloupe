@@ -4,30 +4,43 @@ import { Star, Shield, ExternalLink, ChevronRight } from "lucide-react";
 import { reviews } from "@/data/reviews";
 import { getTranslations } from "next-intl/server";
 
-const OG_IMAGE = "https://tikiboat.fr/photos/grandculdesacmarin-excursion.png";
+const OG_IMAGE = "https://tikiboat.fr/og.jpg";
 
-export const metadata: Metadata = {
-  title: "Avis clients — Tiki Boat Guadeloupe",
-  description: "Plus de 600 avis vérifiés 5 étoiles sur Tiki Boat. Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
-  alternates: { canonical: "https://tikiboat.fr/avis" },
-  openGraph: {
-    title: "Avis clients Tiki Boat — 600+ avis 5 étoiles",
-    description: "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
-    url: "https://tikiboat.fr/avis",
-    type: "website",
-    locale: "fr_FR",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Guadeloupe" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Avis clients Tiki Boat — 600+ avis 5 étoiles",
-    description: "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
-    images: [OG_IMAGE],
-  },
-};
+const BASE = "https://tikiboat.fr";
 
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en/avis` : `${BASE}/avis`;
+  return {
+    title: isEn ? "Customer Reviews — Tiki Boat Guadeloupe" : "Avis clients — Tiki Boat Guadeloupe",
+    description: isEn
+      ? "Over 600 verified 5-star reviews for Tiki Boat. See what our customers say about their boat trips in Guadeloupe."
+      : "Plus de 600 avis vérifiés 5 étoiles sur Tiki Boat. Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
+    alternates: { canonical: url, languages: { fr: `${BASE}/avis`, en: `${BASE}/en/avis` } },
+    openGraph: {
+      title: isEn ? "Tiki Boat Reviews — 600+ 5-star reviews" : "Avis clients Tiki Boat — 600+ avis 5 étoiles",
+      description: isEn
+        ? "See what our customers say about their boat trips in Guadeloupe."
+        : "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion Tiki Boat Guadeloupe" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isEn ? "Tiki Boat Reviews — 600+ 5-star reviews" : "Avis clients Tiki Boat — 600+ avis 5 étoiles",
+      description: isEn
+        ? "See what our customers say about their boat trips in Guadeloupe."
+        : "Découvrez ce que nos clients disent de leurs excursions en bateau en Guadeloupe.",
+      images: [OG_IMAGE],
+    },
+  };
 }
 
 export default async function AvisPage({ params }: Props) {

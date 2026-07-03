@@ -64,7 +64,9 @@ export const getExcursions = unstable_cache(
     return staticExcursions;
   },
   ["excursions-list"],
-  { revalidate: 10, tags: ["excursions"] }
+  // 1h : le tag "excursions" est déjà revalidé par l'admin à chaque modif —
+  // pas besoin de re-hit la DB toutes les 10 s.
+  { revalidate: 3600, tags: ["excursions"] }
 );
 
 export const getExcursionBySlug = unstable_cache(
@@ -76,5 +78,5 @@ export const getExcursionBySlug = unstable_cache(
     return staticExcursions.find(e => e.slug === slug);
   },
   ["excursion-by-slug"],
-  { revalidate: 10, tags: ["excursions"] }
+  { revalidate: 3600, tags: ["excursions"] }
 );

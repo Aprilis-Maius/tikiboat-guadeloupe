@@ -7,19 +7,24 @@ import SiteImage from "@/components/SiteImage";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Blog — Conseils excursions en Guadeloupe",
-  description:
-    "Conseils, guides et inspiration pour vos excursions en bateau en Guadeloupe. Snorkeling, îlets, Grand Cul de Sac Marin, activités en famille.",
-  robots: { index: false, follow: false }, // noindex tant que pas d'articles
-  alternates: { canonical: "https://tikiboat.fr/blog" },
-  openGraph: {
-    title: "Blog Tiki Boat — Conseils excursions en Guadeloupe",
-    description: "Guides et conseils pour vos excursions en mer en Guadeloupe.",
-    url: "https://tikiboat.fr/blog",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // noindex uniquement tant qu'aucun article n'est publié —
+  // dès le premier article, la page devient indexable automatiquement.
+  const posts = await getPublishedPosts();
+  return {
+    title: "Blog — Conseils excursions en Guadeloupe",
+    description:
+      "Conseils, guides et inspiration pour vos excursions en bateau en Guadeloupe. Snorkeling, îlets, Grand Cul de Sac Marin, activités en famille.",
+    ...(posts.length === 0 ? { robots: { index: false, follow: true } } : {}),
+    alternates: { canonical: "https://tikiboat.fr/blog" },
+    openGraph: {
+      title: "Blog Tiki Boat — Conseils excursions en Guadeloupe",
+      description: "Guides et conseils pour vos excursions en mer en Guadeloupe.",
+      url: "https://tikiboat.fr/blog",
+      type: "website",
+    },
+  };
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
   Guide:       "bg-tiki-gold/15 text-tiki-gold border-tiki-gold/25",

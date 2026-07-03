@@ -8,31 +8,43 @@ import { formatPrice } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
 const BASE = "https://tikiboat.fr";
-const OG_IMAGE = `${BASE}/photos/grandculdesacmarin-excursion.png`;
-
-export const metadata: Metadata = {
-  title: "Excursions en bateau en Guadeloupe — Croisières & Sorties mer | Tiki Boat",
-  description:
-    "Toutes nos excursions en bateau en Guadeloupe : croisière journée Grand Cul de Sac Marin (100 €), privatisation sur mesure. Snorkeling, repas créole, îlets. Réservez en ligne.",
-  alternates: { canonical: `${BASE}/excursions`, languages: { fr: `${BASE}/excursions`, en: `${BASE}/en/excursions` } },
-  openGraph: {
-    title: "Excursions en bateau en Guadeloupe | Tiki Boat",
-    description: "Croisière journée, privatisation. Snorkeling, îlets, repas créole. À partir de 100 €.",
-    url: `${BASE}/excursions`,
-    type: "website",
-    locale: "fr_FR",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Excursions en bateau Guadeloupe | Tiki Boat",
-    description: "Croisière journée, snorkeling, repas créole. À partir de 100€.",
-    images: [OG_IMAGE],
-  },
-};
+const OG_IMAGE = `${BASE}/og.jpg`;
 
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isEn = locale === "en";
+  const url = isEn ? `${BASE}/en/excursions` : `${BASE}/excursions`;
+  return {
+    title: isEn
+      ? "Boat Trips in Guadeloupe — Cruises & Sea Excursions | Tiki Boat"
+      : "Excursions en bateau en Guadeloupe — Croisières & Sorties mer | Tiki Boat",
+    description: isEn
+      ? "All our boat trips in Guadeloupe: full-day Grand Cul de Sac Marin cruise (€100), private charters. Snorkeling, Creole meal, islets. Book online."
+      : "Toutes nos excursions en bateau en Guadeloupe : croisière journée Grand Cul de Sac Marin (100 €), privatisation sur mesure. Snorkeling, repas créole, îlets. Réservez en ligne.",
+    alternates: { canonical: url, languages: { fr: `${BASE}/excursions`, en: `${BASE}/en/excursions` } },
+    openGraph: {
+      title: isEn ? "Boat Trips in Guadeloupe | Tiki Boat" : "Excursions en bateau en Guadeloupe | Tiki Boat",
+      description: isEn
+        ? "Full-day cruise, private charters. Snorkeling, islets, Creole meal. From €100."
+        : "Croisière journée, privatisation. Snorkeling, îlets, repas créole. À partir de 100 €.",
+      url,
+      type: "website",
+      locale: isEn ? "en_US" : "fr_FR",
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Excursion en bateau Tiki Boat — Grand Cul de Sac Marin, Guadeloupe" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: isEn ? "Boat Trips Guadeloupe | Tiki Boat" : "Excursions en bateau Guadeloupe | Tiki Boat",
+      description: isEn
+        ? "Full-day cruise, snorkeling, Creole meal. From €100."
+        : "Croisière journée, snorkeling, repas créole. À partir de 100€.",
+      images: [OG_IMAGE],
+    },
+  };
 }
 
 export default async function ExcursionsPage({ params }: Props) {

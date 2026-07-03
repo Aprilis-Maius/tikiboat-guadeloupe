@@ -9,7 +9,7 @@ import { reviews } from "@/data/reviews";
 import { formatPrice } from "@/lib/utils";
 
 const BASE = "https://tikiboat.fr";
-const OG_IMAGE = `${BASE}/photos/grandculdesacmarin-excursion.png`;
+const OG_IMAGE = `${BASE}/og.jpg`;
 
 interface Props {
   params: Promise<{ locale: string }>;
