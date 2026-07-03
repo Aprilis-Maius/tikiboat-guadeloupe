@@ -19,6 +19,15 @@ body {
   font-family: var(--font-sans);
   background-color: #f0f9ff;
   color: #0f172a;
+  /* Bebas Neue n'existe qu'en graisse 400 : on empêche le navigateur de
+     fabriquer un faux-gras baveux là où font-bold/font-black est appliqué.
+     (les italiques des témoignages, elles, restent intactes) */
+  font-synthesis-weight: none;
+}
+
+@layer base {
+  /* Titres équilibrés : plus de ligne orpheline d'un seul mot */
+  h1, h2, h3 { text-wrap: balance; }
 }
 
 @layer components {
@@ -39,7 +48,9 @@ body {
   }
 
   .section-title {
-    @apply font-display text-4xl md:text-5xl font-bold text-tiki-gold leading-tight;
+    /* Bebas rend à sa vraie graisse 400 (pas de faux-gras) ; un léger
+       espacement fait respirer les capitales condensées */
+    @apply font-display text-4xl md:text-5xl text-tiki-gold leading-tight tracking-wide;
   }
 
   .section-subtitle {
