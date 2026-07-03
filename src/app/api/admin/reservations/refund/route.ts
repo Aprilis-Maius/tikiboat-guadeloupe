@@ -42,33 +42,52 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
+  const newRefunded = alreadyRefunded + requested;
+  const willBeFullyRefunded = newRefunded >= paidAmount;
+
+  // 1) Réservation atomique du montant AVANT l'appel Stripe.
+  // updateMany conditionnel sur refundedAmount : si deux requêtes concurrentes
+  // (double-clic, deux onglets, retry) tentent le même remboursement, une seule
+  // passe — l'autre voit count === 0 et s'arrête. Ferme la fenêtre TOCTOU.
+  const claim = await prisma.reservation.updateMany({
+    where: { id, refundedAmount: resa.refundedAmount },
+    data: {
+      refundedAmount: newRefunded,
+      ...(willBeFullyRefunded ? { status: "cancelled" } : {}),
+    },
+  });
+  if (claim.count === 0) {
+    return NextResponse.json({ error: "Remboursement déjà en cours ou modifié. Rafraîchissez et réessayez." }, { status: 409 });
+  }
+
   try {
     await getStripe().refunds.create({
       payment_intent: resa.stripePaymentIntentId,
       amount: Math.round(requested * 100), // centimes
       reason: "requested_by_customer",
+    }, {
+      // Clé stable : un rejeu du même remboursement ne débite qu'une fois côté Stripe
+      idempotencyKey: `refund_${id}_${newRefunded}`,
     });
   } catch (err) {
+    // Rollback de la réservation optimiste : l'argent n'est pas parti, on restaure l'état
+    await prisma.reservation.updateMany({
+      where: { id, refundedAmount: newRefunded },
+      data: {
+        refundedAmount: resa.refundedAmount,
+        ...(willBeFullyRefunded ? { status: resa.status } : {}),
+      },
+    });
     console.error("Refund error:", err);
     const msg = err instanceof Stripe.errors.StripeError ? err.message : "Échec du remboursement Stripe";
     return NextResponse.json({ error: msg }, { status: 502 });
   }
-
-  const newRefunded = alreadyRefunded + requested;
-  const updated = await prisma.reservation.update({
-    where: { id },
-    data: {
-      refundedAmount: newRefunded,
-      // Remboursement total → annulée ; partiel → statut inchangé
-      ...(newRefunded >= paidAmount ? { status: "cancelled" } : {}),
-    },
-  });
 
   revalidateTag("admin-dashboard", {});
   return NextResponse.json({
     ok: true,
     refunded: requested,
     totalRefunded: newRefunded,
-    status: updated.status,
+    status: willBeFullyRefunded ? "cancelled" : resa.status,
   });
 }

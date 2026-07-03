@@ -21,6 +21,15 @@ function formatDate(d: string, dateLocale: string) {
   });
 }
 
+// La page est accessible par simple possession du session_id (URL dans l'historique
+// d'un poste partagé, etc.) — on masque l'email pour ne pas exposer de PID en clair.
+function maskEmail(email: string): string {
+  const [user, domain] = email.split("@");
+  if (!domain) return email;
+  const shown = user.slice(0, 1);
+  return `${shown}${"•".repeat(Math.max(2, user.length - 1))}@${domain}`;
+}
+
 export default async function ConfirmationPage({
   params,
   searchParams,
@@ -110,7 +119,7 @@ export default async function ConfirmationPage({
                 <div className="flex items-center gap-3 py-3 border-b border-slate-100">
                   <Mail size={16} className="text-tiki-gold shrink-0" />
                   <span className="text-slate-500 text-sm w-28 shrink-0">{t("confEmail")}</span>
-                  <span className="font-semibold text-slate-800 text-sm ml-auto">{customerEmail}</span>
+                  <span className="font-semibold text-slate-800 text-sm ml-auto">{maskEmail(customerEmail)}</span>
                 </div>
               )}
               <div className="flex items-center gap-3 py-3 border-b border-slate-100">
