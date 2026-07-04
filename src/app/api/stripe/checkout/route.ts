@@ -23,6 +23,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    // NB : on ne lit PAS totalPrice/depositAmount/amountToPay du client —
+    // tous les montants sont recalculés serveur ci-dessous (anti price tampering).
     const {
       excursionSlug,
       date,
@@ -32,9 +34,6 @@ export async function POST(req: NextRequest) {
       customerEmail,
       customerPhone,
       paymentType,
-      totalPrice,
-      depositAmount,
-      amountToPay,
       notes,
     } = body;
 
@@ -51,12 +50,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Cette date est déjà passée." }, { status: 400 });
     }
 
+    // Validation + bornage des coordonnées client côté serveur
+    // (anti payload géant / DB bloat ; le client est trivialement contournable)
+    const cName  = String(customerName  ?? "").trim().slice(0, 120);
+    const cEmail = String(customerEmail ?? "").trim().slice(0, 200);
+    const cPhone = String(customerPhone ?? "").trim().slice(0, 40);
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!cName || !cPhone || !EMAIL_RE.test(cEmail)) {
+      return NextResponse.json({ error: "Coordonnées invalides (nom, email et téléphone requis)." }, { status: 400 });
+    }
+
     // Prix recalculés côté serveur — ne jamais faire confiance au client
     const numAdults   = Math.max(0, parseInt(String(adults))   || 0);
     const numChildren = Math.max(0, parseInt(String(children)) || 0);
     const numInfants  = Math.max(0, parseInt(String(body.infants ?? 0)) || 0);
     if (numAdults < 1) {
       return NextResponse.json({ error: "Au moins un adulte est requis." }, { status: 400 });
+    }
+    // Garde-fou : effectif absurde rejeté avant même la requête capacité
+    if (numAdults + numChildren + numInfants > 50) {
+      return NextResponse.json({ error: "Nombre de passagers invalide." }, { status: 400 });
     }
     const { priceAdult: pAdult, priceChild: pChild } = getSeasonalPrices(
       date,
@@ -114,7 +127,7 @@ export async function POST(req: NextRequest) {
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      customer_email: customerEmail,
+      customer_email: cEmail,
       // La session expire vite pour réduire la fenêtre de double réservation
       // (défaut Stripe = 24h ; 30 min est le minimum autorisé)
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
@@ -143,8 +156,8 @@ export async function POST(req: NextRequest) {
         adults:               String(numAdults),
         children:             String(numChildren),
         infants:              String(numInfants),
-        customerName,
-        customerPhone,
+        customerName:         cName,
+        customerPhone:        cPhone,
         totalPrice:           String(serverTotal),
         depositAmount:        String(serverDeposit),
         paymentType,
