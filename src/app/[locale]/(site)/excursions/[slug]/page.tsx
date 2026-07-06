@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
+import YouTubeFacade from "@/components/YouTubeFacade";
 import { Clock, Users, MapPin, CheckCircle2, XCircle, ChevronRight, CalendarDays, Star } from "lucide-react";
 import { excursions } from "@/data/excursions";
 import { getExcursionBySlug } from "@/lib/excursions";
@@ -192,10 +193,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
                 <div>
                   <h2 className="font-display text-2xl font-bold text-tiki-gold mb-4">{t("voirVideo")}</h2>
                   <div className="relative aspect-video rounded-2xl overflow-hidden border border-tiki-gold/20">
-                    <iframe src={`https://www.youtube.com/embed/${excursion.youtubeId}`}
-                      title={excursion.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen className="absolute inset-0 w-full h-full" />
+                    <YouTubeFacade youtubeId={excursion.youtubeId} title={excursion.title} poster={excursion.images[0]} />
                   </div>
                 </div>
               )}

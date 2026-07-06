@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import YouTubeFacade from "@/components/YouTubeFacade";
 
 const OG_IMAGE = "https://tikiboat.fr/og.jpg";
 
@@ -74,13 +75,7 @@ export default async function GaleriePage({ params }: Props) {
             {videos.map((v) => (
               <div key={v.youtubeId} className="card-dark overflow-hidden p-0">
                 <div className="relative aspect-video">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${v.youtubeId}`}
-                    title={v.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full"
-                  />
+                  <YouTubeFacade youtubeId={v.youtubeId} title={v.title} />
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-1">
