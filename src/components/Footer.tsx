@@ -124,6 +124,9 @@ export default function Footer() {
             <Link href="/confidentialite" className="hover:text-tiki-gold transition-colors">{t("confidentialite")}</Link>
           </div>
         </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 text-center text-xs text-tiki-cream-dark/40">
+          Site réalisé par APRILIS &amp; MAIUS
+        </div>
       </div>
     </footer>
   );

@@ -38,16 +38,6 @@ export default function MentionsLegalesPage() {
           </div>
 
           <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">Médiation de la consommation</h2>
-            <p>
-              Conformément à l&apos;article L.612-1 du Code de la consommation, tout consommateur a le droit de recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un litige l&apos;opposant à un professionnel. Le médiateur compétent pour Tiki Boat est :
-            </p>
-            <p className="mt-2 font-semibold text-slate-700 border-l-4 border-tiki-gold pl-4 py-1">
-              [À COMPLÉTER — nom du médiateur de la consommation, adresse postale et site internet]
-            </p>
-          </div>
-
-          <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">Propriété intellectuelle</h2>
             <p>
               L&apos;ensemble des contenus présents sur ce site (textes, images, vidéos, logos) est la propriété exclusive de Tiki Boat ou de ses partenaires. Toute reproduction, même partielle, est interdite sans autorisation préalable.

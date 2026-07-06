@@ -82,17 +82,7 @@ export default function CGVPage() {
           </div>
 
           <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">10. Médiation de la consommation</h2>
-            <p>
-              Conformément à l&apos;article L.612-1 du Code de la consommation, en cas de litige non résolu à l&apos;amiable, le client consommateur peut recourir gratuitement au médiateur de la consommation dont relève Tiki Boat :
-            </p>
-            <p className="mt-2 font-semibold text-slate-700 border-l-4 border-tiki-gold pl-4 py-1">
-              [À COMPLÉTER — nom du médiateur de la consommation, adresse postale et site internet]
-            </p>
-          </div>
-
-          <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">11. Droit applicable</h2>
+            <h2 className="text-slate-800 font-bold text-base mb-3">10. Droit applicable</h2>
             <p>
               Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux compétents seront saisis dans les conditions du droit commun.
             </p>
