@@ -16,7 +16,7 @@ export default function ConfidentialitePage() {
           <div>
             <h2 className="text-slate-800 font-bold text-base mb-3">1. Responsable du traitement</h2>
             <p>
-              <strong className="text-slate-500">Tiki Boat</strong> (tikiboatguadeloupe@gmail.com) est responsable du traitement de vos données personnelles collectées via ce site.
+              <strong className="text-slate-500">TIKI BOAT</strong>, SAS au capital de 1 000 € (RCS Pointe-à-Pitre 878 238 807), dont le siège est situé Chez EXCO Antilles Guyane, Rue Jean Rivier, 97122 Baie-Mahault, joignable à <a href="mailto:tikiboatguadeloupe@gmail.com" className="text-tiki-gold hover:underline">tikiboatguadeloupe@gmail.com</a>, est responsable du traitement de vos données personnelles collectées via ce site.
             </p>
           </div>
 
@@ -39,6 +39,9 @@ export default function ConfidentialitePage() {
               <li>Vous contacter en cas de modification ou d&apos;annulation</li>
               <li>Répondre à vos demandes de contact</li>
             </ul>
+            <p className="mt-3">
+              La base légale de ces traitements est l&apos;<strong className="text-slate-500">exécution du contrat</strong> pour la gestion de votre réservation, et votre <strong className="text-slate-500">consentement</strong> pour les demandes de contact.
+            </p>
           </div>
 
           <div>
@@ -49,9 +52,12 @@ export default function ConfidentialitePage() {
           </div>
 
           <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">5. Partage des données</h2>
+            <h2 className="text-slate-800 font-bold text-base mb-3">5. Partage et transfert des données</h2>
             <p>
-              Vos données ne sont jamais vendues ni cédées à des tiers. Elles peuvent être transmises à nos prestataires techniques (Stripe pour le paiement, Vercel pour l&apos;hébergement) dans le seul but d&apos;assurer le service.
+              Vos données ne sont jamais vendues ni cédées à des tiers. Elles peuvent être transmises à nos prestataires techniques (sous-traitants), dans le seul but d&apos;assurer le service : <strong className="text-slate-500">Stripe</strong> (paiement), <strong className="text-slate-500">Vercel</strong> (hébergement) et <strong className="text-slate-500">Supabase</strong> (base de données).
+            </p>
+            <p className="mt-2">
+              Certains de ces prestataires sont situés en dehors de l&apos;Union européenne (notamment aux États-Unis). Ces transferts sont encadrés par des garanties appropriées, notamment les clauses contractuelles types adoptées par la Commission européenne.
             </p>
           </div>
 
@@ -64,6 +70,7 @@ export default function ConfidentialitePage() {
               <li>Droit d&apos;accès à vos données</li>
               <li>Droit de rectification</li>
               <li>Droit à l&apos;effacement (« droit à l&apos;oubli »)</li>
+              <li>Droit à la limitation du traitement</li>
               <li>Droit d&apos;opposition au traitement</li>
               <li>Droit à la portabilité</li>
             </ul>

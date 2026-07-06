@@ -14,9 +14,9 @@ export default function CGVPage() {
         <div className="space-y-10 text-slate-600 text-sm leading-relaxed">
 
           <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">1. Objet</h2>
+            <h2 className="text-slate-800 font-bold text-base mb-3">1. Objet et vendeur</h2>
             <p>
-              Les présentes CGV régissent les conditions de vente des prestations d&apos;excursions en bateau proposées par Tiki Boat en Guadeloupe. Toute réservation implique l&apos;acceptation pleine et entière des présentes conditions.
+              Les présentes CGV régissent les conditions de vente des prestations d&apos;excursions en bateau proposées par <strong className="text-slate-500">TIKI BOAT</strong>, SAS au capital de 1 000 €, RCS Pointe-à-Pitre 878 238 807, dont le siège est situé Chez EXCO Antilles Guyane, Rue Jean Rivier, 97122 Baie-Mahault (Guadeloupe). Toute réservation implique l&apos;acceptation pleine et entière des présentes conditions.
             </p>
           </div>
 
@@ -75,9 +75,26 @@ export default function CGVPage() {
           </div>
 
           <div>
-            <h2 className="text-slate-800 font-bold text-base mb-3">9. Droit applicable</h2>
+            <h2 className="text-slate-800 font-bold text-base mb-3">9. Droit de rétractation</h2>
             <p>
-              Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux compétents de Guadeloupe seront seuls compétents.
+              Conformément à l&apos;article L.221-28 du Code de la consommation, le droit de rétractation de 14 jours ne s&apos;applique pas aux prestations de services de loisirs fournies à une date déterminée. En réservant une excursion à une date précise, le client reconnaît que sa commande ne bénéficie pas d&apos;un droit de rétractation. Les conditions d&apos;annulation applicables sont celles de l&apos;article 4 ci-dessus.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-slate-800 font-bold text-base mb-3">10. Médiation de la consommation</h2>
+            <p>
+              Conformément à l&apos;article L.612-1 du Code de la consommation, en cas de litige non résolu à l&apos;amiable, le client consommateur peut recourir gratuitement au médiateur de la consommation dont relève Tiki Boat :
+            </p>
+            <p className="mt-2 font-semibold text-slate-700 border-l-4 border-tiki-gold pl-4 py-1">
+              [À COMPLÉTER — nom du médiateur de la consommation, adresse postale et site internet]
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-slate-800 font-bold text-base mb-3">11. Droit applicable</h2>
+            <p>
+              Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux compétents seront saisis dans les conditions du droit commun.
             </p>
           </div>
 
