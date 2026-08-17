@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import BookingForm from "@/components/BookingForm";
+import { getExcursions } from "@/lib/excursions";
 
 const BASE = "https://tikiboat.fr";
 
@@ -20,6 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function ReservationPage() {
   const t = await getTranslations("reservationPage");
+  // Tarifs et horaires viennent de la DB pour que l'admin puisse les modifier.
+  const excursions = await getExcursions();
   return (
     <>
       {/* Header */}
@@ -42,7 +45,7 @@ export default async function ReservationPage() {
       {/* Form */}
       <section className="py-12 bg-white min-h-screen">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <BookingForm />
+          <BookingForm excursions={excursions} />
         </div>
       </section>
     </>

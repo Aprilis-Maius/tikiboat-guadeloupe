@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { ChevronRight, ChevronLeft, Users, CalendarDays, CreditCard, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import BookingCalendar from "@/components/BookingCalendar";
-import { excursions } from "@/data/excursions";
+import type { Excursion } from "@/types";
 import { formatPrice, calculateTotal, calculateDeposit, getSeasonalPrices, parseDateSafe } from "@/lib/utils";
 
 type Step = 1 | 2 | 3 | 4;
@@ -70,7 +70,7 @@ function loadSaved(): { data: BookingData; step: Step } | null {
   }
 }
 
-function BookingFormInner() {
+function BookingFormInner({ excursions }: { excursions: Excursion[] }) {
   const t = useTranslations("booking");
   const locale = useLocale();
   const dateLocale = locale === "en" ? "en-US" : "fr-FR";
@@ -637,10 +637,10 @@ function BookingFormInner() {
   );
 }
 
-export default function BookingForm() {
+export default function BookingForm({ excursions }: { excursions: Excursion[] }) {
   return (
     <Suspense fallback={<div className="animate-pulse h-96 rounded-2xl bg-tiki-ocean-mid" />}>
-      <BookingFormInner />
+      <BookingFormInner excursions={excursions} />
     </Suspense>
   );
 }

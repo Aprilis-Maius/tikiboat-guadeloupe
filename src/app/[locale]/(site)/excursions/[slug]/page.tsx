@@ -5,8 +5,7 @@ import { Link } from "@/i18n/navigation";
 import SiteImage from "@/components/SiteImage";
 import YouTubeFacade from "@/components/YouTubeFacade";
 import { Clock, Users, MapPin, CheckCircle2, XCircle, ChevronRight, CalendarDays, Star } from "lucide-react";
-import { excursions } from "@/data/excursions";
-import { getExcursionBySlug } from "@/lib/excursions";
+import { getExcursionBySlug, getExcursions } from "@/lib/excursions";
 import { formatPrice } from "@/lib/utils";
 
 const BASE = "https://tikiboat.fr";
@@ -48,6 +47,10 @@ export default async function ExcursionDetailPage({ params }: Props) {
   const { slug, locale } = await params;
   const excursion = await getExcursionBySlug(slug);
   if (!excursion) notFound();
+
+  // Depuis la DB, comme le reste de la page : les titres et visuels modifiés
+  // dans l'admin doivent aussi apparaître dans « Autres excursions ».
+  const allExcursions = await getExcursions();
 
   const t = await getTranslations("excursionDetail");
   const isEn = locale === "en";
@@ -281,7 +284,7 @@ export default async function ExcursionDetailPage({ params }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-display text-3xl font-bold text-slate-800 mb-8">{t("autresExcursions")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {excursions
+            {allExcursions
               .filter((e) => e.slug !== excursion.slug)
               .slice(0, 2)
               .map((exc) => (

@@ -73,6 +73,10 @@ model Excursion {
   priceAdult     Float
   priceChild     Float
   pricePrivate   Float?
+  // Tarifs haute saison (31 oct → 30 avr). Null = pas de majoration :
+  // le tarif normal s'applique toute l'année.
+  priceAdultHighSeason Float?
+  priceChildHighSeason Float?
   included       String   // JSON array
   notIncluded    String   // JSON array
   highlights     String   // JSON array

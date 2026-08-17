@@ -1,5 +1,7 @@
 import { Resend } from "resend";
-import { excursions } from "@/data/excursions";
+import { excursions as staticExcursions } from "@/data/excursions";
+import { getExcursionBySlug } from "@/lib/excursions";
+import type { Excursion } from "@/types";
 
 const resend   = new Resend(process.env.RESEND_API_KEY);
 const FROM     = process.env.EMAIL_FROM ?? "Tiki Boat <onboarding@resend.dev>";
@@ -47,8 +49,22 @@ function divider() {
   return `<tr><td colspan="2" style="padding:4px 0;"><div style="height:1px;background:#f1f5f9;"></div></td></tr>`;
 }
 
+// ─── Retrouve l'excursion ───────────────────────────────────────────────────
+// Horaires et point de départ viennent de la DB, pour que les emails reflètent
+// ce que l'admin a saisi. Repli sur le statique si le slug est absent
+// (anciennes réservations enregistrées avec le seul titre).
+async function findExcursion(data: ReservationData): Promise<Excursion | undefined> {
+  if (data.excursionSlug) {
+    const fromDb = await getExcursionBySlug(data.excursionSlug);
+    if (fromDb) return fromDb;
+  }
+  return staticExcursions.find(
+    e => e.slug === data.excursionSlug || e.title === data.excursionTitle
+  );
+}
+
 // ─── Génère un fichier ICS ──────────────────────────────────────────────────
-function generateICS(data: ReservationData, exc: typeof excursions[0] | undefined): string {
+function generateICS(data: ReservationData, exc: Excursion | undefined): string {
   const [y, m, d] = data.date.split("-").map(Number);
   const parseTime = (t: string) => { const [h, min] = t.replace("h", ":").split(":").map(Number); return { h: h || 0, min: min || 0 }; };
   const dep = parseTime(exc?.departureTime ?? "08:00");
@@ -229,7 +245,7 @@ export async function sendAdminPendingNotification(data: ReservationData) {
 
 // ─── Email confirmation client ──────────────────────────────────────────────
 export async function sendConfirmationEmail(data: ReservationData) {
-  const exc       = excursions.find(e => e.slug === data.excursionSlug || e.title === data.excursionTitle);
+  const exc       = await findExcursion(data);
   const isDeposit = data.paymentType === "deposit";
   const remaining = data.totalPrice - data.depositAmount;
   const included  = exc?.included as string[] | undefined;
@@ -343,7 +359,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
 
 // ─── Notification admin ─────────────────────────────────────────────────────
 export async function sendAdminNotification(data: ReservationData) {
-  const exc       = excursions.find(e => e.slug === data.excursionSlug || e.title === data.excursionTitle);
+  const exc       = await findExcursion(data);
   const pax       = data.adults + (data.children ?? 0) + (data.infants ?? 0);
   const isDeposit = data.paymentType === "deposit";
   const remaining = data.totalPrice - data.depositAmount;

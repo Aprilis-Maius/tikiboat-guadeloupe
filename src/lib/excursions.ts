@@ -8,6 +8,7 @@ export interface DbExcursion {
   description: string; duration: string; departureTime: string;
   returnTime: string; departurePoint: string; maxPassengers: number;
   priceAdult: number; priceChild: number; pricePrivate: number | null;
+  priceAdultHighSeason: number | null; priceChildHighSeason: number | null;
   included: string; notIncluded: string; highlights: string;
   images: string; youtubeId: string | null; badge: string | null;
   popular: boolean; isActive: boolean; sortOrder: number;
@@ -30,9 +31,12 @@ export function dbToExcursion(e: DbExcursion): Excursion {
     returnTime:     e.returnTime,
     departurePoint: e.departurePoint,
     maxPassengers:  e.maxPassengers,
-    priceAdult:     s?.priceAdult     ?? e.priceAdult,
-    priceChild:     s?.priceChild     ?? e.priceChild,
-    pricePrivate:   s?.pricePrivate   ?? e.pricePrivate ?? undefined,
+    // Les prix viennent de la DB : c'est la seule source que l'admin peut
+    // modifier. Le statique ne sert plus que de secours quand la DB est
+    // injoignable (cf. le catch de getExcursions / getExcursionBySlug).
+    priceAdult:     e.priceAdult,
+    priceChild:     e.priceChild,
+    pricePrivate:   e.pricePrivate ?? undefined,
     included:       parse(e.included),
     notIncluded:    parse(e.notIncluded),
     highlights:     parse(e.highlights),
@@ -40,8 +44,10 @@ export function dbToExcursion(e: DbExcursion): Excursion {
     youtubeId:      e.youtubeId ?? undefined,
     badge:          e.badge ?? undefined,
     popular:        e.popular,
-    priceAdultHighSeason: s?.priceAdultHighSeason,
-    priceChildHighSeason: s?.priceChildHighSeason,
+    // Pas de repli sur le statique ici : un champ vidé dans l'admin signifie
+    // « aucune majoration haute saison », et doit donc rester vide.
+    priceAdultHighSeason: e.priceAdultHighSeason ?? undefined,
+    priceChildHighSeason: e.priceChildHighSeason ?? undefined,
     subtitleEn:     s?.subtitleEn,
     descriptionEn:  s?.descriptionEn,
     durationEn:     s?.durationEn,

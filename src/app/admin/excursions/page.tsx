@@ -13,6 +13,7 @@ interface Excursion {
   description: string; duration: string; departureTime: string;
   returnTime: string; departurePoint: string; maxPassengers: number;
   priceAdult: number; priceChild: number; pricePrivate: number | null;
+  priceAdultHighSeason: number | null; priceChildHighSeason: number | null;
   included: string; notIncluded: string; highlights: string;
   images: string; youtubeId: string | null; badge: string | null;
   popular: boolean; isActive: boolean; sortOrder: number;
@@ -27,6 +28,7 @@ const emptyForm = (): FormData => ({
   duration: "Journée complète", departureTime: "08h00", returnTime: "17h00",
   departurePoint: "Marina de Pointe-à-Pitre / Le Gosier",
   maxPassengers: 12, priceAdult: 0, priceChild: 0, pricePrivate: null,
+  priceAdultHighSeason: null, priceChildHighSeason: null,
   included: "[]", notIncluded: "[]", highlights: "[]", images: "[]",
   youtubeId: "", badge: "", popular: false, isActive: true, sortOrder: 0,
   includedArr: [""], notIncludedArr: [""], highlightsArr: [""], imagesArr: [""],
@@ -48,6 +50,8 @@ export default function ExcursionsAdminPage() {
   const [editId, setEditId] = useState<string | "new" | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveOk, setSaveOk] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => { if (status === "unauthenticated") router.push("/admin/login"); }, [status, router]);
@@ -75,19 +79,45 @@ export default function ExcursionsAdminPage() {
       imagesArr:      parseArr(exc.images),
     });
     setEditId(exc.id);
+    setSaveError(null);
+    setSaveOk(false);
   };
 
   const openNew = () => {
     setForm(emptyForm());
     setEditId("new");
+    setSaveError(null);
+    setSaveOk(false);
   };
 
-  const closeEdit = () => { setEditId(null); setForm(emptyForm()); };
+  const closeEdit = () => { setEditId(null); setForm(emptyForm()); setSaveError(null); };
 
   const save = async () => {
     setSaving(true);
+    setSaveError(null);
+    setSaveOk(false);
+
+    // Liste explicite des colonnes : le formulaire porte aussi des champs de
+    // travail (includedArr…) et des champs en lecture seule (id, slug,
+    // createdAt) que Prisma refuse. Les envoyer faisait échouer chaque
+    // enregistrement en silence.
     const payload = {
-      ...form,
+      title:          form.title,
+      subtitle:       form.subtitle,
+      description:    form.description,
+      duration:       form.duration,
+      departureTime:  form.departureTime,
+      returnTime:     form.returnTime,
+      departurePoint: form.departurePoint,
+      maxPassengers:  form.maxPassengers,
+      priceAdult:     form.priceAdult,
+      priceChild:     form.priceChild,
+      pricePrivate:   form.pricePrivate,
+      priceAdultHighSeason: form.priceAdultHighSeason,
+      priceChildHighSeason: form.priceChildHighSeason,
+      popular:        form.popular,
+      isActive:       form.isActive,
+      sortOrder:      form.sortOrder,
       included:    JSON.stringify(form.includedArr.filter(Boolean)),
       notIncluded: JSON.stringify(form.notIncludedArr.filter(Boolean)),
       highlights:  JSON.stringify(form.highlightsArr.filter(Boolean)),
@@ -96,20 +126,23 @@ export default function ExcursionsAdminPage() {
       badge:       form.badge || null,
     };
 
-    if (editId === "new") {
-      await fetch("/api/admin/excursions", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    try {
+      const res = await fetch("/api/admin/excursions", {
+        method: editId === "new" ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editId === "new" ? payload : { id: editId, ...payload }),
       });
-    } else {
-      await fetch("/api/admin/excursions", {
-        method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editId, ...payload }),
-      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await fetchExcursions();
+      closeEdit();
+      setSaveOk(true);
+    } catch (err) {
+      console.error("[save excursion]", err);
+      // Surtout ne pas refermer : les saisies restent à l'écran.
+      setSaveError("Enregistrement impossible. Vos modifications n'ont pas été sauvegardées, merci de réessayer.");
+    } finally {
+      setSaving(false);
     }
-    await fetchExcursions();
-    closeEdit();
-    setSaving(false);
   };
 
   const toggleActive = async (exc: Excursion) => {
@@ -169,6 +202,13 @@ export default function ExcursionsAdminPage() {
           <Plus size={16} /> Nouvelle excursion
         </button>
       </div>
+
+      {saveOk && (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Modifications enregistrées. Le site public peut mettre quelques instants
+          à les afficher : si l&apos;ancien tarif apparaît encore, rechargez la page une seconde fois.
+        </div>
+      )}
 
       {/* Formulaire (nouveau ou édition) */}
       {editId !== null && (
@@ -250,6 +290,26 @@ export default function ExcursionsAdminPage() {
                 </div>
               </div>
 
+              {/* Tarifs haute saison */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>Adulte haute saison (€)</label>
+                  <input type="number" value={form.priceAdultHighSeason ?? ""}
+                    onChange={e => setForm(p => ({ ...p, priceAdultHighSeason: e.target.value ? +e.target.value : null }))}
+                    className={inputCls} placeholder="Vide = tarif normal" />
+                </div>
+                <div>
+                  <label className={labelCls}>Enfant haute saison (€)</label>
+                  <input type="number" value={form.priceChildHighSeason ?? ""}
+                    onChange={e => setForm(p => ({ ...p, priceChildHighSeason: e.target.value ? +e.target.value : null }))}
+                    className={inputCls} placeholder="Vide = tarif normal" />
+                </div>
+                <p className="self-center text-slate-400 text-xs leading-snug">
+                  Appliqué automatiquement du 31 octobre au 30 avril.
+                  Laisser vide pour facturer le tarif normal toute l&apos;année.
+                </p>
+              </div>
+
               {/* Options */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -291,6 +351,12 @@ export default function ExcursionsAdminPage() {
                 onChange={arr => setForm(p => ({ ...p, notIncludedArr: arr }))} />
             </div>
           </div>
+
+          {saveError && (
+            <div className="mx-6 mb-1 mt-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {saveError}
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200">
             <button onClick={closeEdit}

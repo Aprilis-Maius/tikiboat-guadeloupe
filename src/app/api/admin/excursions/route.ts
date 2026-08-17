@@ -32,32 +32,44 @@ export async function POST(req: NextRequest) {
   const count = await prisma.excursion.count();
   const slug = body.slug || toSlug(body.title);
 
-  const excursion = await prisma.excursion.create({
-    data: {
-      slug,
-      title:         body.title,
-      subtitle:      body.subtitle ?? "",
-      description:   body.description ?? "",
-      duration:      body.duration ?? "Journée complète",
-      departureTime: body.departureTime ?? "08h00",
-      returnTime:    body.returnTime ?? "17h00",
-      departurePoint: body.departurePoint ?? "Marina de Pointe-à-Pitre / Le Gosier",
-      maxPassengers: Number(body.maxPassengers ?? 12),
-      priceAdult:    Number(body.priceAdult ?? 0),
-      priceChild:    Number(body.priceChild ?? 0),
-      pricePrivate:  body.pricePrivate ? Number(body.pricePrivate) : null,
-      included:      body.included ?? "[]",
-      notIncluded:   body.notIncluded ?? "[]",
-      highlights:    body.highlights ?? "[]",
-      images:        body.images ?? "[]",
-      youtubeId:     body.youtubeId ?? null,
-      badge:         body.badge ?? null,
-      popular:       body.popular ?? false,
-      isActive:      body.isActive ?? true,
-      sortOrder:     count,
-    },
-  });
-  return NextResponse.json(excursion);
+  try {
+    const excursion = await prisma.excursion.create({
+      data: {
+        slug,
+        title:         body.title,
+        subtitle:      body.subtitle ?? "",
+        description:   body.description ?? "",
+        duration:      body.duration ?? "Journée complète",
+        departureTime: body.departureTime ?? "08h00",
+        returnTime:    body.returnTime ?? "17h00",
+        departurePoint: body.departurePoint ?? "Marina de Pointe-à-Pitre / Le Gosier",
+        maxPassengers: Number(body.maxPassengers ?? 12),
+        priceAdult:    Number(body.priceAdult ?? 0),
+        priceChild:    Number(body.priceChild ?? 0),
+        pricePrivate:  body.pricePrivate ? Number(body.pricePrivate) : null,
+        priceAdultHighSeason: body.priceAdultHighSeason ? Number(body.priceAdultHighSeason) : null,
+        priceChildHighSeason: body.priceChildHighSeason ? Number(body.priceChildHighSeason) : null,
+        included:      body.included ?? "[]",
+        notIncluded:   body.notIncluded ?? "[]",
+        highlights:    body.highlights ?? "[]",
+        images:        body.images ?? "[]",
+        youtubeId:     body.youtubeId ?? null,
+        badge:         body.badge ?? null,
+        popular:       body.popular ?? false,
+        isActive:      body.isActive ?? true,
+        sortOrder:     count,
+      },
+    });
+    revalidateTag("excursions", {});
+    for (const locale of ["fr", "en"]) {
+      revalidatePath(`/${locale}/excursions`, "page");
+      revalidatePath(`/${locale}`, "page");
+    }
+    return NextResponse.json(excursion);
+  } catch (err) {
+    console.error("[POST /api/admin/excursions]", err);
+    return NextResponse.json({ error: "Création refusée" }, { status: 400 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -69,9 +81,18 @@ export async function PATCH(req: NextRequest) {
   if (data.priceAdult    !== undefined) data.priceAdult    = Number(data.priceAdult);
   if (data.priceChild    !== undefined) data.priceChild    = Number(data.priceChild);
   if (data.pricePrivate  !== undefined) data.pricePrivate  = data.pricePrivate ? Number(data.pricePrivate) : null;
+  // Champ vidé → null = pas de majoration haute saison
+  if (data.priceAdultHighSeason !== undefined) data.priceAdultHighSeason = data.priceAdultHighSeason ? Number(data.priceAdultHighSeason) : null;
+  if (data.priceChildHighSeason !== undefined) data.priceChildHighSeason = data.priceChildHighSeason ? Number(data.priceChildHighSeason) : null;
   if (data.sortOrder     !== undefined) data.sortOrder     = Number(data.sortOrder);
 
-  const excursion = await prisma.excursion.update({ where: { id }, data });
+  let excursion;
+  try {
+    excursion = await prisma.excursion.update({ where: { id }, data });
+  } catch (err) {
+    console.error("[PATCH /api/admin/excursions]", err);
+    return NextResponse.json({ error: "Mise à jour refusée" }, { status: 400 });
+  }
   revalidateTag("excursions", {});
   for (const locale of ["fr", "en"]) {
     revalidatePath(`/${locale}/excursions/${excursion.slug}`, "page");
