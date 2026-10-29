@@ -474,3 +474,15 @@ export async function sendAdminNotification(data: ReservationData) {
     html,
   });
 }
+
+export async function sendBackupEmail(filename: string, json: string, reservations: number) {
+  return send({
+    from: FROM,
+    to:   process.env.BACKUP_EMAIL || ADMIN,
+    subject: `💾 Sauvegarde du site Tiki Boat — ${filename}`,
+    text: `Sauvegarde automatique hebdomadaire de la base du site (excursions, blog, galerie, ${reservations} réservations).\n\n` +
+          `À conserver : en cas de perte de données, ce fichier permet de tout restaurer.\n` +
+          `Il contient des données clients : ne pas le partager en dehors de Tiki Boat et de son prestataire.`,
+    attachments: [{ filename, content: Buffer.from(json).toString("base64"), contentType: "application/json" }],
+  });
+}

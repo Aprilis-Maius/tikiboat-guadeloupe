@@ -29,3 +29,6 @@ next-env.d.ts
 *.db-journal
 prisma/prisma/
 .env*
+
+# Sauvegardes de la base (données clients) — ne jamais commiter
+/backups/
