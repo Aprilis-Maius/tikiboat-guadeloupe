@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const sig  = req.headers.get("stripe-signature")!;
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2026-05-27.dahlia",
+    apiVersion: "2026-08-26.dahlia",
   });
 
   let event: Stripe.Event;
