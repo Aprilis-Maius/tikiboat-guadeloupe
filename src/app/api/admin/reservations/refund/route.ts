@@ -27,8 +27,17 @@ export async function POST(req: NextRequest) {
     }, { status: 400 });
   }
 
-  // Montant payé en ligne = acompte si deposit, sinon total
-  const paidAmount = resa.paymentType === "deposit" ? resa.depositAmount : resa.totalPrice;
+  // Montant réellement encaissé par Stripe — pas déduit de paymentType, que l'admin
+  // peut changer ensuite (ex. « Soldé total » sur un acompte payé en ligne)
+  const stripe = getStripe();
+  let paidAmount: number;
+  try {
+    const pi = await stripe.paymentIntents.retrieve(resa.stripePaymentIntentId);
+    paidAmount = pi.amount_received / 100;
+  } catch (err) {
+    console.error("Refund: lecture du paiement Stripe impossible", err);
+    return NextResponse.json({ error: "Impossible de lire le paiement Stripe. Réessayez." }, { status: 502 });
+  }
   const alreadyRefunded = resa.refundedAmount ?? 0;
   const maxRefundable = Math.max(0, paidAmount - alreadyRefunded);
   if (maxRefundable <= 0) {
@@ -61,7 +70,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await getStripe().refunds.create({
+    await stripe.refunds.create({
       payment_intent: resa.stripePaymentIntentId,
       amount: Math.round(requested * 100), // centimes
       reason: "requested_by_customer",

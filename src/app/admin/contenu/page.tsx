@@ -30,12 +30,18 @@ export default function ContentPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch("/api/admin/content", {
+    const res = await fetch("/api/admin/content", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
     setSaving(false);
+    if (!res.ok) {
+      // Pas de « Enregistré ! » si le serveur a refusé
+      const json = await res.json().catch(() => ({}));
+      alert(json.error ?? "Échec de l'enregistrement du contenu");
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

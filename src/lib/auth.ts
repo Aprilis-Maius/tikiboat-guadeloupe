@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth";
 import { timingSafeEqual } from "crypto";
+import { rateLimit } from "@/lib/rate-limit";
 
 function safeCompare(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
@@ -18,7 +19,13 @@ export const authOptions: NextAuthOptions = {
         email:    { label: "Email",       type: "email"    },
         password: { label: "Mot de passe", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
+        // Anti brute-force : 5 tentatives / 15 min par IP. En next-auth v4,
+        // req.headers est un objet simple ; IP réelle en tête de x-forwarded-for
+        const fwd = req.headers?.["x-forwarded-for"];
+        const ip  = (typeof fwd === "string" && fwd.split(",")[0].trim()) || "unknown";
+        if (!rateLimit(`login:${ip}`, 5, 15 * 60 * 1000).ok) return null;
+
         const adminEmail    = process.env.ADMIN_EMAIL    ?? "";
         const adminPassword = process.env.ADMIN_PASSWORD ?? "";
         if (

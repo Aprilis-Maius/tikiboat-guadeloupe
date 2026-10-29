@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-import { sendPendingEmail, sendAdminPendingNotification } from "@/lib/email";
+import { sendPendingEmail, sendAdminPendingNotification, OVERBOOKING_ALERT } from "@/lib/email";
 import { revalidateTag } from "next/cache";
 
 export async function POST(req: NextRequest) {
@@ -45,11 +45,19 @@ export async function POST(req: NextRequest) {
       where: { date: meta.date, excursionId: meta.excursionSlug, status: { not: "cancelled" } },
       select: { adults: true, children: true, infants: true },
     });
-    const alreadyBooked = others.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
+    // Mêmes règles que le checkout : jour bloqué (privatisation, météo…), jauge du jour, places saisies par l'admin
+    const avail = await prisma.availability.findUnique({
+      where: { date_excursionId: { date: meta.date, excursionId: meta.excursionSlug } },
+    });
+    const alreadyBooked = Math.max(
+      avail?.bookedSpots ?? 0,
+      others.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0),
+    );
     const capacity = await prisma.excursion.findUnique({ where: { slug: meta.excursionSlug }, select: { maxPassengers: true } }).catch(() => null);
-    const overbooked = alreadyBooked + adults + children + infants > (capacity?.maxPassengers ?? 12);
+    const maxSpots = avail?.maxSpots ?? capacity?.maxPassengers ?? 12;
+    const overbooked = !!avail?.isBlocked || alreadyBooked + adults + children + infants > maxSpots;
     const notesWithAlert = overbooked
-      ? `⚠️ SURRÉSERVATION DÉTECTÉE — capacité dépassée, contacter le client. ${meta.notes || ""}`.trim()
+      ? `${OVERBOOKING_ALERT} ${meta.notes || ""}`.trim()
       : meta.notes || null;
 
     // Restaure les noms de passagers depuis le format compact de la metadata
@@ -113,7 +121,8 @@ export async function POST(req: NextRequest) {
     };
     const emailResults = await Promise.allSettled([
       sendPendingEmail(emailData),
-      sendAdminPendingNotification(emailData),
+      // L'admin reçoit l'alerte de surréservation ; le client, jamais
+      sendAdminPendingNotification({ ...emailData, notes: notesWithAlert ?? undefined }),
     ]);
     emailResults.forEach((r, i) => {
       if (r.status === "rejected") {
@@ -121,19 +130,8 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // Met à jour les places prises dans Availability
-    const totalPassengers = adults + children + infants;
-    await prisma.availability.upsert({
-      where: { date_excursionId: { date: meta.date, excursionId: meta.excursionSlug } },
-      update: { bookedSpots: { increment: totalPassengers } },
-      create: {
-        date:        meta.date,
-        excursionId: meta.excursionSlug,
-        maxSpots:    12,
-        bookedSpots: totalPassengers,
-        isBlocked:   false,
-      },
-    });
+    // Pas de compteur de places à incrémenter : calendrier et checkout comptent
+    // les réservations elles-mêmes, donc une annulation libère bien les places.
   }
 
   revalidateTag("admin-dashboard", {});

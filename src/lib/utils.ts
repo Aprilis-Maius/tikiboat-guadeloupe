@@ -43,6 +43,12 @@ export function todayYMD(): string {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
 }
 
+// "YYYY-MM-DD" du jour en Guadeloupe (lieu du départ), quel que soit le fuseau
+// du serveur (UTC sur Vercel) ou du navigateur du client
+export function todayInGuadeloupe(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Guadeloupe" }).format(new Date());
+}
+
 export function calculateTotal(adults: number, children: number, priceAdult: number, priceChild: number): number {
   return adults * priceAdult + children * priceChild;
 }

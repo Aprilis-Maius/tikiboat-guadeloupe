@@ -19,6 +19,20 @@ interface Reservation {
 
 const toDay = (d: string) => d.split("T")[0];
 
+// Message d'erreur renvoyé par l'API ({ error }) — ex. 409 « Ce jour est privatisé »
+const apiError = async (res: Response, fallback: string): Promise<string> => {
+  const json = await res.json().catch(() => ({}));
+  return json.error ?? fallback;
+};
+
+// Champ CSV : entre guillemets (guillemets internes doublés) + neutralisation des
+// formules (=, +, -, @, tab, CR en tête) contre l'injection CSV dans Excel
+const csvCell = (v: string | number) => {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+};
+
 const emptyCreate = () => ({
   excursionSlug: excursions[0]?.slug ?? "",
   date: todayYMD(),
@@ -124,7 +138,7 @@ export default function ReservationsPage() {
   const submitCreate = async () => {
     setCreating(true);
     const total = calcTotal();
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -143,6 +157,12 @@ export default function ReservationsPage() {
         certificationAccepted: true, // admin = confiance implicite
       }),
     });
+    if (!res.ok) {
+      // Rien n'a été créé : on garde le formulaire ouvert
+      alert(await apiError(res, "Échec de la création de la réservation"));
+      setCreating(false);
+      return;
+    }
     await fetchReservations();
     setShowCreate(false);
     setCreateForm(emptyCreate());
@@ -163,11 +183,16 @@ export default function ReservationsPage() {
 
   const updateStatus = async (id: string, newStatus: string) => {
     setSaving(true);
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: newStatus, ...(newStatus === "confirmed" ? { action: "confirm" } : {}) }),
     });
+    if (!res.ok) {
+      alert(await apiError(res, "Échec de la mise à jour du statut"));
+      setSaving(false);
+      return;
+    }
     await fetchReservations();
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, status: newStatus } : null);
     setSaving(false);
@@ -188,11 +213,16 @@ export default function ReservationsPage() {
   const deleteReservation = async () => {
     if (!selected) return;
     setSaving(true);
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: selected.id }),
     });
+    if (!res.ok) {
+      alert(await apiError(res, "Échec de la suppression"));
+      setSaving(false);
+      return;
+    }
     setSelected(null);
     setConfirmDelete(false);
     await fetchReservations();
@@ -202,11 +232,17 @@ export default function ReservationsPage() {
   const submitEdit = async () => {
     if (!selected || !editForm) return;
     setSaving(true);
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: selected.id, ...editForm }),
     });
+    if (!res.ok) {
+      // On reste en mode édition pour ne pas perdre la saisie
+      alert(await apiError(res, "Échec de l'enregistrement des modifications"));
+      setSaving(false);
+      return;
+    }
     await fetchReservations();
     if (selected) setSelected(prev => prev ? { ...prev, ...editForm } : null);
     setEditMode(false);
@@ -237,11 +273,16 @@ export default function ReservationsPage() {
 
   const markPayment = async (id: string, paymentType: string, isPaid: boolean) => {
     setSaving(true);
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, paymentType, isPaid }),
     });
+    if (!res.ok) {
+      alert(await apiError(res, "Échec de la mise à jour du paiement"));
+      setSaving(false);
+      return;
+    }
     await fetchReservations();
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, paymentType, isPaid } : null);
     setSaving(false);
@@ -254,8 +295,9 @@ export default function ReservationsPage() {
       r.date, r.adults, r.children, r.totalPrice,
       r.status, r.isPaid ? "Oui" : "Non",
     ]);
-    const csv = [headers, ...rows].map(r => r.join(";")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = [headers, ...rows].map(r => r.map(csvCell).join(";")).join("\n");
+    // BOM UTF-8 : sans lui, Excel affiche mal les accents
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "reservations.csv"; a.click();
   };
@@ -266,7 +308,7 @@ export default function ReservationsPage() {
     const names = pendingItems.map(r => r.customerName).join(", ");
     if (!window.confirm(`Confirmer ${pendingItems.length} réservation${pendingItems.length > 1 ? "s" : ""} du ${parseDateSafe(toDay(date)).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} ?\n\n${names}\n\nUn email de confirmation sera envoyé à chaque client.`)) return;
     setDayConfirming(date);
-    await Promise.all(pendingItems.map(r =>
+    const results = await Promise.all(pendingItems.map(r =>
       fetch("/api/admin/reservations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -275,6 +317,10 @@ export default function ReservationsPage() {
     ));
     await fetchReservations();
     setDayConfirming(null);
+    const failed = results.filter(res => !res.ok);
+    if (failed.length > 0) {
+      alert(`Échec de la confirmation pour ${failed.length} réservation${failed.length > 1 ? "s" : ""} sur ${pendingItems.length} : ${await apiError(failed[0], "erreur serveur")}`);
+    }
   };
 
   const closeModal = () => { setSelected(null); setEditMode(false); setEditForm(null); setConfirmDelete(false); setConfirmRefund(false); setRefundError(null); };

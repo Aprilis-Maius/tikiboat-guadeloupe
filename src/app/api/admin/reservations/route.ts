@@ -1,12 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendConfirmationEmail, sendAdminNotification } from "@/lib/email";
-import { excursions as staticExcursions } from "@/data/excursions";
+import { sendConfirmationEmail, sendAdminNotification, OVERBOOKING_ALERT } from "@/lib/email";
+import { getAllExcursionSlugs } from "@/lib/excursions";
 import { revalidateTag } from "next/cache";
 
 const invalidateDashboard = () => revalidateTag("admin-dashboard", {});
+
+// Privatisation → bloquer le jour pour toutes les excursions (statiques + DB)
+async function blockDay(date: string) {
+  const slugs = await getAllExcursionSlugs();
+  await Promise.all(slugs.map(slug =>
+    prisma.availability.upsert({
+      where: { date_excursionId: { date, excursionId: slug } },
+      update: { isBlocked: true, blockReason: "Privatisation", bookedSpots: 12 },
+      create: { date, excursionId: slug, maxSpots: 12, bookedSpots: 12, isBlocked: true, blockReason: "Privatisation" },
+    })
+  ));
+}
+
+async function unblockDay(date: string) {
+  await prisma.availability.updateMany({
+    where: { date, blockReason: "Privatisation" },
+    data: { isBlocked: false, bookedSpots: 0, blockReason: null },
+  });
+}
+
+// Emails envoyés après la réponse : after() empêche Vercel de couper l'envoi en cours
+function sendAfterResponse(label: string, sends: Promise<unknown>[]) {
+  after(async () => {
+    const results = await Promise.allSettled(sends);
+    results.forEach(r => {
+      if (r.status === "rejected") console.error(`[admin/reservations] ${label} :`, r.reason);
+    });
+  });
+}
 
 
 export async function GET(req: NextRequest) {
@@ -87,46 +116,36 @@ export async function POST(req: NextRequest) {
       customerEmail:  body.customerEmail ?? "",
       customerPhone:  body.customerPhone ?? "",
       notes:          body.notes ?? null,
+      passengerNames:        typeof body.passengerNames === "string" ? body.passengerNames : null,
+      certificationAccepted: body.certificationAccepted === true,
     },
   });
-  // Emails — en parallèle, sans bloquer la réponse
-  if (body.customerEmail) {
+
+  // Le client n'est prévenu que d'une réservation confirmée (une demande en attente
+  // l'est à sa confirmation, PATCH action "confirm") ; les notes de l'admin restent internes
+  if (reservation.customerEmail) {
     const emailData = {
-      customerName:   body.customerName,
-      customerEmail:  body.customerEmail,
-      customerPhone:  body.customerPhone ?? "",
-      excursionTitle: body.excursionTitle,
-      excursionSlug:  body.excursionSlug,
-      date:           body.date,
-      adults:         Number(body.adults ?? 1),
-      children:       Number(body.children ?? 0),
-      infants:        Number(body.infants ?? 0),
-      totalPrice:     Number(body.totalPrice ?? 0),
-      depositAmount:  Number(body.depositAmount ?? 0),
-      paymentType:    body.paymentType ?? "full",
-      notes:          body.notes || undefined,
+      customerName:   reservation.customerName,
+      customerEmail:  reservation.customerEmail,
+      customerPhone:  reservation.customerPhone,
+      excursionTitle: reservation.excursionTitle,
+      excursionSlug:  body.excursionSlug ?? reservation.excursionId,
+      date:           reservation.date,
+      adults:         reservation.adults,
+      children:       reservation.children,
+      infants:        reservation.infants,
+      totalPrice:     reservation.totalPrice,
+      depositAmount:  reservation.depositAmount,
+      paymentType:    reservation.paymentType,
+      isPaid:         reservation.isPaid,
     };
-    Promise.allSettled([
-      sendConfirmationEmail(emailData),
-      sendAdminNotification(emailData),
-    ]).catch(() => {});
+    sendAfterResponse("email réservation manuelle", [
+      ...(reservation.status === "confirmed" ? [sendConfirmationEmail(emailData)] : []),
+      sendAdminNotification({ ...emailData, notes: reservation.notes ?? undefined }),
+    ]);
   }
 
-  // Privatisation → bloquer le jour pour toutes les excursions (statiques + DB)
-  if (blocksDay) {
-    const dbExcursions = await prisma.excursion.findMany({ select: { slug: true } });
-    const allSlugs = Array.from(new Set([
-      ...staticExcursions.map(e => e.slug),
-      ...dbExcursions.map(e => e.slug),
-    ]));
-    await Promise.all(allSlugs.map(slug =>
-      prisma.availability.upsert({
-        where: { date_excursionId: { date: body.date, excursionId: slug } },
-        update: { isBlocked: true, blockReason: "Privatisation", bookedSpots: 12 },
-        create: { date: body.date, excursionId: slug, maxSpots: 12, bookedSpots: 12, isBlocked: true, blockReason: "Privatisation" },
-      })
-    ));
-  }
+  if (blocksDay) await blockDay(body.date);
 
   invalidateDashboard();
   return NextResponse.json(reservation);
@@ -137,6 +156,29 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json();
   const { id, ...fields } = body;
+
+  const before = await prisma.reservation.findUnique({
+    where: { id },
+    select: { date: true, status: true, excursionId: true },
+  });
+  if (!before) return NextResponse.json({ error: "Réservation introuvable" }, { status: 404 });
+
+  // Privatisation déplacée ou réactivée : le nouveau jour doit être libre
+  const isPrivatisation = before.excursionId === "privatisation";
+  const newDate   = fields.date   ?? before.date;
+  const newStatus = fields.status ?? before.status;
+  const blocksNewDay = isPrivatisation && newStatus !== "cancelled"
+    && (newDate !== before.date || before.status === "cancelled");
+  if (blocksNewDay) {
+    const conflicts = await prisma.reservation.count({
+      where: { date: newDate, status: { not: "cancelled" }, id: { not: id } },
+    });
+    if (conflicts > 0) {
+      return NextResponse.json({
+        error: `Impossible : des réservations existent déjà le ${newDate}. Annulez-les d'abord.`,
+      }, { status: 409 });
+    }
+  }
 
   const data: Record<string, unknown> = {};
   if (fields.status       !== undefined) data.status        = fields.status;
@@ -156,7 +198,8 @@ export async function PATCH(req: NextRequest) {
     data,
   });
 
-  // Quand l'admin confirme manuellement → envoie l'email de confirmation au client
+  // Quand l'admin confirme manuellement → envoie l'email de confirmation au client.
+  // Seule la remarque du client y figure : jamais les notes internes ni l'alerte de surréservation
   if (fields.action === "confirm" && updated.customerEmail) {
     const emailData = {
       customerName:   updated.customerName,
@@ -171,17 +214,20 @@ export async function PATCH(req: NextRequest) {
       totalPrice:     updated.totalPrice,
       depositAmount:  updated.depositAmount,
       paymentType:    updated.paymentType,
-      notes:          updated.notes ?? undefined,
+      isPaid:         updated.isPaid,
+      notes:          updated.source === "online"
+        ? updated.notes?.replace(OVERBOOKING_ALERT, "").trim() || undefined
+        : undefined,
     };
-    Promise.allSettled([sendConfirmationEmail(emailData)]).catch(() => {});
+    sendAfterResponse("email de confirmation", [sendConfirmationEmail(emailData)]);
   }
 
-  // Si une privatisation est annulée, débloquer le jour
-  if (fields.status === "cancelled" && updated.excursionId === "privatisation") {
-    await prisma.availability.updateMany({
-      where: { date: updated.date, blockReason: "Privatisation" },
-      data: { isBlocked: false, bookedSpots: 0, blockReason: null },
-    });
+  // Privatisation annulée, déplacée ou réactivée : le jour bloqué la suit
+  if (isPrivatisation) {
+    if (before.status !== "cancelled" && (updated.status === "cancelled" || updated.date !== before.date)) {
+      await unblockDay(before.date);
+    }
+    if (blocksNewDay) await blockDay(updated.date);
   }
 
   invalidateDashboard();
@@ -198,10 +244,7 @@ export async function DELETE(req: NextRequest) {
 
   // Si c'était une privatisation, débloquer le jour dans Availability
   if (reservation?.excursionId === "privatisation") {
-    await prisma.availability.updateMany({
-      where: { date: reservation.date, blockReason: "Privatisation" },
-      data: { isBlocked: false, bookedSpots: 0, blockReason: null },
-    });
+    await unblockDay(reservation.date);
   }
 
   invalidateDashboard();

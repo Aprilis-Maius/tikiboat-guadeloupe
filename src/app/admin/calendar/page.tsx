@@ -53,7 +53,10 @@ export default function CalendarPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const getDayData = (dateStr: string) => {
-    const avail = availabilities.find(a => a.date === dateStr);
+    // Une ligne par excursion et par jour : on montre le blocage s'il y en a un,
+    // sinon la ligne d'une excursion classique
+    const dayRows = availabilities.filter(a => a.date === dateStr);
+    const avail = dayRows.find(a => a.isBlocked) ?? dayRows.find(a => a.excursionId !== "privatisation") ?? dayRows[0];
     const dayResas = reservations.filter(r => r.date === dateStr && r.status !== "cancelled");
     const bookedFromResas = dayResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
     const booked = avail ? Math.max(avail.bookedSpots, bookedFromResas) : bookedFromResas;
@@ -69,11 +72,18 @@ export default function CalendarPage() {
   const saveDay = async () => {
     if (!editingDay) return;
     setSaving(true);
-    await fetch("/api/admin/availability", {
+    // Sans excursionId : le serveur applique le réglage à toutes les excursions du jour
+    const res = await fetch("/api/admin/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...editingDay, excursionId: "1" }),
+      body: JSON.stringify(editingDay),
     });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      alert(json.error ?? "Échec de l'enregistrement. Réessayez.");
+      setSaving(false);
+      return;
+    }
     await fetchData();
     setSaving(false);
     setEditingDay(null);
@@ -81,11 +91,15 @@ export default function CalendarPage() {
 
   const confirmReservation = async (id: string) => {
     setConfirming(id);
-    await fetch("/api/admin/reservations", {
+    const res = await fetch("/api/admin/reservations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: "confirmed", action: "confirm" }),
     });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      alert(json.error ?? "Échec de la confirmation. Réessayez.");
+    }
     await fetchData();
     setConfirming(null);
   };
@@ -302,8 +316,10 @@ export default function CalendarPage() {
                           r.children > 0 ? `${r.children} enfant${r.children > 1 ? "s" : ""}` : null,
                           r.infants > 0 ? `${r.infants} bébé${r.infants > 1 ? "s" : ""}` : null,
                         ].filter(Boolean).join(" + ");
-                        const isPaid = r.isPaid;
-                        const isDeposit = r.paymentType === "deposit" && !isPaid;
+                        // isPaid = « payé en ligne », y compris un simple acompte :
+                        // un acompte laisse toujours un solde à encaisser le jour J
+                        const isDeposit = r.paymentType === "deposit";
+                        const isPaid = r.isPaid && !isDeposit;
                         const remaining = r.totalPrice - r.depositAmount;
 
                         return (

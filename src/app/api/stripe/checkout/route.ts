@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getExcursionBySlug } from "@/lib/excursions";
-import { getSeasonalPrices } from "@/lib/utils";
+import { getSeasonalPrices, todayInGuadeloupe } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
     const excursion = await getExcursionBySlug(excursionSlug);
     if (!excursion) return NextResponse.json({ error: "Excursion not found" }, { status: 404 });
 
-    // Validation date : format YYYY-MM-DD et pas dans le passé
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) {
+    // Validation date : format YYYY-MM-DD, date réelle (pas de 30 février)
+    // et au plus tôt demain en Guadeloupe — même règle que le calendrier
+    const parsedDate = new Date(`${date}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) || isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
       return NextResponse.json({ error: "Date invalide" }, { status: 400 });
     }
-    const n = new Date();
-    const todayStr = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
-    if (String(date) < todayStr) {
-      return NextResponse.json({ error: "Cette date est déjà passée." }, { status: 400 });
+    if (String(date) <= todayInGuadeloupe()) {
+      return NextResponse.json({ error: "Cette date n'est plus réservable en ligne (au plus tard la veille)." }, { status: 400 });
     }
 
     // Validation + bornage des coordonnées client côté serveur
@@ -58,6 +58,12 @@ export async function POST(req: NextRequest) {
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!cName || !cPhone || !EMAIL_RE.test(cEmail)) {
       return NextResponse.json({ error: "Coordonnées invalides (nom, email et téléphone requis)." }, { status: 400 });
+    }
+    if (paymentType !== "deposit" && paymentType !== "full") {
+      return NextResponse.json({ error: "Mode de paiement invalide." }, { status: 400 });
+    }
+    if (body.certificationAccepted !== true) {
+      return NextResponse.json({ error: "Veuillez cocher la certification avant de payer." }, { status: 400 });
     }
 
     // Prix recalculés côté serveur — ne jamais faire confiance au client
@@ -94,7 +100,11 @@ export async function POST(req: NextRequest) {
       where: { date, excursionId: excursionSlug, status: { not: "cancelled" } },
       select: { adults: true, children: true, infants: true },
     });
-    const bookedCount = existingResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0);
+    // Même calcul que le calendrier public : places saisies par l'admin ou réservations, le plus grand
+    const bookedCount = Math.max(
+      avail?.bookedSpots ?? 0,
+      existingResas.reduce((s, r) => s + r.adults + r.children + (r.infants ?? 0), 0),
+    );
     const maxSpots    = avail?.maxSpots ?? excursion.maxPassengers ?? 12;
     const remaining   = maxSpots - bookedCount;
     const requested   = numAdults + numChildren + numInfants;
@@ -117,10 +127,13 @@ export async function POST(req: NextRequest) {
     try {
       const parsed = typeof body.passengerNames === "string" ? JSON.parse(body.passengerNames) : (body.passengerNames || []);
       const typeShort: Record<string, string> = { adult: "a", child: "c", infant: "i" };
-      passengerNamesCompact = JSON.stringify(
-        (parsed as { name?: string; type?: string }[]).slice(0, 15).map((p) => [String(p.name ?? "").slice(0, 40), typeShort[p.type ?? ""] ?? "a"])
-      );
-      if (passengerNamesCompact.length > 490) passengerNamesCompact = passengerNamesCompact.slice(0, 490);
+      const list = (parsed as { name?: string; type?: string }[]).slice(0, 15).map((p) => [String(p.name ?? ""), typeShort[p.type ?? ""] ?? "a"]);
+      // Raccourcit les noms jusqu'à tenir dans la limite — couper le JSON lui-même le rendrait illisible
+      for (const max of [40, 30, 20, 12]) {
+        passengerNamesCompact = JSON.stringify(list.map(([name, t]) => [name.slice(0, max), t]));
+        if (passengerNamesCompact.length <= 490) break;
+      }
+      if (passengerNamesCompact.length > 490) passengerNamesCompact = "[]";
     } catch {}
     const notesSafe = String(notes || "").slice(0, 400);
 
@@ -129,8 +142,8 @@ export async function POST(req: NextRequest) {
       mode: "payment",
       customer_email: cEmail,
       // La session expire vite pour réduire la fenêtre de double réservation
-      // (défaut Stripe = 24h ; 30 min est le minimum autorisé)
-      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+      // (défaut Stripe = 24h ; minimum autorisé = 30 min, +1 min de marge réseau)
+      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
       line_items: [
         {
           price_data: {
@@ -142,7 +155,9 @@ export async function POST(req: NextRequest) {
               description: isEn
                 ? `${date} · ${numAdults} adult${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} child${numChildren > 1 ? "ren" : ""}` : ""} · Departure ${excursion.departureTime} · Return ${excursion.returnTime}`
                 : `${date} · ${numAdults} adulte${numAdults > 1 ? "s" : ""}${numChildren > 0 ? ` + ${numChildren} enfant${numChildren > 1 ? "s" : ""}` : ""} · Départ ${excursion.departureTime} · Retour ${excursion.returnTime}`,
-              images: excursion.images[0] ? [`${baseUrl}${excursion.images[0]}`] : [],
+              images: excursion.images[0]
+                ? [excursion.images[0].startsWith("http") ? excursion.images[0] : `${baseUrl}${excursion.images[0]}`]
+                : [],
             },
             unit_amount: Math.round(serverAmountToPay * 100),
           },

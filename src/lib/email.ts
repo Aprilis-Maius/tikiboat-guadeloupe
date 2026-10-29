@@ -10,6 +10,17 @@ const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://tikiboat.fr";
 
 const LOGO = `${SITE_URL}/logo.png`;
 
+// Resend ne lève jamais d'exception : il renvoie { data, error }. On lève nous-mêmes,
+// sinon un envoi raté passe pour réussi et n'est jamais journalisé.
+async function send(payload: Parameters<typeof resend.emails.send>[0]) {
+  const { data, error } = await resend.emails.send(payload);
+  if (error) throw new Error(`Resend : ${error.message}`);
+  return data;
+}
+
+// Préfixe ajouté aux notes par le webhook en cas de surréservation — réservé à l'admin
+export const OVERBOOKING_ALERT = "⚠️ SURRÉSERVATION DÉTECTÉE — capacité dépassée, contacter le client.";
+
 export interface ReservationData {
   customerName:   string;
   customerEmail:  string;
@@ -23,6 +34,7 @@ export interface ReservationData {
   totalPrice:     number;
   depositAmount:  number;
   paymentType:    string;
+  isPaid?:        boolean; // réservation manuelle : false = rien d'encaissé
   notes?:         string;
 }
 
@@ -69,12 +81,17 @@ function generateICS(data: ReservationData, exc: Excursion | undefined): string 
   const parseTime = (t: string) => { const [h, min] = t.replace("h", ":").split(":").map(Number); return { h: h || 0, min: min || 0 }; };
   const dep = parseTime(exc?.departureTime ?? "08:00");
   const ret = parseTime(exc?.returnTime    ?? "17:00");
-  const pad = (n: number) => String(n).padStart(2, "0");
+  // Heures en UTC (Guadeloupe = UTC-4 toute l'année) : sans fuseau, un agenda
+  // réglé sur l'heure de Paris décalerait le départ de plusieurs heures
+  const icsDate = (dt: Date) => dt.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const utc = (h: number, min: number) => icsDate(new Date(Date.UTC(y, m - 1, d, h + 4, min)));
   return [
     "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Tiki Boat//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `DTSTART:${y}${pad(m)}${pad(d)}T${pad(dep.h)}${pad(dep.min)}00`,
-    `DTEND:${y}${pad(m)}${pad(d)}T${pad(ret.h)}${pad(ret.min)}00`,
+    `UID:${crypto.randomUUID()}@tikiboat.fr`,
+    `DTSTAMP:${icsDate(new Date())}`,
+    `DTSTART:${utc(dep.h, dep.min)}`,
+    `DTEND:${utc(ret.h, ret.min)}`,
     `SUMMARY:Tiki Boat — ${data.excursionTitle}`,
     `DESCRIPTION:${data.excursionTitle}\\nPassagers : ${data.adults + (data.children ?? 0) + (data.infants ?? 0)} pers.\\nContact : +590 690 49 58 48`,
     `LOCATION:${exc?.departurePoint ?? "Marina de Pointe-à-Pitre"}, Guadeloupe`,
@@ -170,7 +187,7 @@ export async function sendPendingEmail(data: ReservationData) {
 </td></tr></table>
 </body></html>`;
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   data.customerEmail,
     subject: `⏳ Demande reçue — ${data.excursionTitle} · ${formatDate(data.date)}`,
@@ -235,7 +252,7 @@ export async function sendAdminPendingNotification(data: ReservationData) {
 </td></tr></table>
 </body></html>`;
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   ADMIN,
     subject: `⏳ Nouvelle demande — ${data.customerName} · ${data.excursionTitle} · ${formatDate(data.date)} (${pax} pers.)`,
@@ -247,6 +264,8 @@ export async function sendAdminPendingNotification(data: ReservationData) {
 export async function sendConfirmationEmail(data: ReservationData) {
   const exc       = await findExcursion(data);
   const isDeposit = data.paymentType === "deposit";
+  // Réservation manuelle pas encore payée (téléphone, sur place)
+  const isUnpaid  = !isDeposit && (data.paymentType === "none" || data.isPaid === false);
   const remaining = data.totalPrice - data.depositAmount;
   const included  = exc?.included as string[] | undefined;
   const depTime   = exc?.departureTime ?? "08h00";
@@ -294,7 +313,9 @@ export async function sendConfirmationEmail(data: ReservationData) {
           ${isDeposit
             ? row("Acompte réglé (30%)", `<span style="color:#16a34a;font-weight:600;">✓ ${data.depositAmount.toFixed(2)} €</span>`) +
               row("Solde à régler le jour J", `<strong style="color:#dc2626;">${remaining.toFixed(2)} €</strong>`)
-            : row("Paiement", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
+            : isUnpaid
+              ? row("À régler le jour J", `<strong style="color:#dc2626;">${data.totalPrice.toFixed(2)} €</strong>`)
+              : row("Paiement", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
         </table>
       </td></tr>
     </table>
@@ -348,7 +369,7 @@ export async function sendConfirmationEmail(data: ReservationData) {
 </td></tr></table>
 </body></html>`;
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   data.customerEmail,
     subject: `✅ Réservation confirmée — ${data.excursionTitle} · ${formatDate(data.date)}`,
@@ -362,6 +383,7 @@ export async function sendAdminNotification(data: ReservationData) {
   const exc       = await findExcursion(data);
   const pax       = data.adults + (data.children ?? 0) + (data.infants ?? 0);
   const isDeposit = data.paymentType === "deposit";
+  const isUnpaid  = !isDeposit && (data.paymentType === "none" || data.isPaid === false);
   const remaining = data.totalPrice - data.depositAmount;
   const safeName  = esc(data.customerName);
   const safePhone = esc(data.customerPhone);
@@ -377,14 +399,16 @@ export async function sendAdminNotification(data: ReservationData) {
 <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
 
   <!-- Header -->
-  <tr><td>${logoHeader(`${safeTitle} · ${formatDate(data.date)}`, isDeposit ? "#d97706" : "#16a34a", isDeposit ? "💰 Acompte reçu" : "✅ Paiement intégral")}</td></tr>
+  <tr><td>${logoHeader(`${safeTitle} · ${formatDate(data.date)}`, isDeposit ? "#d97706" : isUnpaid ? "#dc2626" : "#16a34a", isDeposit ? "💰 Acompte reçu" : isUnpaid ? "🕐 À encaisser" : "✅ Paiement intégral")}</td></tr>
 
   <!-- Bandeau montant -->
-  <tr><td style="background:${isDeposit ? "#d97706" : "#16a34a"};padding:10px 24px;">
+  <tr><td style="background:${isDeposit ? "#d97706" : isUnpaid ? "#dc2626" : "#16a34a"};padding:10px 24px;">
     <p style="color:#fff;font-size:13px;font-weight:700;margin:0;">
       ${isDeposit
         ? `Acompte de ${data.depositAmount.toFixed(2)} € encaissé — Solde à récupérer le jour J : <strong>${remaining.toFixed(2)} €</strong>`
-        : `Paiement intégral reçu : ${data.totalPrice.toFixed(2)} €`}
+        : isUnpaid
+          ? `Rien d'encaissé — à régler le jour J : <strong>${data.totalPrice.toFixed(2)} €</strong>`
+          : `Paiement intégral reçu : ${data.totalPrice.toFixed(2)} €`}
     </p>
   </td></tr>
 
@@ -417,7 +441,9 @@ export async function sendAdminNotification(data: ReservationData) {
       ${isDeposit
         ? row("Acompte reçu", `<span style="color:#16a34a;font-weight:600;">✓ ${data.depositAmount.toFixed(2)} €</span>`) +
           row("Solde à encaisser", `<strong style="color:#dc2626;font-size:15px;">${remaining.toFixed(2)} €</strong>`)
-        : row("Statut", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
+        : isUnpaid
+          ? row("Solde à encaisser", `<strong style="color:#dc2626;font-size:15px;">${data.totalPrice.toFixed(2)} €</strong>`)
+          : row("Statut", `<span style="color:#16a34a;font-weight:600;">Intégralement réglé ✓</span>`)}
       ${safeNotes ? row("Notes client", `<em style="color:#64748b;">${safeNotes}</em>`) : ""}
     </table>
 
@@ -441,7 +467,7 @@ export async function sendAdminNotification(data: ReservationData) {
 </td></tr></table>
 </body></html>`;
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   ADMIN,
     subject: `🆕 ${data.customerName} — ${data.excursionTitle} — ${formatDate(data.date)} (${pax} pers.)`,

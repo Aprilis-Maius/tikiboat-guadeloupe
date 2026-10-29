@@ -43,10 +43,12 @@ export async function GET(req: NextRequest) {
     };
   }
 
-  // Dates avec réservations mais sans entrée Availability
+  // Dates avec réservations mais sans entrée Availability : capacité de l'excursion
+  const excursion = await prisma.excursion.findUnique({ where: { slug }, select: { maxPassengers: true } });
+  const capacity  = excursion?.maxPassengers ?? 12;
   for (const [date, booked] of Object.entries(bookedByDate)) {
     if (!dates[date]) {
-      dates[date] = { spotsLeft: Math.max(0, 12 - booked), isBlocked: false };
+      dates[date] = { spotsLeft: Math.max(0, capacity - booked), isBlocked: false };
     }
   }
 

@@ -38,6 +38,12 @@ const parseArr = (json: string): string[] => {
   try { return JSON.parse(json); } catch { return []; }
 };
 
+// Message d'erreur renvoyé par l'API ({ error }), sinon message générique
+const apiError = async (res: Response, fallback: string): Promise<string> => {
+  const json = await res.json().catch(() => ({}));
+  return json.error ?? fallback;
+};
+
 const inputCls = "w-full bg-white border border-slate-200 focus:border-tiki-lagon focus:ring-2 focus:ring-tiki-lagon/10 rounded-xl px-3 py-2.5 text-slate-800 placeholder-slate-400 outline-none transition-colors text-sm";
 const labelCls = "block text-slate-500 text-xs font-semibold mb-1.5";
 
@@ -146,19 +152,21 @@ export default function ExcursionsAdminPage() {
   };
 
   const toggleActive = async (exc: Excursion) => {
-    await fetch("/api/admin/excursions", {
+    const res = await fetch("/api/admin/excursions", {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: exc.id, isActive: !exc.isActive }),
     });
+    if (!res.ok) alert(await apiError(res, "Échec de la mise à jour de l'excursion"));
     fetchExcursions();
   };
 
   const deleteExc = async (exc: Excursion) => {
     if (!confirm(`Supprimer "${exc.title}" ? Cette action est irréversible.`)) return;
-    await fetch("/api/admin/excursions", {
+    const res = await fetch("/api/admin/excursions", {
       method: "DELETE", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: exc.id }),
     });
+    if (!res.ok) alert(await apiError(res, "Échec de la suppression de l'excursion"));
     fetchExcursions();
   };
 

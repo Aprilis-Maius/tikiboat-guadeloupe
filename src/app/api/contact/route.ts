@@ -24,23 +24,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const { name, email, phone, subject, message } = body as Record<string, string>;
+    const body = await req.json() as Record<string, unknown>;
+
+    // Bornage serveur des longueurs (le formulaire n'en impose aucune)
+    const name    = String(body.name    ?? "").trim().slice(0, 120);
+    const email   = String(body.email   ?? "").trim().slice(0, 200);
+    const phone   = String(body.phone   ?? "").trim().slice(0, 40);
+    // Sans \r\n : le sujet part dans l'en-tête Subject de l'email
+    const subject = String(body.subject ?? "").replace(/[\r\n]/g, "").trim().slice(0, 150);
+    const message = String(body.message ?? "").trim().slice(0, 5000);
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
     }
-    if (!EMAIL_RE.test(String(email).trim())) {
+    if (!EMAIL_RE.test(email)) {
       return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 });
     }
 
-    const safeName    = esc(String(name));
-    const safeEmail   = esc(String(email));
-    const safePhone   = esc(String(phone ?? ""));
-    const safeSubject = esc(String(subject ?? ""));
-    const safeMessage = esc(String(message));
+    const safeName    = esc(name);
+    const safeEmail   = esc(email);
+    const safePhone   = esc(phone);
+    const safeSubject = esc(subject);
+    const safeMessage = esc(message);
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: FROM,
       to:   TO,
       replyTo: email,
@@ -59,6 +66,15 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     });
+
+    // Resend v6 ne lève pas d'exception sur une erreur d'API : elle arrive dans `error`
+    if (error) {
+      console.error("[POST /api/contact] Resend", error);
+      return NextResponse.json(
+        { error: "L'envoi a échoué. Réessayez dans un instant ou contactez-nous directement sur WhatsApp." },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

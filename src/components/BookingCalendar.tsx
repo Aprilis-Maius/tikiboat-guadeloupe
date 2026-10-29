@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { todayInGuadeloupe } from "@/lib/utils";
 
 interface DayState {
   spotsLeft: number;
@@ -68,14 +69,10 @@ export default function BookingCalendar({ excursionSlug, value, onChange, onSpot
   // Complète pour avoir des lignes entières
   while (cells.length % 7 !== 0) cells.push(null);
 
-  // Bloque aujourd'hui et le passé — demain est le minimum réservable
-  // Utilise l'heure locale du navigateur (pas Guadeloupe) pour que "aujourd'hui"
-  // soit toujours le bon jour depuis la perspective du client
-  const isPast = (d: number) => {
-    const local = new Date();
-    const tomorrow = new Date(local.getFullYear(), local.getMonth(), local.getDate() + 1);
-    return new Date(year, month, d) < tomorrow;
-  };
+  // Bloque aujourd'hui et le passé — demain est le minimum réservable.
+  // "Aujourd'hui" = date en Guadeloupe, comme la vérification du paiement
+  // (sinon un client à l'autre bout du monde pourrait choisir un jour déjà commencé)
+  const isPast = (d: number) => toYMD(year, month, d) <= todayInGuadeloupe();
 
   const isFull = (d: number) => {
     const ymd = toYMD(year, month, d);

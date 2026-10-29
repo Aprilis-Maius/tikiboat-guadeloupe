@@ -14,8 +14,13 @@ export interface DbExcursion {
   popular: boolean; isActive: boolean; sortOrder: number;
 }
 
+// Tolère une valeur mal formée en base (null, objet, nombres…) : une page
+// d'excursion qui plante, c'est tout le site qui renvoie une erreur
 const parse = (json: string): string[] => {
-  try { return JSON.parse(json); } catch { return []; }
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
+  } catch { return []; }
 };
 
 export function dbToExcursion(e: DbExcursion): Excursion {
@@ -79,10 +84,18 @@ export const getExcursionBySlug = unstable_cache(
   async (slug: string): Promise<Excursion | undefined> => {
     try {
       const row = await prisma.excursion.findUnique({ where: { slug } });
-      if (row) return dbToExcursion(row);
+      // Excursion masquée par l'admin : ni page, ni réservation
+      if (row) return row.isActive ? dbToExcursion(row) : undefined;
     } catch {}
     return staticExcursions.find(e => e.slug === slug);
   },
   ["excursion-by-slug"],
   { revalidate: 3600, tags: ["excursions"] }
 );
+
+// Toutes les excursions (statiques + DB) : le bateau est partagé, un blocage
+// ou une jauge du jour s'applique à chacune
+export async function getAllExcursionSlugs(): Promise<string[]> {
+  const rows = await prisma.excursion.findMany({ select: { slug: true } });
+  return Array.from(new Set([...staticExcursions.map(e => e.slug), ...rows.map(e => e.slug)]));
+}

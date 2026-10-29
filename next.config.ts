@@ -12,6 +12,9 @@ const securityHeaders = [
   { key: "X-DNS-Prefetch-Control",    value: "on" },
 ];
 
+// Images envoyées depuis l'admin (/api/upload → Supabase Storage)
+const supabaseHost = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : null;
+
 const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
@@ -25,10 +28,11 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "img.youtube.com" },
-      { protocol: "https", hostname: "lh3.googleusercontent.com" },
-      { protocol: "https", hostname: "raw.githubusercontent.com" },
+      // Seul bucket utilisé (cf. BUCKET dans /api/upload)
+      ...(supabaseHost
+        ? [{ protocol: "https" as const, hostname: supabaseHost, pathname: "/storage/v1/object/public/tikiboat-images/**" }]
+        : []),
     ],
   },
 };
